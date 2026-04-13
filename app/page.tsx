@@ -90,6 +90,9 @@ const CloseIcon = () => (
   </svg>
 )
 
+// ✅ EDIT THESE to control Y-axis levels on the graph
+const yAxisTicks = [0, 250, 500]
+
 export default function ReelInsights() {
   const { data: insightsData, saveData, isLoaded } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
@@ -382,25 +385,23 @@ export default function ReelInsights() {
               </button>
             ))}
           </div>
-                              <div className="h-44 -ml-2">
+                                        <div className="h-44 -ml-2">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={[
-                  {
-                    date: insightsData.viewsTimeData[0]?.date ?? "Day 1",
-                    thisReel: Math.round(insightsData.views * 0.55),
-                    typical: Math.round(insightsData.views * 0.3),
-                  },
-                  {
-                    date: insightsData.viewsTimeData[1]?.date ?? "Day 2",
-                    thisReel: Math.round(insightsData.views * 0.85),
-                    typical: Math.round(insightsData.views * 0.5),
-                  },
-                  {
-                    date: insightsData.viewsTimeData[2]?.date ?? "Day 3",
-                    thisReel: insightsData.views,
-                    typical: Math.round(insightsData.views * 0.38),
-                  },
+                  // ✅ EDIT THESE VALUES to change graph shape
+                  // date = shown on X axis (use your reel posted date + next days)
+                  // thisReel = your reel views (pink line)
+                  // typical = average reel views (grey dashed line)
+                  { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 80,  typical: 60  },
+                  { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 200, typical: 80  },
+                  { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 170, typical: 90  },
+                  { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 320, typical: 75  },
+                  { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 290, typical: 100 },
+                  { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 400, typical: 85  },
+                  { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 370, typical: 95  },
+                  { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 460, typical: 80  },
+                  { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 481, typical: 110 },
                 ]}
                 margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
               >
@@ -410,6 +411,8 @@ export default function ReelInsights() {
                   tickLine={false}
                   tick={{ fill: "#71717a", fontSize: 10 }}
                   dy={8}
+                  // Shows only unique dates (one label per date group)
+                  interval={2}
                 />
                 <YAxis
                   axisLine={false}
@@ -418,17 +421,14 @@ export default function ReelInsights() {
                   tickFormatter={(value) =>
                     value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value.toString()
                   }
-                  domain={[0, Math.round(insightsData.views * 1.15)]}
-                  ticks={[
-                    0,
-                    Math.round(insightsData.views * 0.5),
-                    Math.round(insightsData.views * 1.0),
-                  ]}
+                  // ✅ EDIT yAxisTicks variable at top of file to change Y axis levels
+                  ticks={yAxisTicks}
+                  domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
                   width={38}
                 />
-                {/* This reel - pink, no dots, sharp growth curve */}
+                {/* This reel - pink, natural growth with ups and downs */}
                 <Line
-                  type="monotone"
+                  type="natural"
                   dataKey="thisReel"
                   stroke="#D946EF"
                   strokeWidth={3}
@@ -436,7 +436,7 @@ export default function ReelInsights() {
                   activeDot={{ r: 4, fill: "#D946EF" }}
                   animationDuration={1500}
                 />
-                {/* Typical reel - bright grey, natural curve with dips */}
+                {/* Typical reel - bright grey, fluctuating, dashed */}
                 <Line
                   type="natural"
                   dataKey="typical"
