@@ -90,32 +90,47 @@ const CloseIcon = () => (
 )
 
 // ===== DRAGGABLE GRAPH COMPONENT =====
+type GraphPoint = { date: string; thisReel: number; typical: number }
+
 const DraggableGraph = ({
   data,
   onChange,
 }: {
-  data: { date: string; thisReel: number; typical: number }[]
-  onChange: (newData: { date: string; thisReel: number; typical: number }[]) => void
+  data: GraphPoint[]
+  onChange: (newData: GraphPoint[]) => void
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
-    const [yTicks, setYTicks] = useState(() => {
-    try {
-      const saved = localStorage.getItem("graph-yticks")
-      if (saved) return JSON.parse(saved)
-    } catch {}
-    return [0, 250, 500]
-  })
+  const [yTicks, setYTicks] = useState([0, 250, 500])
   const [showEditor, setShowEditor] = useState(false)
   const [tempYTicks, setTempYTicks] = useState([0, 250, 500])
-  const [tempData, setTempData] = useState(data)
+  const [tempData, setTempData] = useState<GraphPoint[]>(data)
+
+  // Load saved Y ticks after mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("graph-yticks")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setYTicks(parsed)
+          setTempYTicks(parsed)
+        }
+      }
+    } catch {}
+  }, [])
 
   const padding = { top: 20, right: 15, bottom: 35, left: 42 }
   const width = 340
   const height = 180
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
-  const yMax = yTicks[yTicks.length - 1] || 500
+
+  // Auto Y axis based on data
+  const maxVal = Math.max(...data.map(d => Math.max(d.thisReel, d.typical)))
+  const autoMax = Math.ceil(maxVal / 100) * 100 || 500
+  const yMax = yTicks[yTicks.length - 1] > 0 ? yTicks[yTicks.length - 1] : autoMax
+  const displayTicks = yTicks[yTicks.length - 1] > 0 ? yTicks : [0, Math.round(autoMax / 2), autoMax]
 
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yMax) / yMax) * chartH
@@ -187,29 +202,64 @@ const DraggableGraph = ({
         onPointerLeave={handlePointerUp}
       >
         {/* Y axis lines and labels */}
-        {yTicks.map((tick) => (
+        {displayTicks.map((tick) => (
           <g key={tick}>
-            <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#27272a" strokeWidth={1} />
-            <text x={padding.left - 6} y={getY(tick) + 4} textAnchor="end" fill="#71717a" fontSize="10" fontFamily="Roboto, sans-serif">
-              {tick >= 1000 ? `${(tick / 1000).toFixed(1)}K` : tick}
+            <line
+              x1={padding.left}
+              y1={getY(tick)}
+              x2={width - padding.right}
+              y2={getY(tick)}
+              stroke="#27272a"
+              strokeWidth={1}
+            />
+            <text
+              x={padding.left - 6}
+              y={getY(tick) + 4}
+              textAnchor="end"
+              fill="#71717a"
+              fontSize="10"
+              fontFamily="Roboto, sans-serif"
+            >
+              {tick >= 1000 ? `${(tick / 1000).toFixed(1)}K` : tick.toString()}
             </text>
           </g>
         ))}
 
         {/* X axis date labels */}
         {uniqueDates.map((d) => (
-          <text key={d.date} x={d.x} y={height - 8} textAnchor="middle" fill="#71717a" fontSize="10" fontFamily="Roboto, sans-serif">
+          <text
+            key={d.date}
+            x={d.x}
+            y={height - 8}
+            textAnchor="middle"
+            fill="#71717a"
+            fontSize="10"
+            fontFamily="Roboto, sans-serif"
+          >
             {d.date}
           </text>
         ))}
 
-                {/* Typical reel line (grey dashed - more spacing) */}
-        <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
+        {/* Typical reel line (grey dashed - more spacing) */}
+        <path
+          d={buildPath(typicalPoints)}
+          fill="none"
+          stroke="#a1a1aa"
+          strokeWidth={3.5}
+          strokeDasharray="6 10"
+          strokeLinecap="round"
+        />
 
         {/* This reel line (pink) */}
-        <path d={buildPath(thisReelPoints)} fill="none" stroke="#D946EF" strokeWidth={4} strokeLinecap="round" />
+        <path
+          d={buildPath(thisReelPoints)}
+          fill="none"
+          stroke="#D946EF"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
 
-                {/* Invisible drag handles for thisReel — no visible dots */}
+        {/* Invisible drag handles for thisReel */}
         {data.map((d, i) => (
           <circle
             key={`tr-${i}`}
@@ -223,7 +273,7 @@ const DraggableGraph = ({
           />
         ))}
 
-        {/* Invisible drag handles for typical — no visible dots */}
+        {/* Invisible drag handles for typical */}
         {data.map((d, i) => (
           <circle
             key={`tp-${i}`}
@@ -238,7 +288,19 @@ const DraggableGraph = ({
         ))}
       </svg>
 
-            {/* Editor trigger - hidden text removed, use long press or button */}
+      {/* Edit button */}
+      <div className="flex justify-end mt-1">
+        <button
+          onClick={() => {
+            setTempData([...data])
+            setTempYTicks([...yTicks])
+            setShowEditor(true)
+          }}
+          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors px-1"
+        >
+          Edit values
+        </button>
+      </div>
 
       {/* Value Editor Popup */}
       {showEditor && (
@@ -277,9 +339,10 @@ const DraggableGraph = ({
 
             {/* Data Points */}
             <div className="px-4 py-4">
-              <p className="text-[12px] font-semibold text-zinc-400 mb-3">Data Points</p>
+              <p className="text-[12px] font-semibold text-zinc-400 mb-1">Data Points</p>
+              <p className="text-[11px] text-zinc-500 mb-3">Edit Date to change X axis label.</p>
               <div className="grid grid-cols-3 gap-2 mb-2">
-                <p className="text-[10px] text-zinc-500 text-center">Date</p>
+                <p className="text-[10px] text-zinc-500 text-center">X Axis Date</p>
                 <p className="text-[10px] text-fuchsia-400 text-center">This Reel</p>
                 <p className="text-[10px] text-zinc-400 text-center">Typical</p>
               </div>
@@ -295,6 +358,7 @@ const DraggableGraph = ({
                         setTempData(updated)
                       }}
                       className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[11px] text-white text-center"
+                      placeholder="28 Jan"
                     />
                     <input
                       type="number"
@@ -347,13 +411,13 @@ const DraggableGraph = ({
               >
                 Cancel
               </button>
-                            <button
+              <button
                 onClick={() => {
                   setYTicks(tempYTicks)
                   onChange(tempData)
                   try {
-                    localStorage.setItem("graph-data", JSON.stringify(tempData))
                     localStorage.setItem("graph-yticks", JSON.stringify(tempYTicks))
+                    localStorage.setItem("graph-data", JSON.stringify(tempData))
                   } catch {}
                   setShowEditor(false)
                 }}
@@ -379,7 +443,8 @@ export default function ReelInsights() {
   const [editorOpen, setEditorOpen] = useState(false)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
-    const DEFAULT_GRAPH_DATA = [
+
+  const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
     { date: "28 Jan", thisReel: 200, typical: 80  },
     { date: "28 Jan", thisReel: 170, typical: 90  },
@@ -391,15 +456,22 @@ export default function ReelInsights() {
     { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
 
-  const [graphData, setGraphData] = useState(() => {
+  const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
+
+  // Load saved graph data after mount (fixes SSR issue)
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("graph-data")
-      if (saved) return JSON.parse(saved)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setGraphData(parsed)
+        }
+      }
     } catch {}
-    return DEFAULT_GRAPH_DATA
-  })
+  }, [])
 
-  const handleGraphChange = (newData: typeof graphData) => {
+  const handleGraphChange = (newData: GraphPoint[]) => {
     setGraphData(newData)
     try {
       localStorage.setItem("graph-data", JSON.stringify(newData))
@@ -661,7 +733,6 @@ export default function ReelInsights() {
             ))}
           </div>
 
-                    {/* Draggable Graph */}
           <DraggableGraph data={graphData} onChange={handleGraphChange} />
 
           {/* Legend */}
