@@ -53,21 +53,13 @@ export function InsightEditorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={() => onOpenChange(false)}
-      />
-
-      {/* Modal */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => onOpenChange(false)} />
       <div className="relative w-full sm:max-w-lg bg-zinc-950 border border-zinc-800 rounded-t-3xl sm:rounded-2xl flex flex-col max-h-[92vh] sm:max-h-[85vh]">
 
-        {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <div className="w-10 h-1 bg-zinc-700 rounded-full" />
         </div>
 
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800 shrink-0">
           <h2 className="text-[16px] font-semibold text-white">Edit Reel Insights</h2>
           <button
@@ -81,7 +73,6 @@ export function InsightEditorModal({
           </button>
         </div>
 
-        {/* Tab Buttons */}
         <div className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0 border-b border-zinc-800">
           {tabs.map((tab) => (
             <button
@@ -98,10 +89,8 @@ export function InsightEditorModal({
           ))}
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
 
-          {/* Basic Tab */}
           {activeTab === "basic" && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -138,7 +127,6 @@ export function InsightEditorModal({
             </div>
           )}
 
-          {/* Engagement Tab */}
           {activeTab === "engagement" && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -181,7 +169,6 @@ export function InsightEditorModal({
             </div>
           )}
 
-          {/* Viewership Tab */}
           {activeTab === "viewership" && (
             <div className="space-y-4">
               <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800 space-y-3">
@@ -221,26 +208,10 @@ export function InsightEditorModal({
 
         </div>
 
-        {/* Footer Buttons */}
         <div className="flex gap-2 px-5 py-4 border-t border-zinc-800 shrink-0">
-          <button
-            onClick={handleReset}
-            className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors"
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors"
-          >
-            Save
-          </button>
+          <button onClick={handleReset} className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors">Reset</button>
+          <button onClick={() => onOpenChange(false)} className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors">Cancel</button>
+          <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors">Save</button>
         </div>
 
       </div>
