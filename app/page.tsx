@@ -957,9 +957,11 @@ export default function ReelInsights() {
             className="transition-all duration-1000 ease-out"
           />
         </svg>
-        <div className="absolute flex flex-col items-center justify-center">
+                <div className="absolute flex flex-col items-center justify-center">
           <span className="text-xs text-zinc-400 tracking-wide">{label}</span>
-          <span className="text-[38px] font-semibold text-white tracking-tight">{value}</span>
+          <span className="text-[38px] font-semibold text-white tracking-tight">
+            {Number(value).toLocaleString("en-IN")}
+          </span>
         </div>
       </div>
     )
