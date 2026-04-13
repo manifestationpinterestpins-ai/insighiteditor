@@ -1414,7 +1414,7 @@ export default function ReelInsights() {
           <h3 className="text-[18px] font-semibold mb-4">Ad</h3>
           <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                          <div className="flex items-center justify-center">
                 <BoostIcon />
               </div>
               <span className="text-[14px] text-white font-medium">Boost this Reel</span>
