@@ -382,10 +382,26 @@ export default function ReelInsights() {
               </button>
             ))}
           </div>
-                    <div className="h-44 -ml-2">
+                              <div className="h-44 -ml-2">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={insightsData.viewsTimeData}
+                data={[
+                  {
+                    date: insightsData.viewsTimeData[0]?.date ?? "Day 1",
+                    thisReel: Math.round(insightsData.views * 0.55),
+                    typical: Math.round(insightsData.views * 0.3),
+                  },
+                  {
+                    date: insightsData.viewsTimeData[1]?.date ?? "Day 2",
+                    thisReel: Math.round(insightsData.views * 0.85),
+                    typical: Math.round(insightsData.views * 0.5),
+                  },
+                  {
+                    date: insightsData.viewsTimeData[2]?.date ?? "Day 3",
+                    thisReel: insightsData.views,
+                    typical: Math.round(insightsData.views * 0.38),
+                  },
+                ]}
                 margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
               >
                 <XAxis
@@ -400,29 +416,35 @@ export default function ReelInsights() {
                   tickLine={false}
                   tick={{ fill: "#71717a", fontSize: 10 }}
                   tickFormatter={(value) =>
-                    value >= 1000 ? `${value / 1000}K` : value.toString()
+                    value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value.toString()
                   }
-                  domain={[0, Math.max(...insightsData.viewsTimeData.map(d => Math.max(d.thisReel, d.typical))) * 1.2]}
-                  width={35}
+                  domain={[0, Math.round(insightsData.views * 1.15)]}
+                  ticks={[
+                    0,
+                    Math.round(insightsData.views * 0.5),
+                    Math.round(insightsData.views * 1.0),
+                  ]}
+                  width={38}
                 />
-                {/* This reel - bright pink, more engaging, natural curve */}
+                {/* This reel - pink, no dots, sharp growth curve */}
                 <Line
                   type="monotone"
                   dataKey="thisReel"
                   stroke="#D946EF"
                   strokeWidth={3}
-                  dot={{ fill: "#D946EF", r: 3, strokeWidth: 0 }}
-                  activeDot={{ r: 5, fill: "#D946EF" }}
+                  dot={false}
+                  activeDot={{ r: 4, fill: "#D946EF" }}
                   animationDuration={1500}
                 />
-                {/* Typical reel - bright grey, smooth natural curve, dashed */}
+                {/* Typical reel - bright grey, natural curve with dips */}
                 <Line
                   type="natural"
                   dataKey="typical"
                   stroke="#a1a1aa"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   strokeDasharray="5 4"
                   dot={false}
+                  activeDot={{ r: 4, fill: "#a1a1aa" }}
                   animationDuration={1500}
                 />
               </LineChart>
@@ -439,7 +461,8 @@ export default function ReelInsights() {
               <div className="w-[6px] h-[6px] rounded-full bg-zinc-400" />
               <span className="text-[11px] text-zinc-500">Your typical reel views</span>
             </div>
-          </div>        </section>
+          </div>
+        </section>
 
         {/* Thin Divider */}
         <div className="h-px bg-zinc-800 mx-4" />
