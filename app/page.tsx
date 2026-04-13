@@ -99,7 +99,13 @@ const DraggableGraph = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
-  const [yTicks, setYTicks] = useState([0, 250, 500])
+    const [yTicks, setYTicks] = useState(() => {
+    try {
+      const saved = localStorage.getItem("graph-yticks")
+      if (saved) return JSON.parse(saved)
+    } catch {}
+    return [0, 250, 500]
+  })
   const [showEditor, setShowEditor] = useState(false)
   const [tempYTicks, setTempYTicks] = useState([0, 250, 500])
   const [tempData, setTempData] = useState(data)
@@ -197,8 +203,8 @@ const DraggableGraph = ({
           </text>
         ))}
 
-        {/* Typical reel line (grey dashed) */}
-        <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="5 4" strokeLinecap="round" />
+                {/* Typical reel line (grey dashed - more spacing) */}
+        <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
 
         {/* This reel line (pink) */}
         <path d={buildPath(thisReelPoints)} fill="none" stroke="#D946EF" strokeWidth={4} strokeLinecap="round" />
@@ -232,17 +238,7 @@ const DraggableGraph = ({
         ))}
       </svg>
 
-      {/* Tap to edit label */}
-      <p
-        className="text-center text-[10px] text-zinc-600 mt-1 cursor-pointer hover:text-zinc-400 transition-colors"
-        onClick={() => {
-          setTempData([...data])
-          setTempYTicks([...yTicks])
-          setShowEditor(true)
-        }}
-      >
-        Drag points to edit · Tap here to edit values
-      </p>
+            {/* Editor trigger - hidden text removed, use long press or button */}
 
       {/* Value Editor Popup */}
       {showEditor && (
@@ -351,10 +347,14 @@ const DraggableGraph = ({
               >
                 Cancel
               </button>
-              <button
+                            <button
                 onClick={() => {
                   setYTicks(tempYTicks)
                   onChange(tempData)
+                  try {
+                    localStorage.setItem("graph-data", JSON.stringify(tempData))
+                    localStorage.setItem("graph-yticks", JSON.stringify(tempYTicks))
+                  } catch {}
                   setShowEditor(false)
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors"
@@ -379,7 +379,7 @@ export default function ReelInsights() {
   const [editorOpen, setEditorOpen] = useState(false)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
-  const [graphData, setGraphData] = useState([
+    const DEFAULT_GRAPH_DATA = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
     { date: "28 Jan", thisReel: 200, typical: 80  },
     { date: "28 Jan", thisReel: 170, typical: 90  },
@@ -389,7 +389,22 @@ export default function ReelInsights() {
     { date: "30 Jan", thisReel: 370, typical: 95  },
     { date: "30 Jan", thisReel: 460, typical: 80  },
     { date: "30 Jan", thisReel: 481, typical: 110 },
-  ])
+  ]
+
+  const [graphData, setGraphData] = useState(() => {
+    try {
+      const saved = localStorage.getItem("graph-data")
+      if (saved) return JSON.parse(saved)
+    } catch {}
+    return DEFAULT_GRAPH_DATA
+  })
+
+  const handleGraphChange = (newData: typeof graphData) => {
+    setGraphData(newData)
+    try {
+      localStorage.setItem("graph-data", JSON.stringify(newData))
+    } catch {}
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimateCharts(true), 300)
@@ -646,8 +661,8 @@ export default function ReelInsights() {
             ))}
           </div>
 
-          {/* Draggable Graph */}
-          <DraggableGraph data={graphData} onChange={setGraphData} />
+                    {/* Draggable Graph */}
+          <DraggableGraph data={graphData} onChange={handleGraphChange} />
 
           {/* Legend */}
           <div className="flex items-center justify-center gap-6 mt-2">
