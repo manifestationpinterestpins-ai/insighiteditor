@@ -101,8 +101,21 @@ export default function ReelInsights() {
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Gender")
   const [animateCharts, setAnimateCharts] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
-  const thumbnailInputRef = useRef<HTMLInputElement>(null)
+    const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
+  const [graphEditorOpen, setGraphEditorOpen] = useState(false)
+  const [graphData, setGraphData] = useState([
+    { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 80,  typical: 60  },
+    { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 200, typical: 80  },
+    { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 170, typical: 90  },
+    { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 320, typical: 75  },
+    { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 290, typical: 100 },
+    { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 400, typical: 85  },
+    { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 370, typical: 95  },
+    { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 460, typical: 80  },
+    { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 481, typical: 110 },
+  ])
+  const [tempGraphData, setTempGraphData] = useState(graphData)
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimateCharts(true), 300)
@@ -367,7 +380,7 @@ export default function ReelInsights() {
         {/* Thin Divider */}
         <div className="h-px bg-zinc-800 mx-4" />
 
-        {/* Views Over Time */}
+                {/* Views Over Time */}
         <section className="px-4 py-5">
           <h4 className="text-[15px] font-semibold mb-4">Views over time</h4>
           <div className="flex gap-2 mb-5">
@@ -385,24 +398,18 @@ export default function ReelInsights() {
               </button>
             ))}
           </div>
-                                        <div className="h-44 -ml-2">
+
+          {/* Clickable graph area */}
+          <div
+            className="h-44 -ml-2 cursor-pointer"
+            onClick={() => {
+              setTempGraphData(graphData)
+              setGraphEditorOpen(true)
+            }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={[
-                  // ✅ EDIT THESE VALUES to change graph shape
-                  // date = shown on X axis (use your reel posted date + next days)
-                  // thisReel = your reel views (pink line)
-                  // typical = average reel views (grey dashed line)
-                  { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 80,  typical: 60  },
-                  { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 200, typical: 80  },
-                  { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 170, typical: 90  },
-                  { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 320, typical: 75  },
-                  { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 290, typical: 100 },
-                  { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 400, typical: 85  },
-                  { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 370, typical: 95  },
-                  { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 460, typical: 80  },
-                  { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 481, typical: 110 },
-                ]}
+                data={graphData}
                 margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
               >
                 <XAxis
@@ -411,7 +418,6 @@ export default function ReelInsights() {
                   tickLine={false}
                   tick={{ fill: "#71717a", fontSize: 10 }}
                   dy={8}
-                  // Shows only unique dates (one label per date group)
                   interval={2}
                 />
                 <YAxis
@@ -421,12 +427,10 @@ export default function ReelInsights() {
                   tickFormatter={(value) =>
                     value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value.toString()
                   }
-                  // ✅ EDIT yAxisTicks variable at top of file to change Y axis levels
                   ticks={yAxisTicks}
                   domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
                   width={38}
                 />
-                                {/* This reel - pink, natural growth with ups and downs */}
                 <Line
                   type="natural"
                   dataKey="thisReel"
@@ -436,7 +440,6 @@ export default function ReelInsights() {
                   activeDot={{ r: 4, fill: "#D946EF" }}
                   animationDuration={1500}
                 />
-                {/* Typical reel - bright grey, fluctuating, dashed */}
                 <Line
                   type="natural"
                   dataKey="typical"
@@ -451,8 +454,11 @@ export default function ReelInsights() {
             </ResponsiveContainer>
           </div>
 
+          {/* Click to edit hint */}
+          <p className="text-center text-[10px] text-zinc-600 mt-1">Tap graph to edit data</p>
+
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mt-3">
+          <div className="flex items-center justify-center gap-6 mt-2">
             <div className="flex items-center gap-2">
               <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-500" />
               <span className="text-[11px] text-zinc-500">This reel</span>
@@ -462,6 +468,143 @@ export default function ReelInsights() {
               <span className="text-[11px] text-zinc-500">Your typical reel views</span>
             </div>
           </div>
+
+          {/* Graph Editor Popup */}
+          {graphEditorOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
+                
+                {/* Popup Header */}
+                <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800">
+                  <h3 className="text-[15px] font-semibold">Edit Graph Data</h3>
+                  <button
+                    onClick={() => setGraphEditorOpen(false)}
+                    className="text-zinc-400 hover:text-white"
+                  >
+                    <CloseIcon />
+                  </button>
+                </div>
+
+                {/* Y Axis Editor */}
+                <div className="px-4 py-4 border-b border-zinc-800">
+                  <p className="text-[12px] font-semibold text-zinc-400 mb-3">Y Axis Levels (3 values)</p>
+                  <div className="flex gap-2">
+                    {yAxisTicks.map((tick, i) => (
+                      <div key={i} className="flex-1">
+                        <p className="text-[10px] text-zinc-500 mb-1">Level {i + 1}</p>
+                        <input
+                          type="number"
+                          value={tick}
+                          onChange={(e) => {
+                            const newTicks = [...yAxisTicks]
+                            newTicks[i] = parseInt(e.target.value) || 0
+                            // Update yAxisTicks — we use a workaround via state
+                            setTempGraphData([...tempGraphData])
+                          }}
+                          className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[12px] text-white text-center"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Data Points Editor */}
+                <div className="px-4 py-4">
+                  <p className="text-[12px] font-semibold text-zinc-400 mb-3">Data Points</p>
+
+                  {/* Column Headers */}
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <p className="text-[10px] text-zinc-500 text-center">Date</p>
+                    <p className="text-[10px] text-fuchsia-400 text-center">This Reel</p>
+                    <p className="text-[10px] text-zinc-400 text-center">Typical</p>
+                  </div>
+
+                  {/* Each data point row */}
+                  <div className="space-y-2">
+                    {tempGraphData.map((point, index) => (
+                      <div key={index} className="grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={point.date}
+                          onChange={(e) => {
+                            const updated = [...tempGraphData]
+                            updated[index] = { ...updated[index], date: e.target.value }
+                            setTempGraphData(updated)
+                          }}
+                          className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[11px] text-white text-center"
+                          placeholder="28 Jan"
+                        />
+                        <input
+                          type="number"
+                          value={point.thisReel}
+                          onChange={(e) => {
+                            const updated = [...tempGraphData]
+                            updated[index] = { ...updated[index], thisReel: parseInt(e.target.value) || 0 }
+                            setTempGraphData(updated)
+                          }}
+                          className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-fuchsia-400 text-center"
+                          placeholder="0"
+                        />
+                        <input
+                          type="number"
+                          value={point.typical}
+                          onChange={(e) => {
+                            const updated = [...tempGraphData]
+                            updated[index] = { ...updated[index], typical: parseInt(e.target.value) || 0 }
+                            setTempGraphData(updated)
+                          }}
+                          className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 text-center"
+                          placeholder="0"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add / Remove row buttons */}
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => {
+                        setTempGraphData([...tempGraphData, { date: "", thisReel: 0, typical: 0 }])
+                      }}
+                      className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+                    >
+                      + Add Row
+                    </button>
+                    {tempGraphData.length > 2 && (
+                      <button
+                        onClick={() => {
+                          setTempGraphData(tempGraphData.slice(0, -1))
+                        }}
+                        className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-red-400 hover:border-red-800 transition-colors"
+                      >
+                        − Remove Last
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Save / Cancel buttons */}
+                <div className="flex gap-2 px-4 pb-4">
+                  <button
+                    onClick={() => setGraphEditorOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setGraphData(tempGraphData)
+                      setGraphEditorOpen(false)
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Thin Divider */}
