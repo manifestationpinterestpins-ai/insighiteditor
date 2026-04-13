@@ -134,6 +134,55 @@ const GenderEditor = ({
   )
 }
 
+// ===== COUNTRY NAME EDITOR =====
+const CountryNameEditor = ({
+  name,
+  onSave,
+}: {
+  name: string
+  onSave: (newName: string) => void
+}) => {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(name)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editing])
+
+  const commit = () => {
+    if (value.trim()) onSave(value.trim())
+    else setValue(name)
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit() }}
+        className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white outline-none flex-1"
+        style={{ caretColor: "#D946EF" }}
+      />
+    )
+  }
+
+  return (
+    <span
+      className="text-[13px] text-zinc-300 cursor-pointer hover:text-fuchsia-400 transition-colors"
+      onClick={() => { setValue(name); setEditing(true) }}
+    >
+      {name}
+    </span>
+  )
+}
+
 // ===== DRAGGABLE VIEWS GRAPH =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
 
@@ -469,14 +518,12 @@ export default function ReelInsights() {
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
-  // Randomize certain values on each page load
-    // Randomize certain values on each page load — but preserve gender
+  // Randomize on each page load — preserve gender
   useEffect(() => {
     const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
     const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
     const skipTypical = parseFloat((Math.random() * (30 - 20) + 20).toFixed(1))
 
-    // Random country data US > UK > Canada > Australia > Germany > Others
     const us = parseFloat((Math.random() * (45 - 35) + 35).toFixed(1))
     const uk = parseFloat((Math.random() * (28 - 20) + 20).toFixed(1))
     const ca = parseFloat((Math.random() * (18 - 12) + 12).toFixed(1))
@@ -484,7 +531,6 @@ export default function ReelInsights() {
     const de = parseFloat((Math.random() * (7 - 4) + 4).toFixed(1))
     const others = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
 
-    // Random age data
     const a1824 = parseFloat((Math.random() * (48 - 35) + 35).toFixed(1))
     const a2534 = parseFloat((Math.random() * (42 - 30) + 30).toFixed(1))
     const a3544 = parseFloat((Math.random() * (10 - 5) + 5).toFixed(1))
@@ -493,7 +539,6 @@ export default function ReelInsights() {
     const a65 = parseFloat((Math.random() * (1 - 0.2) + 0.2).toFixed(1))
     const a1317 = parseFloat((100 - a1824 - a2534 - a3544 - a4554 - a5564 - a65).toFixed(1))
 
-    // Random sources
     const reels = parseFloat((Math.random() * (85 - 75) + 75).toFixed(1))
     const explore = parseFloat((Math.random() * (15 - 10) + 10).toFixed(1))
     const remaining = parseFloat((100 - reels - explore).toFixed(1))
@@ -501,7 +546,7 @@ export default function ReelInsights() {
     const profile = parseFloat((remaining * 0.28).toFixed(1))
     const feed = parseFloat((remaining - stories - profile).toFixed(1))
 
-    // ✅ Read saved gender from localStorage — preserve it across reloads
+    // Preserve saved gender
     let savedMen = insightsData.genderData.men
     let savedWomen = insightsData.genderData.women
     try {
@@ -513,20 +558,29 @@ export default function ReelInsights() {
       }
     } catch {}
 
+    // Preserve saved country names
+    let savedCountryNames = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "Others"]
+    try {
+      const savedNames = localStorage.getItem("country-names")
+      if (savedNames) {
+        const parsed = JSON.parse(savedNames)
+        if (Array.isArray(parsed) && parsed.length === 6) savedCountryNames = parsed
+      }
+    } catch {}
+
     saveData({
       ...insightsData,
       followerPercentage: followerPct,
       skipRateThis: skipThis,
       skipRateTypical: skipTypical,
-      // ✅ Use saved gender — not randomized
       genderData: { men: savedMen, women: savedWomen },
       countryData: [
-        { name: "United States", percentage: us },
-        { name: "United Kingdom", percentage: uk },
-        { name: "Canada", percentage: ca },
-        { name: "Australia", percentage: au },
-        { name: "Germany", percentage: de },
-        { name: "Others", percentage: Math.max(0, others) },
+        { name: savedCountryNames[0], percentage: us },
+        { name: savedCountryNames[1], percentage: uk },
+        { name: savedCountryNames[2], percentage: ca },
+        { name: savedCountryNames[3], percentage: au },
+        { name: savedCountryNames[4], percentage: de },
+        { name: savedCountryNames[5], percentage: Math.max(0, others) },
       ],
       ageData: [
         { name: "13-17", percentage: Math.max(0, a1317) },
@@ -889,7 +943,6 @@ export default function ReelInsights() {
                   <span className="text-[10px] mt-2">Upload</span>
                 </div>
               )}
-              {/* Play Icon */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>
@@ -1029,11 +1082,10 @@ export default function ReelInsights() {
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-[13px] text-zinc-300">Men</span>
-                                    <GenderEditor
+                  <GenderEditor
                     menValue={insightsData.genderData.men}
                     onSave={(newMen) => {
                       const newWomen = parseFloat((100 - newMen).toFixed(1))
-                      // ✅ Save to localStorage so it persists after reload
                       try {
                         localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: newWomen }))
                       } catch {}
@@ -1059,9 +1111,22 @@ export default function ReelInsights() {
           {audienceTab === "Country" && (
             <div className="space-y-5">
               {insightsData.countryData.map((country, index) => (
-                <div key={country.name}>
+                <div key={index}>
                   <div className="flex justify-between mb-2">
-                    <span className="text-[13px] text-zinc-300">{country.name}</span>
+                    {/* Clickable country name */}
+                    <CountryNameEditor
+                      name={country.name}
+                      onSave={(newName) => {
+                        const updatedCountries = [...insightsData.countryData]
+                        updatedCountries[index] = { ...updatedCountries[index], name: newName }
+                        // Save country names to localStorage
+                        try {
+                          const names = updatedCountries.map(c => c.name)
+                          localStorage.setItem("country-names", JSON.stringify(names))
+                        } catch {}
+                        saveData({ ...insightsData, countryData: updatedCountries })
+                      }}
+                    />
                     <span className="text-[13px] text-zinc-300">{country.percentage.toFixed(1)}%</span>
                   </div>
                   <ProgressBar percentage={country.percentage} delay={index * 80} />
