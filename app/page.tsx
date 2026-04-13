@@ -426,12 +426,12 @@ export default function ReelInsights() {
                   domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
                   width={38}
                 />
-                {/* This reel - pink, natural growth with ups and downs */}
+                                {/* This reel - pink, natural growth with ups and downs */}
                 <Line
                   type="natural"
                   dataKey="thisReel"
                   stroke="#D946EF"
-                  strokeWidth={3}
+                  strokeWidth={4}
                   dot={false}
                   activeDot={{ r: 4, fill: "#D946EF" }}
                   animationDuration={1500}
@@ -441,7 +441,7 @@ export default function ReelInsights() {
                   type="natural"
                   dataKey="typical"
                   stroke="#a1a1aa"
-                  strokeWidth={2.5}
+                  strokeWidth={3.5}
                   strokeDasharray="5 4"
                   dot={false}
                   activeDot={{ r: 4, fill: "#a1a1aa" }}
