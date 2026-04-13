@@ -17,8 +17,9 @@ import { InsightsData } from "@/lib/insights-state"
 
 // Custom Icons matching Instagram exactly
 const ChevronLeftIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M14 6L8 12L14 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 19-7-7 7-7"/>
+    <path d="M19 12H5"/>
   </svg>
 )
 
@@ -267,7 +268,7 @@ export default function ReelInsights() {
         {/* Thumbnail Section */}
         <section className="flex flex-col items-center pt-4 pb-6 px-4">
           <div
-            className="relative w-[200px] h-[310px] bg-zinc-900 rounded-lg overflow-hidden cursor-pointer group shadow-lg"
+            className="relative w-[160px] h-[250px] bg-zinc-900 rounded-lg overflow-hidden cursor-pointer group shadow-lg"
             onClick={() => thumbnailInputRef.current?.click()}
           >
             {thumbnailImage ? (
