@@ -907,7 +907,7 @@ export default function ReelInsights() {
     const radius = 110
     const strokeWidth = 16
     const circumference = 2 * Math.PI * radius
-    const gap = 20
+    const gap = 16
 
     useEffect(() => {
       if (animateCharts) {
