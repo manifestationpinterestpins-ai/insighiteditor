@@ -101,24 +101,46 @@ const DraggableGraph = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
-  const [yTicks, setYTicks] = useState([0, 250, 500])
-  const [showEditor, setShowEditor] = useState(false)
-  const [tempYTicks, setTempYTicks] = useState([0, 250, 500])
-  const [tempData, setTempData] = useState<GraphPoint[]>(data)
 
-  // Load saved Y ticks after mount
+  // X axis labels — 3 unique dates
+  const [xLabels, setXLabels] = useState(["28 Jan", "29 Jan", "30 Jan"])
+  // Y axis labels — 3 levels
+  const [yLabels, setYLabels] = useState(["0", "250", "500"])
+
+  // Which label is being edited right now
+  const [editingX, setEditingX] = useState<number | null>(null)
+  const [editingY, setEditingY] = useState<number | null>(null)
+  const [editValue, setEditValue] = useState("")
+
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Load saved axis labels from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("graph-yticks")
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setYTicks(parsed)
-          setTempYTicks(parsed)
-        }
-      }
+      const savedX = localStorage.getItem("graph-xlabels")
+      const savedY = localStorage.getItem("graph-ylabels")
+      if (savedX) setXLabels(JSON.parse(savedX))
+      if (savedY) setYLabels(JSON.parse(savedY))
     } catch {}
   }, [])
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if ((editingX !== null || editingY !== null) && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingX, editingY])
+
+  const saveXLabels = (labels: string[]) => {
+    setXLabels(labels)
+    try { localStorage.setItem("graph-xlabels", JSON.stringify(labels)) } catch {}
+  }
+
+  const saveYLabels = (labels: string[]) => {
+    setYLabels(labels)
+    try { localStorage.setItem("graph-ylabels", JSON.stringify(labels)) } catch {}
+  }
 
   const padding = { top: 20, right: 15, bottom: 35, left: 42 }
   const width = 340
@@ -126,11 +148,9 @@ const DraggableGraph = ({
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
 
-  // Auto Y axis based on data
-  const maxVal = Math.max(...data.map(d => Math.max(d.thisReel, d.typical)))
-  const autoMax = Math.ceil(maxVal / 100) * 100 || 500
-  const yMax = yTicks[yTicks.length - 1] > 0 ? yTicks[yTicks.length - 1] : autoMax
-  const displayTicks = yTicks[yTicks.length - 1] > 0 ? yTicks : [0, Math.round(autoMax / 2), autoMax]
+  // Y axis max from yLabels
+  const yMax = parseFloat(yLabels[yLabels.length - 1]) || 500
+  const yTickValues = yLabels.map(l => parseFloat(l) || 0)
 
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yMax) / yMax) * chartH
@@ -181,18 +201,49 @@ const DraggableGraph = ({
     setDragging(null)
   }
 
-  // Get unique dates for x-axis labels
-  const uniqueDates: { date: string; x: number }[] = []
-  const seen = new Set<string>()
-  data.forEach((d, i) => {
-    if (!seen.has(d.date)) {
-      seen.add(d.date)
-      uniqueDates.push({ date: d.date, x: getX(i) })
+  // X axis positions — evenly spaced across 3 labels
+  const xPositions = [
+    padding.left,
+    padding.left + chartW / 2,
+    padding.left + chartW,
+  ]
+
+  // Y axis positions
+  const yPositions = yTickValues.map(v => getY(v))
+
+  const commitEdit = () => {
+    if (editingX !== null) {
+      const updated = [...xLabels]
+      updated[editingX] = editValue
+      saveXLabels(updated)
+      setEditingX(null)
     }
-  })
+    if (editingY !== null) {
+      const updated = [...yLabels]
+      updated[editingY] = editValue
+      saveYLabels(updated)
+      setEditingY(null)
+    }
+    setEditValue("")
+  }
 
   return (
-    <div>
+    <div className="relative">
+      {/* Floating input for editing axis labels */}
+      {(editingX !== null || editingY !== null) && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => { if (e.key === "Enter") commitEdit() }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: "#D946EF" }}
+          />
+        </div>
+      )}
+
       <svg
         ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
@@ -201,46 +252,62 @@ const DraggableGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Y axis lines and labels */}
-        {displayTicks.map((tick) => (
-          <g key={tick}>
-            <line
-              x1={padding.left}
-              y1={getY(tick)}
-              x2={width - padding.right}
-              y2={getY(tick)}
-              stroke="#27272a"
-              strokeWidth={1}
-            />
-            <text
-              x={padding.left - 6}
-              y={getY(tick) + 4}
-              textAnchor="end"
-              fill="#71717a"
-              fontSize="10"
-              fontFamily="Roboto, sans-serif"
-            >
-              {tick >= 1000 ? `${(tick / 1000).toFixed(1)}K` : tick.toString()}
-            </text>
-          </g>
+        {/* Y axis grid lines */}
+        {yTickValues.map((tick, i) => (
+          <line
+            key={`yline-${i}`}
+            x1={padding.left}
+            y1={getY(tick)}
+            x2={width - padding.right}
+            y2={getY(tick)}
+            stroke="#27272a"
+            strokeWidth={1}
+          />
         ))}
 
-        {/* X axis date labels */}
-        {uniqueDates.map((d) => (
+        {/* Y axis clickable labels */}
+        {yLabels.map((label, i) => (
           <text
-            key={d.date}
-            x={d.x}
-            y={height - 8}
-            textAnchor="middle"
-            fill="#71717a"
+            key={`ylabel-${i}`}
+            x={padding.left - 6}
+            y={yPositions[i] + 4}
+            textAnchor="end"
+            fill={editingY === i ? "#D946EF" : "#71717a"}
             fontSize="10"
             fontFamily="Roboto, sans-serif"
+            className="cursor-pointer"
+            onClick={() => {
+              setEditingY(i)
+              setEditingX(null)
+              setEditValue(label)
+            }}
           >
-            {d.date}
+            {label}
           </text>
         ))}
 
-        {/* Typical reel line (grey dashed - more spacing) */}
+        {/* X axis clickable labels */}
+        {xLabels.map((label, i) => (
+          <text
+            key={`xlabel-${i}`}
+            x={xPositions[i]}
+            y={height - 8}
+            textAnchor="middle"
+            fill={editingX === i ? "#D946EF" : "#71717a"}
+            fontSize="10"
+            fontFamily="Roboto, sans-serif"
+            className="cursor-pointer"
+            onClick={() => {
+              setEditingX(i)
+              setEditingY(null)
+              setEditValue(label)
+            }}
+          >
+            {label}
+          </text>
+        ))}
+
+        {/* Typical reel line (grey dashed) */}
         <path
           d={buildPath(typicalPoints)}
           fill="none"
@@ -287,148 +354,6 @@ const DraggableGraph = ({
           />
         ))}
       </svg>
-
-      {/* Edit button */}
-      <div className="flex justify-end mt-1">
-        <button
-          onClick={() => {
-            setTempData([...data])
-            setTempYTicks([...yTicks])
-            setShowEditor(true)
-          }}
-          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors px-1"
-        >
-          Edit values
-        </button>
-      </div>
-
-      {/* Value Editor Popup */}
-      {showEditor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800">
-              <h3 className="text-[15px] font-semibold">Edit Graph Data</h3>
-              <button onClick={() => setShowEditor(false)} className="text-zinc-400 hover:text-white">
-                <CloseIcon />
-              </button>
-            </div>
-
-            {/* Y Axis Editor */}
-            <div className="px-4 py-4 border-b border-zinc-800">
-              <p className="text-[12px] font-semibold text-zinc-400 mb-3">Y Axis Levels</p>
-              <div className="flex gap-2">
-                {tempYTicks.map((tick, i) => (
-                  <div key={i} className="flex-1">
-                    <p className="text-[10px] text-zinc-500 mb-1">Level {i + 1}</p>
-                    <input
-                      type="number"
-                      value={tick}
-                      onChange={(e) => {
-                        const updated = [...tempYTicks]
-                        updated[i] = parseInt(e.target.value) || 0
-                        setTempYTicks(updated)
-                      }}
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[12px] text-white text-center"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Data Points */}
-            <div className="px-4 py-4">
-              <p className="text-[12px] font-semibold text-zinc-400 mb-1">Data Points</p>
-              <p className="text-[11px] text-zinc-500 mb-3">Edit Date to change X axis label.</p>
-              <div className="grid grid-cols-3 gap-2 mb-2">
-                <p className="text-[10px] text-zinc-500 text-center">X Axis Date</p>
-                <p className="text-[10px] text-fuchsia-400 text-center">This Reel</p>
-                <p className="text-[10px] text-zinc-400 text-center">Typical</p>
-              </div>
-              <div className="space-y-2">
-                {tempData.map((point, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-2">
-                    <input
-                      type="text"
-                      value={point.date}
-                      onChange={(e) => {
-                        const updated = [...tempData]
-                        updated[index] = { ...updated[index], date: e.target.value }
-                        setTempData(updated)
-                      }}
-                      className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[11px] text-white text-center"
-                      placeholder="28 Jan"
-                    />
-                    <input
-                      type="number"
-                      value={point.thisReel}
-                      onChange={(e) => {
-                        const updated = [...tempData]
-                        updated[index] = { ...updated[index], thisReel: parseInt(e.target.value) || 0 }
-                        setTempData(updated)
-                      }}
-                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-fuchsia-400 text-center"
-                    />
-                    <input
-                      type="number"
-                      value={point.typical}
-                      onChange={(e) => {
-                        const updated = [...tempData]
-                        updated[index] = { ...updated[index], typical: parseInt(e.target.value) || 0 }
-                        setTempData(updated)
-                      }}
-                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 text-center"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Add/Remove */}
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => setTempData([...tempData, { date: "", thisReel: 0, typical: 0 }])}
-                  className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
-                >
-                  + Add Point
-                </button>
-                {tempData.length > 2 && (
-                  <button
-                    onClick={() => setTempData(tempData.slice(0, -1))}
-                    className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-red-400 hover:border-red-800 transition-colors"
-                  >
-                    − Remove Last
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Save/Cancel */}
-            <div className="flex gap-2 px-4 pb-4">
-              <button
-                onClick={() => setShowEditor(false)}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setYTicks(tempYTicks)
-                  onChange(tempData)
-                  try {
-                    localStorage.setItem("graph-yticks", JSON.stringify(tempYTicks))
-                    localStorage.setItem("graph-data", JSON.stringify(tempData))
-                  } catch {}
-                  setShowEditor(false)
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -458,7 +383,7 @@ export default function ReelInsights() {
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
 
-  // Load saved graph data after mount (fixes SSR issue)
+  // Load saved graph data after mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem("graph-data")
