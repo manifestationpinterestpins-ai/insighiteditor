@@ -470,6 +470,7 @@ export default function ReelInsights() {
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
   // Randomize certain values on each page load
+    // Randomize certain values on each page load — but preserve gender
   useEffect(() => {
     const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
     const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
@@ -500,11 +501,25 @@ export default function ReelInsights() {
     const profile = parseFloat((remaining * 0.28).toFixed(1))
     const feed = parseFloat((remaining - stories - profile).toFixed(1))
 
+    // ✅ Read saved gender from localStorage — preserve it across reloads
+    let savedMen = insightsData.genderData.men
+    let savedWomen = insightsData.genderData.women
+    try {
+      const savedGender = localStorage.getItem("gender-data")
+      if (savedGender) {
+        const parsed = JSON.parse(savedGender)
+        savedMen = parsed.men
+        savedWomen = parsed.women
+      }
+    } catch {}
+
     saveData({
       ...insightsData,
       followerPercentage: followerPct,
       skipRateThis: skipThis,
       skipRateTypical: skipTypical,
+      // ✅ Use saved gender — not randomized
+      genderData: { men: savedMen, women: savedWomen },
       countryData: [
         { name: "United States", percentage: us },
         { name: "United Kingdom", percentage: uk },
@@ -1014,10 +1029,14 @@ export default function ReelInsights() {
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-[13px] text-zinc-300">Men</span>
-                  <GenderEditor
+                                    <GenderEditor
                     menValue={insightsData.genderData.men}
                     onSave={(newMen) => {
                       const newWomen = parseFloat((100 - newMen).toFixed(1))
+                      // ✅ Save to localStorage so it persists after reload
+                      try {
+                        localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: newWomen }))
+                      } catch {}
                       saveData({
                         ...insightsData,
                         genderData: { men: newMen, women: newWomen },
