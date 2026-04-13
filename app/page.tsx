@@ -102,19 +102,15 @@ const DraggableGraph = ({
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
 
-  // X axis labels — 3 unique dates
   const [xLabels, setXLabels] = useState(["28 Jan", "29 Jan", "30 Jan"])
-  // Y axis labels — 3 levels
   const [yLabels, setYLabels] = useState(["0", "250", "500"])
 
-  // Which label is being edited right now
   const [editingX, setEditingX] = useState<number | null>(null)
   const [editingY, setEditingY] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Load saved axis labels from localStorage
   useEffect(() => {
     try {
       const savedX = localStorage.getItem("graph-xlabels")
@@ -124,7 +120,6 @@ const DraggableGraph = ({
     } catch {}
   }, [])
 
-  // Focus input when editing starts
   useEffect(() => {
     if ((editingX !== null || editingY !== null) && inputRef.current) {
       inputRef.current.focus()
@@ -148,20 +143,27 @@ const DraggableGraph = ({
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
 
-  // Y axis max from yLabels
-  const yMax = parseFloat(yLabels[yLabels.length - 1]) || 500
-  const yTickValues = yLabels.map(l => parseFloat(l) || 0)
+  // Y axis: fixed positions for 3 levels — graph does NOT change when Y labels change
+  const yPositions = [
+    padding.top + chartH,        // bottom
+    padding.top + chartH / 2,    // middle
+    padding.top,                  // top
+  ]
+
+  // Graph uses its own fixed scale — NOT affected by Y label edits
+  const maxVal = Math.max(...data.map(d => Math.max(d.thisReel, d.typical)))
+  const graphMax = Math.ceil(maxVal / 100) * 100 || 500
 
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
-  const getY = (val: number) => padding.top + chartH - (Math.min(val, yMax) / yMax) * chartH
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, graphMax) / graphMax) * chartH
 
   const getValFromY = (clientY: number) => {
     const svg = svgRef.current
     if (!svg) return 0
     const rect = svg.getBoundingClientRect()
     const svgY = ((clientY - rect.top) / rect.height) * height
-    const val = ((padding.top + chartH - svgY) / chartH) * yMax
-    return Math.max(0, Math.min(yMax, Math.round(val)))
+    const val = ((padding.top + chartH - svgY) / chartH) * graphMax
+    return Math.max(0, Math.min(graphMax, Math.round(val)))
   }
 
   const buildPath = (points: { x: number; y: number }[]) => {
@@ -197,19 +199,14 @@ const DraggableGraph = ({
     onChange(newData)
   }
 
-  const handlePointerUp = () => {
-    setDragging(null)
-  }
+  const handlePointerUp = () => setDragging(null)
 
-  // X axis positions — evenly spaced across 3 labels
+  // X label positions — evenly spaced 3 points
   const xPositions = [
     padding.left,
     padding.left + chartW / 2,
     padding.left + chartW,
   ]
-
-  // Y axis positions
-  const yPositions = yTickValues.map(v => getY(v))
 
   const commitEdit = () => {
     if (editingX !== null) {
@@ -252,27 +249,27 @@ const DraggableGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Y axis grid lines */}
-        {yTickValues.map((tick, i) => (
+        {/* Y axis grid lines — fixed positions */}
+        {yPositions.map((yPos, i) => (
           <line
             key={`yline-${i}`}
             x1={padding.left}
-            y1={getY(tick)}
+            y1={yPos}
             x2={width - padding.right}
-            y2={getY(tick)}
+            y2={yPos}
             stroke="#27272a"
             strokeWidth={1}
           />
         ))}
 
-        {/* Y axis clickable labels */}
+        {/* Y axis clickable labels — bright grey, click to edit */}
         {yLabels.map((label, i) => (
           <text
             key={`ylabel-${i}`}
             x={padding.left - 6}
             y={yPositions[i] + 4}
             textAnchor="end"
-            fill={editingY === i ? "#D946EF" : "#71717a"}
+            fill={editingY === i ? "#D946EF" : "#a1a1aa"}
             fontSize="10"
             fontFamily="Roboto, sans-serif"
             className="cursor-pointer"
@@ -286,14 +283,14 @@ const DraggableGraph = ({
           </text>
         ))}
 
-        {/* X axis clickable labels */}
+        {/* X axis clickable labels — bright grey, click to edit */}
         {xLabels.map((label, i) => (
           <text
             key={`xlabel-${i}`}
             x={xPositions[i]}
             y={height - 8}
             textAnchor="middle"
-            fill={editingX === i ? "#D946EF" : "#71717a"}
+            fill={editingX === i ? "#D946EF" : "#a1a1aa"}
             fontSize="10"
             fontFamily="Roboto, sans-serif"
             className="cursor-pointer"
@@ -383,7 +380,6 @@ export default function ReelInsights() {
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
 
-  // Load saved graph data after mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem("graph-data")
@@ -418,9 +414,7 @@ export default function ReelInsights() {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
-      reader.onload = (event) => {
-        setThumbnailImage(event.target?.result as string)
-      }
+      reader.onload = (event) => { setThumbnailImage(event.target?.result as string) }
       reader.readAsDataURL(file)
     }
   }
@@ -429,9 +423,7 @@ export default function ReelInsights() {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
-      reader.onload = (event) => {
-        setRetentionThumbnail(event.target?.result as string)
-      }
+      reader.onload = (event) => { setRetentionThumbnail(event.target?.result as string) }
       reader.readAsDataURL(file)
     }
   }
@@ -464,11 +456,13 @@ export default function ReelInsights() {
       <div className="relative flex items-center justify-center py-6">
         <svg width="260" height="260" className="transform -rotate-90">
           <circle cx="130" cy="130" r={radius} fill="none" stroke="#27272a" strokeWidth={strokeWidth} />
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#8B5CF6" strokeWidth={strokeWidth} strokeDasharray={`${nonFollowerStroke} ${circumference}`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#D946EF" strokeWidth={strokeWidth} strokeDasharray={`${followerStroke} ${circumference}`} strokeDashoffset={-nonFollowerStroke} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          {/* Darker purple */}
+          <circle cx="130" cy="130" r={radius} fill="none" stroke="#6D28D9" strokeWidth={strokeWidth} strokeDasharray={`${nonFollowerStroke} ${circumference}`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          {/* Darker pink */}
+          <circle cx="130" cy="130" r={radius} fill="none" stroke="#B91CD4" strokeWidth={strokeWidth} strokeDasharray={`${followerStroke} ${circumference}`} strokeDashoffset={-nonFollowerStroke} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
         </svg>
         <div className="absolute flex flex-col items-center justify-center">
-          <span className="text-xs text-zinc-500 tracking-wide">{label}</span>
+          <span className="text-xs text-zinc-400 tracking-wide">{label}</span>
           <span className="text-[38px] font-semibold text-white tracking-tight">{value}</span>
         </div>
       </div>
@@ -494,13 +488,13 @@ export default function ReelInsights() {
     }, [animateCharts, percentage, delay])
 
     const colorClasses = {
-      magenta: "bg-fuchsia-500",
-      violet: "bg-violet-500",
+      magenta: "bg-fuchsia-600",
+      violet: "bg-violet-700",
       blue: "bg-blue-500",
     }
 
     return (
-      <div className="relative w-full h-[6px] bg-zinc-800 rounded-full overflow-hidden">
+      <div className="relative w-full h-[9px] bg-zinc-800 rounded-full overflow-hidden">
         <div
           className={`absolute left-0 top-0 h-full ${colorClasses[color]} rounded-full transition-all duration-700 ease-out`}
           style={{ width: `${width}%` }}
@@ -546,7 +540,7 @@ export default function ReelInsights() {
                 </button>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-600 hover:text-zinc-400 transition-colors">
+              <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors">
                 <UploadIcon />
                 <span className="text-[10px] mt-2 font-medium">Upload thumbnail</span>
               </div>
@@ -555,7 +549,7 @@ export default function ReelInsights() {
           </div>
 
           <h2 className="text-[13px] font-semibold mt-4 text-center px-4 leading-tight">{insightsData.caption}</h2>
-          <p className="text-[10px] text-zinc-500 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
+          <p className="text-[10px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
 
           {/* Engagement Stats Row */}
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
@@ -592,20 +586,20 @@ export default function ReelInsights() {
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-[13px]">Views</span>
-              <span className="text-[13px]">{insightsData.views}</span>
+              <span className="text-[13px] text-zinc-300">Views</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.views}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[13px]">Watch time</span>
-              <span className="text-[13px]">{insightsData.watchTime}</span>
+              <span className="text-[13px] text-zinc-300">Watch time</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[13px]">Interactions</span>
-              <span className="text-[13px]">{insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}</span>
+              <span className="text-[13px] text-zinc-300">Interactions</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[13px]">Profile activity</span>
-              <span className="text-[13px]">0</span>
+              <span className="text-[13px] text-zinc-300">Profile activity</span>
+              <span className="text-[13px] text-zinc-300">0</span>
             </div>
           </div>
         </section>
@@ -622,24 +616,24 @@ export default function ReelInsights() {
           <div className="space-y-3 mt-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-500" />
-                <span className="text-[13px]">Followers</span>
+                <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
+                <span className="text-[13px] text-zinc-300">Followers</span>
               </div>
-              <span className="text-[13px]">{insightsData.followerPercentage.toFixed(1)}%</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.followerPercentage.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-violet-500" />
-                <span className="text-[13px]">Non-followers</span>
+                <div className="w-[6px] h-[6px] rounded-full bg-violet-700" />
+                <span className="text-[13px] text-zinc-300">Non-followers</span>
               </div>
-              <span className="text-[13px]">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
+              <span className="text-[13px] text-zinc-300">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
             </div>
           </div>
         </section>
 
         <div className="h-px bg-zinc-800 mx-4" />
 
-        {/* Views Over Time — DRAGGABLE GRAPH */}
+        {/* Views Over Time */}
         <section className="px-4 py-5">
           <h4 className="text-[15px] font-semibold mb-4">Views over time</h4>
           <div className="flex gap-2 mb-5">
@@ -650,7 +644,7 @@ export default function ReelInsights() {
                 className={`px-4 py-[9px] rounded-full text-[11px] font-medium transition-all duration-200 ${
                   viewsFilter === filter
                     ? "bg-zinc-800 text-white"
-                    : "bg-transparent text-zinc-400 border border-zinc-800"
+                    : "bg-transparent text-white border border-zinc-800"
                 }`}
               >
                 {filter}
@@ -663,12 +657,12 @@ export default function ReelInsights() {
           {/* Legend */}
           <div className="flex items-center justify-center gap-6 mt-2">
             <div className="flex items-center gap-2">
-              <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-500" />
-              <span className="text-[11px] text-zinc-500">This reel</span>
+              <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
+              <span className="text-[11px] text-zinc-400">This reel</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-[6px] h-[6px] rounded-full bg-zinc-400" />
-              <span className="text-[11px] text-zinc-500">Your typical reel views</span>
+              <span className="text-[11px] text-zinc-400">Your typical reel views</span>
             </div>
           </div>
         </section>
@@ -682,22 +676,22 @@ export default function ReelInsights() {
             {insightsData.sourcesData.map((source, index) => (
               <div key={source.name}>
                 <div className="flex justify-between mb-2">
-                  <span className="text-[13px]">{source.name}</span>
-                  <span className="text-[13px]">{source.percentage.toFixed(1)}%</span>
+                  <span className="text-[13px] text-zinc-300">{source.name}</span>
+                  <span className="text-[13px] text-zinc-300">{source.percentage.toFixed(1)}%</span>
                 </div>
                 <ProgressBar percentage={source.percentage} delay={index * 100} />
               </div>
             ))}
           </div>
           <div className="flex justify-between mt-6 pt-5 border-t border-zinc-800">
-            <span className="text-[13px] font-medium">Accounts reached</span>
-            <span className="text-[13px]">{insightsData.accountsReached.toLocaleString()}</span>
+            <span className="text-[13px] text-zinc-300">Accounts reached</span>
+            <span className="text-[13px] text-zinc-300">{insightsData.accountsReached.toLocaleString()}</span>
           </div>
         </section>
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Interactions Section */}
+        {/* Interactions Section — swapped above Retention */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-[18px] font-semibold">Interactions</h3>
@@ -711,40 +705,40 @@ export default function ReelInsights() {
           <div className="space-y-3 mt-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-500" />
-                <span className="text-[13px]">Followers</span>
+                <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
+                <span className="text-[13px] text-zinc-300">Followers</span>
               </div>
-              <span className="text-[13px]">{insightsData.followerPercentage.toFixed(1)}%</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.followerPercentage.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-violet-500" />
-                <span className="text-[13px]">Non-followers</span>
+                <div className="w-[6px] h-[6px] rounded-full bg-violet-700" />
+                <span className="text-[13px] text-zinc-300">Non-followers</span>
               </div>
-              <span className="text-[13px]">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
+              <span className="text-[13px] text-zinc-300">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
             </div>
           </div>
           <div className="h-px bg-zinc-800 my-5" />
           <div className="space-y-4">
             <div className="flex justify-between">
-              <span className="text-[13px]">Likes</span>
-              <span className="text-[13px]">{insightsData.likes}</span>
+              <span className="text-[13px] text-zinc-300">Likes</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.likes}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px]">Saves</span>
-              <span className="text-[13px]">{insightsData.bookmarks}</span>
+              <span className="text-[13px] text-zinc-300">Saves</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.bookmarks}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px]">Shares</span>
-              <span className="text-[13px]">{insightsData.shares}</span>
+              <span className="text-[13px] text-zinc-300">Shares</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.shares}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px]">Reposts</span>
-              <span className="text-[13px]">{insightsData.reposts}</span>
+              <span className="text-[13px] text-zinc-300">Reposts</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.reposts}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px]">Comments</span>
-              <span className="text-[13px]">{insightsData.comments}</span>
+              <span className="text-[13px] text-zinc-300">Comments</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.comments}</span>
             </div>
           </div>
         </section>
@@ -755,20 +749,20 @@ export default function ReelInsights() {
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-[18px] font-semibold">Profile activity</h3>
+              <h3 className="text-[15px] font-semibold">Profile activity</h3>
               <InfoIcon />
             </div>
-            <span className="text-[18px] font-semibold">1</span>
+            <span className="text-[15px] font-semibold">1</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[13px]">Follows</span>
-            <span className="text-[13px]">1</span>
+            <span className="text-[13px] text-zinc-300">Follows</span>
+            <span className="text-[13px] text-zinc-300">1</span>
           </div>
         </section>
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Retention Section */}
+        {/* Retention Section — swapped below Interactions */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Retention</h3>
@@ -776,7 +770,7 @@ export default function ReelInsights() {
           </div>
           <div className="flex justify-center mb-6">
             <div
-              className="relative w-[120px] h-[180px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl"
+              className="relative w-[90px] h-[180px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl"
               onClick={() => retentionInputRef.current?.click()}
             >
               {retentionThumbnail ? (
@@ -790,7 +784,7 @@ export default function ReelInsights() {
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-600">
+                <div className="flex flex-col items-center justify-center h-full text-zinc-500">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
@@ -813,13 +807,13 @@ export default function ReelInsights() {
               <AreaChart data={insightsData.retentionData}>
                 <defs>
                   <linearGradient id="retentionGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D946EF" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#D946EF" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#B91CD4" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#B91CD4" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="time" axisLine={{ stroke: "#3f3f46", strokeWidth: 1 }} tickLine={false} tick={{ fill: "#71717a", fontSize: 10 }} dy={8} />
-                <YAxis axisLine={{ stroke: "#3f3f46", strokeWidth: 1 }} tickLine={false} tick={{ fill: "#71717a", fontSize: 10 }} tickFormatter={(value) => `${value}%`} domain={[0, 100]} ticks={[0, 50, 100]} width={40} />
-                <Area type="monotone" dataKey="retention" stroke="#D946EF" strokeWidth={2.5} fill="url(#retentionGradient)" animationDuration={1500} />
+                <XAxis dataKey="time" axisLine={{ stroke: "#3f3f46", strokeWidth: 1 }} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} dy={8} />
+                <YAxis axisLine={{ stroke: "#3f3f46", strokeWidth: 1 }} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} tickFormatter={(value) => `${value}%`} domain={[0, 100]} ticks={[0, 50, 100]} width={40} />
+                <Area type="monotone" dataKey="retention" stroke="#B91CD4" strokeWidth={2.5} fill="url(#retentionGradient)" animationDuration={1500} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -828,24 +822,24 @@ export default function ReelInsights() {
             <h4 className="text-[15px] font-semibold mb-4">Skip rate</h4>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-[13px]">{"This reel's skip rate"}</span>
-                <span className="text-[13px]">{insightsData.skipRateThis.toFixed(1)}%</span>
+                <span className="text-[13px] text-zinc-300">{"This reel's skip rate"}</span>
+                <span className="text-[13px] text-zinc-300">{insightsData.skipRateThis.toFixed(1)}%</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[13px]">Your typical skip rate</span>
-                <span className="text-[13px]">{insightsData.skipRateTypical.toFixed(1)}%</span>
+                <span className="text-[13px] text-zinc-300">Your typical skip rate</span>
+                <span className="text-[13px] text-zinc-300">{insightsData.skipRateTypical.toFixed(1)}%</span>
               </div>
             </div>
           </div>
 
           <div className="mt-5 pt-5 border-t border-zinc-800 space-y-3">
             <div className="flex justify-between">
-              <span className="text-[13px]">Watch time</span>
-              <span className="text-[13px]">{insightsData.watchTime}</span>
+              <span className="text-[13px] text-zinc-300">Watch time</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px]">Average watch time</span>
-              <span className="text-[13px]">{insightsData.avgWatchTime}</span>
+              <span className="text-[13px] text-zinc-300">Average watch time</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.avgWatchTime}</span>
             </div>
           </div>
         </section>
@@ -863,10 +857,10 @@ export default function ReelInsights() {
               <button
                 key={tab}
                 onClick={() => setAudienceTab(tab)}
-                className={`px-4 py-[9px] rounded-lg text-[11px] font-medium transition-all duration-200 ${
+                className={`px-4 py-[9px] rounded-full text-[11px] font-medium transition-all duration-200 ${
                   audienceTab === tab
                     ? "bg-zinc-800 text-white"
-                    : "bg-transparent text-zinc-400 border border-zinc-800"
+                    : "bg-transparent text-white border border-zinc-800"
                 }`}
               >
                 {tab}
@@ -878,15 +872,15 @@ export default function ReelInsights() {
             <div className="space-y-5">
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-[13px]">Men</span>
-                  <span className="text-[13px]">{insightsData.genderData.men.toFixed(1)}%</span>
+                  <span className="text-[13px] text-zinc-300">Men</span>
+                  <span className="text-[13px] text-zinc-300">{insightsData.genderData.men.toFixed(1)}%</span>
                 </div>
                 <ProgressBar percentage={insightsData.genderData.men} delay={0} />
               </div>
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-[13px]">Women</span>
-                  <span className="text-[13px]">{insightsData.genderData.women.toFixed(1)}%</span>
+                  <span className="text-[13px] text-zinc-300">Women</span>
+                  <span className="text-[13px] text-zinc-300">{insightsData.genderData.women.toFixed(1)}%</span>
                 </div>
                 <ProgressBar percentage={insightsData.genderData.women} color="violet" delay={100} />
               </div>
@@ -898,8 +892,8 @@ export default function ReelInsights() {
               {insightsData.countryData.map((country, index) => (
                 <div key={country.name}>
                   <div className="flex justify-between mb-2">
-                    <span className="text-[13px]">{country.name}</span>
-                    <span className="text-[13px]">{country.percentage.toFixed(1)}%</span>
+                    <span className="text-[13px] text-zinc-300">{country.name}</span>
+                    <span className="text-[13px] text-zinc-300">{country.percentage.toFixed(1)}%</span>
                   </div>
                   <ProgressBar percentage={country.percentage} delay={index * 80} />
                 </div>
@@ -912,8 +906,8 @@ export default function ReelInsights() {
               {insightsData.ageData.map((age, index) => (
                 <div key={age.name}>
                   <div className="flex justify-between mb-2">
-                    <span className="text-[13px]">{age.name}</span>
-                    <span className="text-[13px]">{age.percentage.toFixed(1)}%</span>
+                    <span className="text-[13px] text-zinc-300">{age.name}</span>
+                    <span className="text-[13px] text-zinc-300">{age.percentage.toFixed(1)}%</span>
                   </div>
                   <ProgressBar percentage={age.percentage} delay={index * 60} />
                 </div>
