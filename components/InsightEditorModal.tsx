@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { InsightsData, CountryDataPoint, AgeDataPoint, SourceDataPoint, normalizePercentages, calculateWatchTime } from "@/lib/insights-state"
+import { InsightsData, normalizePercentages, calculateWatchTime } from "@/lib/insights-state"
 import { recalculateMetrics } from "@/lib/insights-calculator"
 
 interface InsightEditorModalProps {
@@ -34,42 +34,6 @@ export function InsightEditorModal({
     setFormData((prev) => ({ ...prev, ...changes }))
   }
 
-  const handleDemographicChange = (type: string, field: string, value: any) => {
-    if (type === "gender") {
-      setFormData((prev) => ({
-        ...prev,
-        genderData: { ...prev.genderData, [field]: value },
-      }))
-    } else if (type === "country") {
-      const [index, subField] = field.split(".")
-      const idx = parseInt(index)
-      const newCountryData = [...formData.countryData]
-      newCountryData[idx] = { ...newCountryData[idx], [subField]: value }
-      setFormData((prev) => ({ ...prev, countryData: newCountryData }))
-    } else if (type === "age") {
-      const index = parseInt(field)
-      const newAgeData = [...formData.ageData]
-      newAgeData[index] = { ...newAgeData[index], percentage: value }
-      setFormData((prev) => ({ ...prev, ageData: normalizePercentages(newAgeData) }))
-    }
-  }
-
-  const handleSourceChange = (index: number, field: string, value: any) => {
-    const newSourcesData = [...formData.sourcesData]
-    newSourcesData[index] = { ...newSourcesData[index], [field]: value }
-    setFormData((prev) => ({ ...prev, sourcesData: normalizePercentages(newSourcesData) }))
-  }
-
-  const handleViewsTimeChange = (index: number, field: string, value: any) => {
-    const newViewsTimeData = [...formData.viewsTimeData]
-    if (field === "date") {
-      newViewsTimeData[index] = { ...newViewsTimeData[index], date: value }
-    } else {
-      newViewsTimeData[index] = { ...newViewsTimeData[index], [field]: parseInt(value) || 0 }
-    }
-    setFormData((prev) => ({ ...prev, viewsTimeData: newViewsTimeData }))
-  }
-
   const handleSave = () => {
     const calculatedWatchTime = calculateWatchTime(formData.views, formData.avgWatchTime)
     const finalData = { ...formData, watchTime: calculatedWatchTime }
@@ -84,9 +48,7 @@ export function InsightEditorModal({
   const tabs = [
     { id: "basic", label: "Basic" },
     { id: "engagement", label: "Engagement" },
-    { id: "demographics", label: "Demographics" },
     { id: "viewership", label: "Viewership" },
-    { id: "sources", label: "Sources" },
   ]
 
   return (
@@ -119,8 +81,8 @@ export function InsightEditorModal({
           </button>
         </div>
 
-        {/* Tab Buttons — horizontal scrollable */}
-        <div className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0 border-b border-zinc-800 scrollbar-hide">
+        {/* Tab Buttons */}
+        <div className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0 border-b border-zinc-800">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -190,25 +152,6 @@ export function InsightEditorModal({
               </div>
 
               <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800 space-y-3">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-medium text-zinc-300">Followers %</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={formData.followerPercentage}
-                    onChange={(e) => handleEngagementChange("followerPercentage", parseFloat(e.target.value) || 0)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                  />
-                </div>
-                <div className="flex items-center justify-between px-3 py-2 bg-zinc-950 rounded-lg border border-zinc-700">
-                  <span className="text-[12px] text-zinc-500">Non-followers (auto)</span>
-                  <span className="text-[13px] font-semibold text-fuchsia-400">{(100 - formData.followerPercentage).toFixed(1)}%</span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[13px] font-medium text-zinc-300">Total Interactions</span>
                   <span className="text-[15px] font-bold text-fuchsia-400">
@@ -238,120 +181,9 @@ export function InsightEditorModal({
             </div>
           )}
 
-          {/* Demographics Tab */}
-          {activeTab === "demographics" && (
-            <div className="space-y-5">
-              {/* Gender */}
-              <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800 space-y-3">
-                <span className="text-[13px] font-semibold text-zinc-300 block">Gender Distribution</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[12px] text-zinc-400">Men (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={formData.genderData.men}
-                      onChange={(e) => handleDemographicChange("gender", "men", parseFloat(e.target.value))}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[12px] text-zinc-400">Women (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={formData.genderData.women}
-                      onChange={(e) => handleDemographicChange("gender", "women", parseFloat(e.target.value))}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Countries */}
-              <div className="space-y-3">
-                <span className="text-[13px] font-semibold text-zinc-300 block">Top Countries</span>
-                {formData.countryData.map((country, index) => (
-                  <div key={index} className="p-3 bg-zinc-900 rounded-xl border border-zinc-800 space-y-2">
-                    <input
-                      type="text"
-                      value={country.name}
-                      onChange={(e) => handleDemographicChange("country", `${index}.name`, e.target.value)}
-                      placeholder="Country name"
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                    />
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={country.percentage}
-                        onChange={(e) => handleDemographicChange("country", `${index}.percentage`, parseFloat(e.target.value))}
-                        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                      />
-                      <span className="text-[13px] font-semibold text-fuchsia-400 w-12 text-right">{country.percentage.toFixed(1)}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Age */}
-              <div className="space-y-3">
-                <span className="text-[13px] font-semibold text-zinc-300 block">Age Distribution</span>
-                {formData.ageData.map((age, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="text-[13px] text-zinc-300 w-14 shrink-0">{age.name}</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={age.percentage}
-                      onChange={(e) => handleDemographicChange("age", index.toString(), parseFloat(e.target.value))}
-                      className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                    />
-                    <span className="text-[12px] text-zinc-500 w-10 text-right">{age.percentage.toFixed(1)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Viewership Tab */}
           {activeTab === "viewership" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-[13px] font-medium text-zinc-300">Skip Rate This Reel (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={formData.skipRateThis}
-                    onChange={(e) => handleBasicChange("skipRateThis", parseFloat(e.target.value))}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[13px] font-medium text-zinc-300">Skip Rate Typical (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={formData.skipRateTypical}
-                    onChange={(e) => handleBasicChange("skipRateTypical", parseFloat(e.target.value))}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
-                  />
-                </div>
-              </div>
-
               <div className="p-4 bg-zinc-900 rounded-xl border border-zinc-800 space-y-3">
                 <div className="space-y-2">
                   <label className="text-[13px] font-medium text-zinc-300">Avg Watch Time Per View</label>
@@ -384,28 +216,6 @@ export function InsightEditorModal({
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors"
                 />
               </div>
-            </div>
-          )}
-
-          {/* Sources Tab */}
-          {activeTab === "sources" && (
-            <div className="space-y-3">
-              <span className="text-[13px] font-semibold text-zinc-300 block">View Sources</span>
-              {formData.sourcesData.map((source, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <span className="text-[13px] text-zinc-300 flex-1 shrink-0">{source.name}</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={source.percentage}
-                    onChange={(e) => handleSourceChange(index, "percentage", parseFloat(e.target.value))}
-                    className="w-20 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-[13px] text-white outline-none focus:border-fuchsia-500 transition-colors text-center"
-                  />
-                  <span className="text-[12px] text-zinc-500 w-10 text-right">{source.percentage.toFixed(1)}%</span>
-                </div>
-              ))}
             </div>
           )}
 
