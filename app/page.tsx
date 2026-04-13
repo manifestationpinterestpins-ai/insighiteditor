@@ -83,13 +83,91 @@ const CloseIcon = () => (
   </svg>
 )
 
+const LockIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+)
+
+const UnlockIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+  </svg>
+)
+
+// ===== INLINE EDITOR =====
+const InlineEditor = ({
+  value,
+  onSave,
+  isNumber = false,
+  className = "",
+  locked = false,
+}: {
+  value: string | number
+  onSave: (val: any) => void
+  isNumber?: boolean
+  className?: string
+  locked?: boolean
+}) => {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(String(value))
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { setVal(String(value)) }, [value])
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editing])
+
+  const commit = () => {
+    if (isNumber) {
+      const parsed = parseFloat(val)
+      if (!isNaN(parsed)) onSave(parsed)
+    } else {
+      if (val.trim()) onSave(val.trim())
+    }
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={val}
+        type={isNumber ? "number" : "text"}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit() }}
+        className={`bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-white outline-none ${className}`}
+        style={{ caretColor: "#D946EF", minWidth: 60 }}
+      />
+    )
+  }
+
+  return (
+    <span
+      className={`${locked ? "cursor-default" : "cursor-pointer hover:text-fuchsia-400"} transition-colors ${className}`}
+      onClick={() => { if (!locked) { setVal(String(value)); setEditing(true) } }}
+    >
+      {value}
+    </span>
+  )
+}
+
 // ===== GENDER EDITOR =====
 const GenderEditor = ({
   menValue,
   onSave,
+  locked,
 }: {
   menValue: number
   onSave: (newMen: number) => void
+  locked: boolean
 }) => {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(menValue.toFixed(1))
@@ -104,9 +182,7 @@ const GenderEditor = ({
 
   const commit = () => {
     const parsed = parseFloat(value)
-    if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
-      onSave(parsed)
-    }
+    if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) onSave(parsed)
     setEditing(false)
   }
 
@@ -126,8 +202,8 @@ const GenderEditor = ({
 
   return (
     <span
-      className="text-[13px] text-zinc-300 cursor-pointer hover:text-fuchsia-400 transition-colors"
-      onClick={() => { setValue(menValue.toFixed(1)); setEditing(true) }}
+      className={`text-[13px] text-zinc-300 ${locked ? "cursor-default" : "cursor-pointer hover:text-fuchsia-400"} transition-colors`}
+      onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}
     >
       {menValue.toFixed(1)}%
     </span>
@@ -138,9 +214,11 @@ const GenderEditor = ({
 const CountryNameEditor = ({
   name,
   onSave,
+  locked,
 }: {
   name: string
   onSave: (newName: string) => void
+  locked: boolean
 }) => {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(name)
@@ -175,8 +253,8 @@ const CountryNameEditor = ({
 
   return (
     <span
-      className="text-[13px] text-zinc-300 cursor-pointer hover:text-fuchsia-400 transition-colors"
-      onClick={() => { setValue(name); setEditing(true) }}
+      className={`text-[13px] text-zinc-300 ${locked ? "cursor-default" : "cursor-pointer hover:text-fuchsia-400"} transition-colors`}
+      onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}
     >
       {name}
     </span>
@@ -189,9 +267,11 @@ type GraphPoint = { date: string; thisReel: number; typical: number }
 const DraggableGraph = ({
   data,
   onChange,
+  locked,
 }: {
   data: GraphPoint[]
   onChange: (newData: GraphPoint[]) => void
+  locked: boolean
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
@@ -272,6 +352,7 @@ const DraggableGraph = ({
   const typicalPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
 
   const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
+    if (locked) return
     e.preventDefault()
     e.stopPropagation()
     const target = e.target as Element
@@ -280,7 +361,7 @@ const DraggableGraph = ({
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragging) return
+    if (!dragging || locked) return
     e.preventDefault()
     const val = getValFromY(e.clientY)
     const newData = [...data]
@@ -341,13 +422,39 @@ const DraggableGraph = ({
         ))}
 
         {yLabels.map((label, i) => (
-          <text key={`ylabel-${i}`} x={padding.left - 6} y={yPositions[i] + 4} textAnchor="end" fill={editingY === i ? "#D946EF" : "#a1a1aa"} fontSize="10" fontFamily="Roboto, sans-serif" className="cursor-pointer" onClick={() => { setEditingY(i); setEditingX(null); setEditValue(label) }}>
+          <text
+            key={`ylabel-${i}`}
+            x={padding.left - 6}
+            y={yPositions[i] + 4}
+            textAnchor="end"
+            fill={editingY === i ? "#D946EF" : "#a1a1aa"}
+            fontSize="10"
+            fontFamily="Roboto, sans-serif"
+            className={locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked) return
+              setEditingY(i); setEditingX(null); setEditValue(label)
+            }}
+          >
             {label}
           </text>
         ))}
 
         {xLabels.map((label, i) => (
-          <text key={`xlabel-${i}`} x={xPositions[i]} y={height - 8} textAnchor="middle" fill={editingX === i ? "#D946EF" : "#a1a1aa"} fontSize="10" fontFamily="Roboto, sans-serif" className="cursor-pointer" onClick={() => { setEditingX(i); setEditingY(null); setEditValue(label) }}>
+          <text
+            key={`xlabel-${i}`}
+            x={xPositions[i]}
+            y={height - 8}
+            textAnchor="middle"
+            fill={editingX === i ? "#D946EF" : "#a1a1aa"}
+            fontSize="10"
+            fontFamily="Roboto, sans-serif"
+            className={locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked) return
+              setEditingX(i); setEditingY(null); setEditValue(label)
+            }}
+          >
             {label}
           </text>
         ))}
@@ -356,10 +463,10 @@ const DraggableGraph = ({
         <path d={buildPath(thisReelPoints)} fill="none" stroke="#C026D3" strokeWidth={4} strokeLinecap="round" />
 
         {data.map((d, i) => (
-          <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className="cursor-grab active:cursor-grabbing" onPointerDown={(e) => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />
+          <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />
         ))}
         {data.map((d, i) => (
-          <circle key={`tp-${i}`} cx={getX(i)} cy={getY(d.typical)} r={18} fill="transparent" className="cursor-grab active:cursor-grabbing" onPointerDown={(e) => handlePointerDown(i, "typical", e)} style={{ touchAction: "none" }} />
+          <circle key={`tp-${i}`} cx={getX(i)} cy={getY(d.typical)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "typical", e)} style={{ touchAction: "none" }} />
         ))}
       </svg>
     </div>
@@ -372,12 +479,24 @@ type RetentionPoint = { time: string; retention: number }
 const DraggableRetentionGraph = ({
   data,
   onChange,
+  locked,
 }: {
   data: RetentionPoint[]
   onChange: (newData: RetentionPoint[]) => void
+  locked: boolean
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<number | null>(null)
+  const [editingRightX, setEditingRightX] = useState(false)
+  const [rightXValue, setRightXValue] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingRightX && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingRightX])
 
   const padding = { top: 20, right: 15, bottom: 35, left: 45 }
   const width = 340
@@ -412,11 +531,9 @@ const DraggableRetentionGraph = ({
 
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.retention) }))
   const pathD = buildPath(points)
-  const areaD = points.length > 1
-    ? `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`
-    : ""
 
   const handlePointerDown = (index: number, e: React.PointerEvent) => {
+    if (locked) return
     e.preventDefault()
     e.stopPropagation()
     const target = e.target as Element
@@ -425,7 +542,7 @@ const DraggableRetentionGraph = ({
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (dragging === null) return
+    if (dragging === null || locked) return
     e.preventDefault()
     const val = getValFromY(e.clientY)
     const newData = [...data]
@@ -436,59 +553,102 @@ const DraggableRetentionGraph = ({
   const handlePointerUp = () => setDragging(null)
 
   const yTicks = [0, 50, 100]
-  const xTickIndices = [0, Math.floor(data.length / 2), data.length - 1]
+  // Only show first and last X axis labels (remove middle)
+  const firstIdx = 0
+  const lastIdx = data.length - 1
+
+  const commitRightX = () => {
+    if (rightXValue.trim()) {
+      const newData = [...data]
+      newData[lastIdx] = { ...newData[lastIdx], time: rightXValue.trim() }
+      onChange(newData)
+    }
+    setEditingRightX(false)
+  }
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox={`0 0 ${width} ${height}`}
-      className="w-full touch-none select-none"
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
-    >
-      <defs>
-        <linearGradient id="retentionDragGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#C026D3" stopOpacity={0.2} />
-          <stop offset="100%" stopColor="#C026D3" stopOpacity={0} />
-        </linearGradient>
-      </defs>
+    <div className="relative">
+      {/* Input for right X axis label */}
+      {editingRightX && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={inputRef}
+            value={rightXValue}
+            onChange={(e) => setRightXValue(e.target.value)}
+            onBlur={commitRightX}
+            onKeyDown={(e) => { if (e.key === "Enter") commitRightX() }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: "#D946EF" }}
+          />
+        </div>
+      )}
 
-      {yTicks.map((tick) => (
-        <g key={tick}>
-          <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#3f3f46" strokeWidth={1} />
-          <text x={padding.left - 4} y={getY(tick) + 4} textAnchor="end" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
-            {tick}%
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full touch-none select-none"
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        {/* Y axis grid and labels */}
+        {yTicks.map((tick) => (
+          <g key={tick}>
+            <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#3f3f46" strokeWidth={1} />
+            <text x={padding.left - 4} y={getY(tick) + 4} textAnchor="end" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
+              {tick}%
+            </text>
+          </g>
+        ))}
+
+        {/* X axis — only first label (left) */}
+        {data[firstIdx] && (
+          <text x={getX(firstIdx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
+            {data[firstIdx].time}
           </text>
-        </g>
-      ))}
+        )}
 
-      {xTickIndices.map((idx) => (
-        data[idx] && (
-          <text key={idx} x={getX(idx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
-            {data[idx].time}
+        {/* X axis — last label (right) — clickable to edit */}
+        {data[lastIdx] && (
+          <text
+            x={getX(lastIdx)}
+            y={height - 8}
+            textAnchor="middle"
+            fill={editingRightX ? "#D946EF" : "#a1a1aa"}
+            fontSize="10"
+            fontFamily="Roboto, sans-serif"
+            className={locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked) return
+              setRightXValue(data[lastIdx].time)
+              setEditingRightX(true)
+            }}
+          >
+            {data[lastIdx].time}
           </text>
-        )
-      ))}
+        )}
 
-      <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH} stroke="#3f3f46" strokeWidth={1} />
+        {/* X axis bottom line */}
+        <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH} stroke="#3f3f46" strokeWidth={1} />
 
-      <path d={areaD} fill="url(#retentionDragGradient)" />
-      <path d={pathD} fill="none" stroke="#C026D3" strokeWidth={2.5} strokeLinecap="round" />
+        {/* Retention line — thick, NO shadow/fill */}
+        <path d={pathD} fill="none" stroke="#C026D3" strokeWidth={4} strokeLinecap="round" />
 
-      {data.map((d, i) => (
-        <circle
-          key={i}
-          cx={getX(i)}
-          cy={getY(d.retention)}
-          r={16}
-          fill="transparent"
-          className="cursor-grab active:cursor-grabbing"
-          onPointerDown={(e) => handlePointerDown(i, e)}
-          style={{ touchAction: "none" }}
-        />
-      ))}
-    </svg>
+        {/* Invisible drag handles */}
+        {data.map((d, i) => (
+          <circle
+            key={i}
+            cx={getX(i)}
+            cy={getY(d.retention)}
+            r={16}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={(e) => handlePointerDown(i, e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
+      </svg>
+    </div>
   )
 }
 
@@ -500,8 +660,29 @@ export default function ReelInsights() {
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Gender")
   const [animateCharts, setAnimateCharts] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
+  const [locked, setLocked] = useState(false)
+  const [accountsReachedLabel, setAccountsReachedLabel] = useState("Accounts reached")
+  const [profileActivity, setProfileActivity] = useState(0)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
+
+  // Load locked state and label from localStorage
+  useEffect(() => {
+    try {
+      const savedLock = localStorage.getItem("site-locked")
+      if (savedLock) setLocked(JSON.parse(savedLock))
+      const savedLabel = localStorage.getItem("accounts-reached-label")
+      if (savedLabel) setAccountsReachedLabel(savedLabel)
+      const savedActivity = localStorage.getItem("profile-activity")
+      if (savedActivity) setProfileActivity(JSON.parse(savedActivity))
+    } catch {}
+  }, [])
+
+  const toggleLock = () => {
+    const newLocked = !locked
+    setLocked(newLocked)
+    try { localStorage.setItem("site-locked", JSON.stringify(newLocked)) } catch {}
+  }
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
@@ -518,7 +699,7 @@ export default function ReelInsights() {
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
-  // Randomize on each page load — preserve gender
+  // Randomize on page load
   useEffect(() => {
     const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
     const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
@@ -546,7 +727,6 @@ export default function ReelInsights() {
     const profile = parseFloat((remaining * 0.28).toFixed(1))
     const feed = parseFloat((remaining - stories - profile).toFixed(1))
 
-    // Preserve saved gender
     let savedMen = insightsData.genderData.men
     let savedWomen = insightsData.genderData.women
     try {
@@ -558,7 +738,6 @@ export default function ReelInsights() {
       }
     } catch {}
 
-    // Preserve saved country names
     let savedCountryNames = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "Others"]
     try {
       const savedNames = localStorage.getItem("country-names")
@@ -617,11 +796,13 @@ export default function ReelInsights() {
   }, [])
 
   const handleGraphChange = (newData: GraphPoint[]) => {
+    if (locked) return
     setGraphData(newData)
     try { localStorage.setItem("graph-data", JSON.stringify(newData)) } catch {}
   }
 
   const handleRetentionChange = (newData: RetentionPoint[]) => {
+    if (locked) return
     setRetentionData(newData)
     try { localStorage.setItem("retention-data", JSON.stringify(newData)) } catch {}
   }
@@ -638,6 +819,7 @@ export default function ReelInsights() {
   }
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (locked) return
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
@@ -647,6 +829,7 @@ export default function ReelInsights() {
   }
 
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (locked) return
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
@@ -736,33 +919,54 @@ export default function ReelInsights() {
           <button className="p-1 -ml-1 active:opacity-60 transition-opacity">
             <ChevronLeftIcon />
           </button>
-          <h1 className="text-[17px] font-semibold flex-1 ml-3">Reel insights</h1>
-          <button
-            className="p-1 -mr-1 active:opacity-60 transition-opacity"
-            onClick={() => setEditorOpen(true)}
-            title="Edit insights"
-          >
-            <MoreHorizontalIcon />
-          </button>
+          {/* Shifted more right with ml-5 */}
+          <h1 className="text-[17px] font-semibold flex-1 ml-5">Reel insights</h1>
+          <div className="flex items-center gap-2">
+            {/* Lock/Unlock Button */}
+            <button
+              onClick={toggleLock}
+              className={`p-1.5 rounded-full transition-colors ${locked ? "text-fuchsia-400 bg-fuchsia-400/10" : "text-zinc-400"}`}
+              title={locked ? "Unlock editing" : "Lock editing"}
+            >
+              {locked ? <LockIcon /> : <UnlockIcon />}
+            </button>
+            <button
+              className="p-1 -mr-1 active:opacity-60 transition-opacity"
+              onClick={() => setEditorOpen(true)}
+              title="Edit insights"
+            >
+              <MoreHorizontalIcon />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Lock banner */}
+      {locked && (
+        <div className="bg-fuchsia-600/10 border-b border-fuchsia-600/20 px-4 py-2 flex items-center justify-between">
+          <span className="text-[12px] text-fuchsia-400">Editing locked — tap 🔒 to unlock</span>
+          <button onClick={toggleLock} className="text-[12px] text-fuchsia-400 underline">Unlock</button>
+        </div>
+      )}
 
       <main className="pb-12">
         {/* Thumbnail Section */}
         <section className="flex flex-col items-center pt-4 pb-6 px-4">
           <div
             className="relative w-[130px] h-[200px] bg-zinc-900 rounded-lg overflow-hidden cursor-pointer group shadow-lg"
-            onClick={() => thumbnailInputRef.current?.click()}
+            onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}
           >
             {thumbnailImage ? (
               <>
                 <img src={thumbnailImage || "/placeholder.svg"} alt="Reel thumbnail" className="w-full h-full object-cover" />
-                <button
-                  className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                  onClick={(e) => { e.stopPropagation(); setThumbnailImage(null) }}
-                >
-                  <CloseIcon />
-                </button>
+                {!locked && (
+                  <button
+                    className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                    onClick={(e) => { e.stopPropagation(); setThumbnailImage(null) }}
+                  >
+                    <CloseIcon />
+                  </button>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors">
@@ -821,9 +1025,20 @@ export default function ReelInsights() {
               <span className="text-[13px] text-zinc-300">Interactions</span>
               <span className="text-[13px] text-zinc-300">{insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}</span>
             </div>
+            {/* Profile activity — clickable to edit, syncs with Profile Activity section */}
             <div className="flex justify-between items-center">
               <span className="text-[13px] text-zinc-300">Profile activity</span>
-              <span className="text-[13px] text-zinc-300">0</span>
+              <InlineEditor
+                value={profileActivity}
+                isNumber
+                locked={locked}
+                className="text-[13px] text-zinc-300"
+                onSave={(val) => {
+                  const num = Math.round(val)
+                  setProfileActivity(num)
+                  try { localStorage.setItem("profile-activity", JSON.stringify(num)) } catch {}
+                }}
+              />
             </div>
           </div>
         </section>
@@ -875,7 +1090,7 @@ export default function ReelInsights() {
               </button>
             ))}
           </div>
-          <DraggableGraph data={graphData} onChange={handleGraphChange} />
+          <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
           <div className="flex items-center justify-center gap-6 mt-2">
             <div className="flex items-center gap-2">
               <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
@@ -904,8 +1119,17 @@ export default function ReelInsights() {
               </div>
             ))}
           </div>
+          {/* Accounts reached — clickable label to rename */}
           <div className="flex justify-between mt-6 pt-5 border-t border-zinc-800">
-            <span className="text-[14px] text-zinc-300">Accounts reached</span>
+            <InlineEditor
+              value={accountsReachedLabel}
+              locked={locked}
+              className="text-[14px] text-zinc-300"
+              onSave={(val) => {
+                setAccountsReachedLabel(val)
+                try { localStorage.setItem("accounts-reached-label", val) } catch {}
+              }}
+            />
             <span className="text-[14px] text-zinc-300">{insightsData.accountsReached.toLocaleString()}</span>
           </div>
         </section>
@@ -921,17 +1145,19 @@ export default function ReelInsights() {
           <div className="flex justify-center mb-6">
             <div
               className="relative w-[105px] h-[180px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl"
-              onClick={() => retentionInputRef.current?.click()}
+              onClick={() => { if (!locked) retentionInputRef.current?.click() }}
             >
               {retentionThumbnail ? (
                 <>
                   <img src={retentionThumbnail || "/placeholder.svg"} alt="Retention thumbnail" className="w-full h-full object-cover" />
-                  <button
-                    className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                    onClick={(e) => { e.stopPropagation(); setRetentionThumbnail(null) }}
-                  >
-                    <CloseIcon />
-                  </button>
+                  {!locked && (
+                    <button
+                      className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                      onClick={(e) => { e.stopPropagation(); setRetentionThumbnail(null) }}
+                    >
+                      <CloseIcon />
+                    </button>
+                  )}
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-zinc-500">
@@ -953,7 +1179,7 @@ export default function ReelInsights() {
           </div>
 
           <div className="-ml-2">
-            <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} />
+            <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} locked={locked} />
           </div>
 
           <div className="mt-6">
@@ -1038,18 +1264,18 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Profile Activity */}
+        {/* Profile Activity — synced with Overview */}
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h3 className="text-[15px] font-semibold">Profile activity</h3>
               <InfoIcon />
             </div>
-            <span className="text-[15px] font-semibold">1</span>
+            <span className="text-[15px] font-semibold">{profileActivity}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[13px] text-zinc-300">Follows</span>
-            <span className="text-[13px] text-zinc-300">1</span>
+            <span className="text-[13px] text-zinc-300">{profileActivity}</span>
           </div>
         </section>
 
@@ -1083,16 +1309,12 @@ export default function ReelInsights() {
                 <div className="flex justify-between mb-2">
                   <span className="text-[13px] text-zinc-300">Men</span>
                   <GenderEditor
+                    locked={locked}
                     menValue={insightsData.genderData.men}
                     onSave={(newMen) => {
                       const newWomen = parseFloat((100 - newMen).toFixed(1))
-                      try {
-                        localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: newWomen }))
-                      } catch {}
-                      saveData({
-                        ...insightsData,
-                        genderData: { men: newMen, women: newWomen },
-                      })
+                      try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: newWomen })) } catch {}
+                      saveData({ ...insightsData, genderData: { men: newMen, women: newWomen } })
                     }}
                   />
                 </div>
@@ -1113,13 +1335,12 @@ export default function ReelInsights() {
               {insightsData.countryData.map((country, index) => (
                 <div key={index}>
                   <div className="flex justify-between mb-2">
-                    {/* Clickable country name */}
                     <CountryNameEditor
+                      locked={locked}
                       name={country.name}
                       onSave={(newName) => {
                         const updatedCountries = [...insightsData.countryData]
                         updatedCountries[index] = { ...updatedCountries[index], name: newName }
-                        // Save country names to localStorage
                         try {
                           const names = updatedCountries.map(c => c.name)
                           localStorage.setItem("country-names", JSON.stringify(names))
