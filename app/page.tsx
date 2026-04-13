@@ -97,6 +97,50 @@ const BoostIcon = () => (
   </svg>
 )
 
+// ===== SHIMMER ROW =====
+const ShimmerRow = ({
+  children,
+  delay = 0,
+  play = false,
+}: {
+  children: React.ReactNode
+  delay?: number
+  play?: boolean
+}) => {
+  const [animating, setAnimating] = useState(false)
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!play || done) return
+    const startTimer = setTimeout(() => {
+      setAnimating(true)
+      const endTimer = setTimeout(() => {
+        setAnimating(false)
+        setDone(true)
+      }, 1000)
+      return () => clearTimeout(endTimer)
+    }, delay)
+    return () => clearTimeout(startTimer)
+  }, [play, delay, done])
+
+  return (
+    <div className="relative overflow-hidden">
+      {children}
+      {animating && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 40%, rgba(255,255,255,0.38) 50%, rgba(255,255,255,0.18) 60%, transparent 100%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmerSweep 900ms ease-out forwards",
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
 // ===== LOCK MENU =====
 const LockMenu = ({
   locked,
@@ -723,9 +767,8 @@ export default function ReelInsights() {
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
 
-  // Overview animation state
-  const [overviewVisible, setOverviewVisible] = useState(false)
-  const [overviewRowsReady, setOverviewRowsReady] = useState(false)
+  // Overview shimmer state
+  const [shimmerPlay, setShimmerPlay] = useState(false)
   const overviewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -745,22 +788,19 @@ export default function ReelInsights() {
     try { localStorage.setItem("site-locked", JSON.stringify(newLocked)) } catch {}
   }
 
-  // Overview section slide-in animation via IntersectionObserver
+  // Trigger shimmer when Overview scrolls into view — once only
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !overviewVisible) {
-          setOverviewVisible(true)
-          // Slight delay so section itself starts animating first, then rows follow
-          const rowTimer = setTimeout(() => setOverviewRowsReady(true), 60)
-          return () => clearTimeout(rowTimer)
+        if (entries[0].isIntersecting && !shimmerPlay) {
+          setShimmerPlay(true)
         }
       },
       { threshold: 0.2 }
     )
     if (overviewRef.current) observer.observe(overviewRef.current)
     return () => observer.disconnect()
-  }, [overviewVisible])
+  }, [shimmerPlay])
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
@@ -940,10 +980,8 @@ export default function ReelInsights() {
 
     const followerFull = (followerPercent / 100) * circumference
     const nonFollowerFull = ((100 - followerPercent) / 100) * circumference
-
     const followerDash = Math.max(0, followerFull - gap) * progress
     const nonFollowerDash = Math.max(0, nonFollowerFull - gap) * progress
-
     const halfGap = gap / 2
 
     return (
@@ -1015,30 +1053,21 @@ export default function ReelInsights() {
     )
   }
 
-  // Overview row items for staggered animation
-  const overviewRows = [
-    {
-      label: "Views",
-      value: insightsData.views.toLocaleString("en-IN"),
-    },
-    {
-      label: "Watch time",
-      value: insightsData.watchTime,
-    },
-    {
-      label: "Interactions",
-      value: (
-        insightsData.likes +
-        insightsData.comments +
-        insightsData.shares +
-        insightsData.reposts +
-        insightsData.bookmarks
-      ).toLocaleString("en-IN"),
-    },
-  ]
-
   return (
     <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden" style={{ backgroundColor: BG }}>
+
+      {/* Inject shimmer keyframe once into the page */}
+      <style>{`
+        @keyframes shimmerSweep {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+      `}</style>
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-sm border-b border-zinc-900" style={{ backgroundColor: BG + "f5" }}>
         <div className="flex items-center justify-between px-4 h-[52px]">
@@ -1096,60 +1125,63 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Overview — section-based left→right pan with staggered rows */}
-        <section
-          ref={overviewRef}
-          className="px-4 py-5"
-          style={{
-            transform: overviewVisible ? "translateX(0)" : "translateX(-30px)",
-            transition: "transform 300ms ease-out",
-            willChange: "transform",
-          }}
-        >
+        {/* Overview — shimmer sweep on each row, no movement */}
+        <section ref={overviewRef} className="px-4 py-5">
           <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Overview</h3>
             <InfoIcon />
           </div>
 
           <div className="space-y-4">
-            {/* Staggered rows: Views, Watch time, Interactions */}
-            {overviewRows.map((row, i) => (
-              <div
-                key={row.label}
-                className="flex justify-between items-center"
-                style={{
-                  transform: overviewRowsReady ? "translateX(0)" : "translateX(-30px)",
-                  transition: `transform 300ms ease-out ${i * 120}ms`,
-                  willChange: "transform",
-                }}
-              >
-                <span className="text-[13px] text-zinc-300">{row.label}</span>
-                <span className="text-[13px] text-zinc-300">{row.value}</span>
+            {/* Views row */}
+            <ShimmerRow delay={0} play={shimmerPlay}>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[13px] text-zinc-300">Views</span>
+                <span className="text-[13px] text-zinc-300">{insightsData.views.toLocaleString("en-IN")}</span>
               </div>
-            ))}
+            </ShimmerRow>
 
-            {/* Profile activity row — staggered last */}
-            <div
-              className="flex justify-between items-center"
-              style={{
-                transform: overviewRowsReady ? "translateX(0)" : "translateX(-30px)",
-                transition: `transform 300ms ease-out ${3 * 120}ms`,
-                willChange: "transform",
-              }}
-            >
-              <span className="text-[13px] text-zinc-300">Profile activity</span>
-              <InlineEditor
-                value={profileActivity}
-                isNumber
-                locked={locked}
-                className="text-[13px] text-zinc-300"
-                onSave={(val) => {
-                  const num = Math.round(val)
-                  setProfileActivity(num)
-                  try { localStorage.setItem("profile-activity", JSON.stringify(num)) } catch {}
-                }}
-              />
-            </div>
+            {/* Watch time row */}
+            <ShimmerRow delay={130} play={shimmerPlay}>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[13px] text-zinc-300">Watch time</span>
+                <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
+              </div>
+            </ShimmerRow>
+
+            {/* Interactions row */}
+            <ShimmerRow delay={260} play={shimmerPlay}>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[13px] text-zinc-300">Interactions</span>
+                <span className="text-[13px] text-zinc-300">
+                  {(
+                    insightsData.likes +
+                    insightsData.comments +
+                    insightsData.shares +
+                    insightsData.reposts +
+                    insightsData.bookmarks
+                  ).toLocaleString("en-IN")}
+                </span>
+              </div>
+            </ShimmerRow>
+
+            {/* Profile activity row */}
+            <ShimmerRow delay={390} play={shimmerPlay}>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-[13px] text-zinc-300">Profile activity</span>
+                <InlineEditor
+                  value={profileActivity}
+                  isNumber
+                  locked={locked}
+                  className="text-[13px] text-zinc-300"
+                  onSave={(val) => {
+                    const num = Math.round(val)
+                    setProfileActivity(num)
+                    try { localStorage.setItem("profile-activity", JSON.stringify(num)) } catch {}
+                  }}
+                />
+              </div>
+            </ShimmerRow>
           </div>
         </section>
 
