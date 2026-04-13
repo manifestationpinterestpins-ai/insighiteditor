@@ -32,21 +32,20 @@ const MoreHorizontalIcon = () => (
 )
 
 const HeartIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-    <path d="M16.792 3.904A4.99 4.99 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.99 4.99 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.05 6.05 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97q.426.368.853.747l1.027.918a45 45 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45 45 0 0 0 3.626-3.115l.922-.824q.441-.39.885-.774c2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218"/>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="none">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
   </svg>
 )
 
 const CommentIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-    <path fill="none" stroke="white" strokeLinejoin="round" strokeWidth="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="none">
+    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
   </svg>
 )
 
 const SendIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-    <path fill="none" stroke="white" strokeLinejoin="round" strokeWidth="2" d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/>
-    <path fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m7.488 12.208 8.027-4.567"/>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="none">
+    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
   </svg>
 )
 
@@ -57,8 +56,8 @@ const RepostIcon = () => (
 )
 
 const BookmarkIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-    <path fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m20 21-8-7.56L4 21V3h16z"/>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="none">
+    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
   </svg>
 )
 
@@ -308,23 +307,23 @@ export default function ReelInsights() {
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
             <div className="flex flex-col items-center gap-1">
               <HeartIcon />
-              <span className="text-[13px] font-medium">{insightsData.likes}</span>
+              <span className="text-[11px] font-medium">{insightsData.likes}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <CommentIcon />
-              <span className="text-[13px] font-medium">{insightsData.comments}</span>
+              <span className="text-[11px] font-medium">{insightsData.comments}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <SendIcon />
-              <span className="text-[13px] font-medium">{insightsData.shares}</span>
+              <span className="text-[11px] font-medium">{insightsData.shares}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <RepostIcon />
-              <span className="text-[13px] font-medium">{insightsData.reposts}</span>
+              <span className="text-[11px] font-medium">{insightsData.reposts}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <BookmarkIcon />
-              <span className="text-[13px] font-medium">{insightsData.bookmarks}</span>
+              <span className="text-[11px] font-medium">{insightsData.bookmarks}</span>
             </div>
           </div>
         </section>
