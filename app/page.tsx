@@ -779,12 +779,7 @@ export default function ReelInsights() {
                   <span className="text-[10px] mt-2">Upload</span>
                 </div>
               )}
-              {/* New Play Icon */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-11 h-11 rounded-full border-[2.5px] border-white/70 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                  <PlayIcon />
-                </div>
-              </div>
+            
               <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
             </div>
           </div>
