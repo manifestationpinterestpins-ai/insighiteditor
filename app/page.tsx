@@ -63,7 +63,6 @@ const BookmarkIcon = () => (
 )
 
 const InfoIcon = () => (
-  const InfoIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white">
     <circle cx="12.001" cy="12.005" r="10.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
     <circle cx="11.819" cy="7.709" r="1.25"/>
