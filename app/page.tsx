@@ -243,18 +243,18 @@ export default function ReelInsights() {
       {/* Header - Sticky */}
       <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900">
         <div className="flex items-center justify-between px-4 h-[52px]">
-          <button className="p-1 -ml-1 active:opacity-60 transition-opacity">
-            <ChevronLeftIcon />
-          </button>
-          <h1 className="text-[17px] font-semibold">Reel insights</h1>
-          <button 
-            className="p-1 -mr-1 active:opacity-60 transition-opacity"
-            onClick={() => setEditorOpen(true)}
-            title="Edit insights"
-          >
-            <MoreHorizontalIcon />
-          </button>
-        </div>
+  <button className="p-1 -ml-1 active:opacity-60 transition-opacity">
+    <ChevronLeftIcon />
+  </button>
+  <h1 className="text-[17px] font-semibold flex-1 ml-3">Reel insights</h1>
+  <button 
+    className="p-1 -mr-1 active:opacity-60 transition-opacity"
+    onClick={() => setEditorOpen(true)}
+    title="Edit insights"
+  >
+    <MoreHorizontalIcon />
+  </button>
+</div>
       </header>
 
       <main className="pb-12">
