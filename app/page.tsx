@@ -68,12 +68,6 @@ const InfoIcon = () => (
   </svg>
 )
 
-const PlayIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>
-  </svg>
-)
-
 const UploadIcon = () => (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -88,6 +82,57 @@ const CloseIcon = () => (
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 )
+
+// ===== GENDER EDITOR =====
+const GenderEditor = ({
+  menValue,
+  onSave,
+}: {
+  menValue: number
+  onSave: (newMen: number) => void
+}) => {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(menValue.toFixed(1))
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editing])
+
+  const commit = () => {
+    const parsed = parseFloat(value)
+    if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+      onSave(parsed)
+    }
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit() }}
+        className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white text-center w-[70px] outline-none"
+        style={{ caretColor: "#D946EF" }}
+      />
+    )
+  }
+
+  return (
+    <span
+      className="text-[13px] text-zinc-300 cursor-pointer hover:text-fuchsia-400 transition-colors"
+      onClick={() => { setValue(menValue.toFixed(1)); setEditing(true) }}
+    >
+      {menValue.toFixed(1)}%
+    </span>
+  )
+}
 
 // ===== DRAGGABLE VIEWS GRAPH =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
@@ -318,8 +363,6 @@ const DraggableRetentionGraph = ({
 
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.retention) }))
   const pathD = buildPath(points)
-
-  // Filled area path
   const areaD = points.length > 1
     ? `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`
     : ""
@@ -344,7 +387,7 @@ const DraggableRetentionGraph = ({
   const handlePointerUp = () => setDragging(null)
 
   const yTicks = [0, 50, 100]
-  const xTicks = data.filter((_, i) => i % Math.floor(data.length / 4) === 0 || i === data.length - 1)
+  const xTickIndices = [0, Math.floor(data.length / 2), data.length - 1]
 
   return (
     <svg
@@ -362,7 +405,6 @@ const DraggableRetentionGraph = ({
         </linearGradient>
       </defs>
 
-      {/* Grid lines */}
       {yTicks.map((tick) => (
         <g key={tick}>
           <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#3f3f46" strokeWidth={1} />
@@ -372,26 +414,19 @@ const DraggableRetentionGraph = ({
         </g>
       ))}
 
-      {/* X axis labels */}
-      {xTicks.map((d, i) => {
-        const idx = data.indexOf(d)
-        return (
-          <text key={i} x={getX(idx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
-            {d.time}
+      {xTickIndices.map((idx) => (
+        data[idx] && (
+          <text key={idx} x={getX(idx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
+            {data[idx].time}
           </text>
         )
-      })}
+      ))}
 
-      {/* X axis line */}
       <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH} stroke="#3f3f46" strokeWidth={1} />
 
-      {/* Filled area */}
       <path d={areaD} fill="url(#retentionDragGradient)" />
-
-      {/* Line */}
       <path d={pathD} fill="none" stroke="#C026D3" strokeWidth={2.5} strokeLinecap="round" />
 
-      {/* Invisible drag handles */}
       {data.map((d, i) => (
         <circle
           key={i}
@@ -433,6 +468,69 @@ export default function ReelInsights() {
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
+
+  // Randomize certain values on each page load
+  useEffect(() => {
+    const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
+    const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
+    const skipTypical = parseFloat((Math.random() * (30 - 20) + 20).toFixed(1))
+
+    // Random country data US > UK > Canada > Australia > Germany > Others
+    const us = parseFloat((Math.random() * (45 - 35) + 35).toFixed(1))
+    const uk = parseFloat((Math.random() * (28 - 20) + 20).toFixed(1))
+    const ca = parseFloat((Math.random() * (18 - 12) + 12).toFixed(1))
+    const au = parseFloat((Math.random() * (13 - 8) + 8).toFixed(1))
+    const de = parseFloat((Math.random() * (7 - 4) + 4).toFixed(1))
+    const others = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
+
+    // Random age data
+    const a1824 = parseFloat((Math.random() * (48 - 35) + 35).toFixed(1))
+    const a2534 = parseFloat((Math.random() * (42 - 30) + 30).toFixed(1))
+    const a3544 = parseFloat((Math.random() * (10 - 5) + 5).toFixed(1))
+    const a4554 = parseFloat((Math.random() * (4 - 1) + 1).toFixed(1))
+    const a5564 = parseFloat((Math.random() * (1.5 - 0.3) + 0.3).toFixed(1))
+    const a65 = parseFloat((Math.random() * (1 - 0.2) + 0.2).toFixed(1))
+    const a1317 = parseFloat((100 - a1824 - a2534 - a3544 - a4554 - a5564 - a65).toFixed(1))
+
+    // Random sources
+    const reels = parseFloat((Math.random() * (85 - 75) + 75).toFixed(1))
+    const explore = parseFloat((Math.random() * (15 - 10) + 10).toFixed(1))
+    const remaining = parseFloat((100 - reels - explore).toFixed(1))
+    const stories = parseFloat((remaining * 0.55).toFixed(1))
+    const profile = parseFloat((remaining * 0.28).toFixed(1))
+    const feed = parseFloat((remaining - stories - profile).toFixed(1))
+
+    saveData({
+      ...insightsData,
+      followerPercentage: followerPct,
+      skipRateThis: skipThis,
+      skipRateTypical: skipTypical,
+      countryData: [
+        { name: "United States", percentage: us },
+        { name: "United Kingdom", percentage: uk },
+        { name: "Canada", percentage: ca },
+        { name: "Australia", percentage: au },
+        { name: "Germany", percentage: de },
+        { name: "Others", percentage: Math.max(0, others) },
+      ],
+      ageData: [
+        { name: "13-17", percentage: Math.max(0, a1317) },
+        { name: "18-24", percentage: a1824 },
+        { name: "25-34", percentage: a2534 },
+        { name: "35-44", percentage: a3544 },
+        { name: "45-54", percentage: a4554 },
+        { name: "55-64", percentage: a5564 },
+        { name: "65+", percentage: a65 },
+      ],
+      sourcesData: [
+        { name: "Reels tab", percentage: reels },
+        { name: "Explore", percentage: explore },
+        { name: "Stories", percentage: stories },
+        { name: "Profile", percentage: profile },
+        { name: "Feed", percentage: Math.max(0, feed) },
+      ],
+    })
+  }, [])
 
   useEffect(() => {
     try {
@@ -516,9 +614,7 @@ export default function ReelInsights() {
       <div className="relative flex items-center justify-center py-6">
         <svg width="260" height="260" className="transform -rotate-90">
           <circle cx="130" cy="130" r={radius} fill="none" stroke="#27272a" strokeWidth={strokeWidth} />
-          {/* Slightly less dark purple */}
           <circle cx="130" cy="130" r={radius} fill="none" stroke="#7C3AED" strokeWidth={strokeWidth} strokeDasharray={`${nonFollowerStroke} ${circumference}`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-          {/* Slightly less dark pink */}
           <circle cx="130" cy="130" r={radius} fill="none" stroke="#C026D3" strokeWidth={strokeWidth} strokeDasharray={`${followerStroke} ${circumference}`} strokeDashoffset={-nonFollowerStroke} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
         </svg>
         <div className="absolute flex flex-col items-center justify-center">
@@ -611,7 +707,6 @@ export default function ReelInsights() {
           <h2 className="text-[13px] font-semibold mt-4 text-center px-4 leading-tight">{insightsData.caption}</h2>
           <p className="text-[10px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
 
-          {/* Engagement Stats Row */}
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
             <div className="flex flex-col items-center gap-1">
               <HeartIcon />
@@ -638,7 +733,7 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Overview Section */}
+        {/* Overview */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Overview</h3>
@@ -666,7 +761,7 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Views Section with Donut */}
+        {/* Views Donut */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-[18px] font-semibold">Views</h3>
@@ -726,7 +821,7 @@ export default function ReelInsights() {
 
         <div className="h-px bg-zinc-800 mx-4" />
 
-        {/* Top Sources of Views */}
+        {/* Top Sources */}
         <section className="px-4 py-5">
           <h4 className="text-[15px] font-semibold mb-5">Top sources of views</h4>
           <div className="space-y-5">
@@ -748,7 +843,7 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Retention Section — now comes BEFORE Interactions */}
+        {/* Retention */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Retention</h3>
@@ -779,8 +874,7 @@ export default function ReelInsights() {
                   <span className="text-[10px] mt-2">Upload</span>
                 </div>
               )}
-            
-                            {/* Play Icon Overlay */}
+              {/* Play Icon */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>
@@ -790,7 +884,6 @@ export default function ReelInsights() {
             </div>
           </div>
 
-          {/* Draggable Retention Chart */}
           <div className="-ml-2">
             <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} />
           </div>
@@ -823,7 +916,7 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Interactions Section — now comes AFTER Retention */}
+        {/* Interactions */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-[18px] font-semibold">Interactions</h3>
@@ -877,7 +970,7 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Profile Activity Section */}
+        {/* Profile Activity */}
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -894,7 +987,7 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Audience Section */}
+        {/* Audience */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Audience</h3>
@@ -921,7 +1014,16 @@ export default function ReelInsights() {
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-[13px] text-zinc-300">Men</span>
-                  <span className="text-[13px] text-zinc-300">{insightsData.genderData.men.toFixed(1)}%</span>
+                  <GenderEditor
+                    menValue={insightsData.genderData.men}
+                    onSave={(newMen) => {
+                      const newWomen = parseFloat((100 - newMen).toFixed(1))
+                      saveData({
+                        ...insightsData,
+                        genderData: { men: newMen, women: newWomen },
+                      })
+                    }}
+                  />
                 </div>
                 <ProgressBar percentage={insightsData.genderData.men} delay={0} />
               </div>
