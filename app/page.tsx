@@ -824,7 +824,11 @@ const [animationKey, setAnimationKey] = useState(0)
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
-  useEffect(() => {
+    useEffect(() => {
+    // Only run if no saved data exists yet (first ever visit)
+    const alreadySaved = localStorage.getItem("instagram-reel-insights")
+    if (alreadySaved) return
+
     const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
     const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
     const skipTypical = parseFloat((Math.random() * (30 - 20) + 20).toFixed(1))
@@ -851,39 +855,18 @@ const [animationKey, setAnimationKey] = useState(0)
     const profile = parseFloat((remaining * 0.28).toFixed(1))
     const feed = parseFloat((remaining - stories - profile).toFixed(1))
 
-    let savedMen = insightsData.genderData.men
-    let savedWomen = insightsData.genderData.women
-    try {
-      const savedGender = localStorage.getItem("gender-data")
-      if (savedGender) {
-        const parsed = JSON.parse(savedGender)
-        savedMen = parsed.men
-        savedWomen = parsed.women
-      }
-    } catch {}
-
-    let savedCountryNames = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "Others"]
-    try {
-      const savedNames = localStorage.getItem("country-names")
-      if (savedNames) {
-        const parsed = JSON.parse(savedNames)
-        if (Array.isArray(parsed) && parsed.length === 6) savedCountryNames = parsed
-      }
-    } catch {}
-
     saveData({
       ...insightsData,
       followerPercentage: followerPct,
       skipRateThis: skipThis,
       skipRateTypical: skipTypical,
-      genderData: { men: savedMen, women: savedWomen },
       countryData: [
-        { name: savedCountryNames[0], percentage: us },
-        { name: savedCountryNames[1], percentage: uk },
-        { name: savedCountryNames[2], percentage: ca },
-        { name: savedCountryNames[3], percentage: au },
-        { name: savedCountryNames[4], percentage: de },
-        { name: savedCountryNames[5], percentage: Math.max(0, others) },
+        { name: "United States", percentage: us },
+        { name: "United Kingdom", percentage: uk },
+        { name: "Canada", percentage: ca },
+        { name: "Australia", percentage: au },
+        { name: "Germany", percentage: de },
+        { name: "Others", percentage: Math.max(0, others) },
       ],
       ageData: [
         { name: "13-17", percentage: Math.max(0, a1317) },
