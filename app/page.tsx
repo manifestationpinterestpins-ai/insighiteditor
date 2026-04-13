@@ -13,6 +13,8 @@ import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
 import { InsightsData } from "@/lib/insights-state"
 
+const BG = "#0c0f14"
+
 // Custom Icons
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -83,19 +85,89 @@ const CloseIcon = () => (
   </svg>
 )
 
-const LockIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-)
+// ===== LOCK MENU =====
+const LockMenu = ({
+  locked,
+  onToggle,
+  onOpenEditor,
+}: {
+  locked: boolean
+  onToggle: () => void
+  onOpenEditor: () => void
+}) => {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-const UnlockIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-  </svg>
-)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [open])
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        className="p-1 -mr-1 active:opacity-60 transition-opacity"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <MoreHorizontalIcon />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50">
+          {/* Edit option */}
+          <button
+            className="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-white hover:bg-zinc-800 transition-colors text-left"
+            onClick={() => {
+              setOpen(false)
+              onOpenEditor()
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit insights
+          </button>
+
+          {/* Divider */}
+          <div className="h-px bg-zinc-800 mx-3" />
+
+          {/* Lock/Unlock option */}
+          <button
+            className="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-white hover:bg-zinc-800 transition-colors text-left"
+            onClick={() => {
+              onToggle()
+              setOpen(false)
+            }}
+          >
+            {locked ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                </svg>
+                Unlock editing
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Lock editing
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ===== INLINE EDITOR =====
 const InlineEditor = ({
@@ -553,7 +625,6 @@ const DraggableRetentionGraph = ({
   const handlePointerUp = () => setDragging(null)
 
   const yTicks = [0, 50, 100]
-  // Only show first and last X axis labels (remove middle)
   const firstIdx = 0
   const lastIdx = data.length - 1
 
@@ -568,7 +639,6 @@ const DraggableRetentionGraph = ({
 
   return (
     <div className="relative">
-      {/* Input for right X axis label */}
       {editingRightX && (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
           <input
@@ -591,7 +661,6 @@ const DraggableRetentionGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Y axis grid and labels */}
         {yTicks.map((tick) => (
           <g key={tick}>
             <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#3f3f46" strokeWidth={1} />
@@ -601,14 +670,14 @@ const DraggableRetentionGraph = ({
           </g>
         ))}
 
-        {/* X axis — only first label (left) */}
+        {/* X axis first label only */}
         {data[firstIdx] && (
           <text x={getX(firstIdx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
             {data[firstIdx].time}
           </text>
         )}
 
-        {/* X axis — last label (right) — clickable to edit */}
+        {/* X axis last label — clickable */}
         {data[lastIdx] && (
           <text
             x={getX(lastIdx)}
@@ -628,13 +697,11 @@ const DraggableRetentionGraph = ({
           </text>
         )}
 
-        {/* X axis bottom line */}
         <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH} stroke="#3f3f46" strokeWidth={1} />
 
-        {/* Retention line — thick, NO shadow/fill */}
+        {/* Thick line, no shadow/fill */}
         <path d={pathD} fill="none" stroke="#C026D3" strokeWidth={4} strokeLinecap="round" />
 
-        {/* Invisible drag handles */}
         {data.map((d, i) => (
           <circle
             key={i}
@@ -666,7 +733,6 @@ export default function ReelInsights() {
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
 
-  // Load locked state and label from localStorage
   useEffect(() => {
     try {
       const savedLock = localStorage.getItem("site-locked")
@@ -699,7 +765,6 @@ export default function ReelInsights() {
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
-  // Randomize on page load
   useEffect(() => {
     const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
     const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
@@ -912,42 +977,21 @@ export default function ReelInsights() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans antialiased">
+    <div className="min-h-screen text-white font-sans antialiased" style={{ backgroundColor: BG }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900">
+      <header className="sticky top-0 z-50 backdrop-blur-sm border-b border-zinc-900" style={{ backgroundColor: BG + "f5" }}>
         <div className="flex items-center justify-between px-4 h-[52px]">
           <button className="p-1 -ml-1 active:opacity-60 transition-opacity">
             <ChevronLeftIcon />
           </button>
-          {/* Shifted more right with ml-5 */}
           <h1 className="text-[17px] font-semibold flex-1 ml-5">Reel insights</h1>
-          <div className="flex items-center gap-2">
-            {/* Lock/Unlock Button */}
-            <button
-              onClick={toggleLock}
-              className={`p-1.5 rounded-full transition-colors ${locked ? "text-fuchsia-400 bg-fuchsia-400/10" : "text-zinc-400"}`}
-              title={locked ? "Unlock editing" : "Lock editing"}
-            >
-              {locked ? <LockIcon /> : <UnlockIcon />}
-            </button>
-            <button
-              className="p-1 -mr-1 active:opacity-60 transition-opacity"
-              onClick={() => setEditorOpen(true)}
-              title="Edit insights"
-            >
-              <MoreHorizontalIcon />
-            </button>
-          </div>
+          <LockMenu
+            locked={locked}
+            onToggle={toggleLock}
+            onOpenEditor={() => setEditorOpen(true)}
+          />
         </div>
       </header>
-
-      {/* Lock banner */}
-      {locked && (
-        <div className="bg-fuchsia-600/10 border-b border-fuchsia-600/20 px-4 py-2 flex items-center justify-between">
-          <span className="text-[12px] text-fuchsia-400">Editing locked — tap 🔒 to unlock</span>
-          <button onClick={toggleLock} className="text-[12px] text-fuchsia-400 underline">Unlock</button>
-        </div>
-      )}
 
       <main className="pb-12">
         {/* Thumbnail Section */}
@@ -981,26 +1025,11 @@ export default function ReelInsights() {
           <p className="text-[10px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
 
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
-            <div className="flex flex-col items-center gap-1">
-              <HeartIcon />
-              <span className="text-[10px] font-medium">{insightsData.likes}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <CommentIcon />
-              <span className="text-[10px] font-medium">{insightsData.comments}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <SendIcon />
-              <span className="text-[10px] font-medium">{insightsData.shares}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <RepostIcon />
-              <span className="text-[10px] font-medium">{insightsData.reposts}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <BookmarkIcon />
-              <span className="text-[10px] font-medium">{insightsData.bookmarks}</span>
-            </div>
+            <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] font-medium">{insightsData.likes}</span></div>
+            <div className="flex flex-col items-center gap-1"><CommentIcon /><span className="text-[10px] font-medium">{insightsData.comments}</span></div>
+            <div className="flex flex-col items-center gap-1"><SendIcon /><span className="text-[10px] font-medium">{insightsData.shares}</span></div>
+            <div className="flex flex-col items-center gap-1"><RepostIcon /><span className="text-[10px] font-medium">{insightsData.reposts}</span></div>
+            <div className="flex flex-col items-center gap-1"><BookmarkIcon /><span className="text-[10px] font-medium">{insightsData.bookmarks}</span></div>
           </div>
         </section>
 
@@ -1025,7 +1054,6 @@ export default function ReelInsights() {
               <span className="text-[13px] text-zinc-300">Interactions</span>
               <span className="text-[13px] text-zinc-300">{insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}</span>
             </div>
-            {/* Profile activity — clickable to edit, syncs with Profile Activity section */}
             <div className="flex justify-between items-center">
               <span className="text-[13px] text-zinc-300">Profile activity</span>
               <InlineEditor
@@ -1081,9 +1109,7 @@ export default function ReelInsights() {
                 key={filter}
                 onClick={() => setViewsFilter(filter)}
                 className={`px-4 py-[9px] rounded-full text-[11px] font-medium transition-all duration-200 ${
-                  viewsFilter === filter
-                    ? "bg-zinc-800 text-white"
-                    : "bg-transparent text-white border border-zinc-800"
+                  viewsFilter === filter ? "bg-zinc-800 text-white" : "bg-transparent text-white border border-zinc-800"
                 }`}
               >
                 {filter}
@@ -1119,7 +1145,6 @@ export default function ReelInsights() {
               </div>
             ))}
           </div>
-          {/* Accounts reached — clickable label to rename */}
           <div className="flex justify-between mt-6 pt-5 border-t border-zinc-800">
             <InlineEditor
               value={accountsReachedLabel}
@@ -1239,32 +1264,17 @@ export default function ReelInsights() {
           </div>
           <div className="h-px bg-zinc-800 my-5" />
           <div className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Likes</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.likes}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Saves</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.bookmarks}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Shares</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.shares}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Reposts</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.reposts}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Comments</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.comments}</span>
-            </div>
+            <div className="flex justify-between"><span className="text-[13px] text-zinc-300">Likes</span><span className="text-[13px] text-zinc-300">{insightsData.likes}</span></div>
+            <div className="flex justify-between"><span className="text-[13px] text-zinc-300">Saves</span><span className="text-[13px] text-zinc-300">{insightsData.bookmarks}</span></div>
+            <div className="flex justify-between"><span className="text-[13px] text-zinc-300">Shares</span><span className="text-[13px] text-zinc-300">{insightsData.shares}</span></div>
+            <div className="flex justify-between"><span className="text-[13px] text-zinc-300">Reposts</span><span className="text-[13px] text-zinc-300">{insightsData.reposts}</span></div>
+            <div className="flex justify-between"><span className="text-[13px] text-zinc-300">Comments</span><span className="text-[13px] text-zinc-300">{insightsData.comments}</span></div>
           </div>
         </section>
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Profile Activity — synced with Overview */}
+        {/* Profile Activity */}
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -1293,9 +1303,7 @@ export default function ReelInsights() {
                 key={tab}
                 onClick={() => setAudienceTab(tab)}
                 className={`px-4 py-[9px] rounded-full text-[11px] font-medium transition-all duration-200 ${
-                  audienceTab === tab
-                    ? "bg-zinc-800 text-white"
-                    : "bg-transparent text-white border border-zinc-800"
+                  audienceTab === tab ? "bg-zinc-800 text-white" : "bg-transparent text-white border border-zinc-800"
                 }`}
               >
                 {tab}
