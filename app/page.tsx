@@ -15,7 +15,6 @@ import { InsightsData } from "@/lib/insights-state"
 
 const BG = "#0c0f14"
 
-// Custom Icons
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m12 19-7-7 7-7"/>
@@ -85,6 +84,19 @@ const CloseIcon = () => (
   </svg>
 )
 
+const ChevronRightIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m9 18 6-6-6-6"/>
+  </svg>
+)
+
+const BoostIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+    <polyline points="17 6 23 6 23 12"/>
+  </svg>
+)
+
 // ===== LOCK MENU =====
 const LockMenu = ({
   locked,
@@ -119,13 +131,9 @@ const LockMenu = ({
 
       {open && (
         <div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50">
-          {/* Edit option */}
           <button
             className="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-white hover:bg-zinc-800 transition-colors text-left"
-            onClick={() => {
-              setOpen(false)
-              onOpenEditor()
-            }}
+            onClick={() => { setOpen(false); onOpenEditor() }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -133,17 +141,10 @@ const LockMenu = ({
             </svg>
             Edit insights
           </button>
-
-          {/* Divider */}
           <div className="h-px bg-zinc-800 mx-3" />
-
-          {/* Lock/Unlock option */}
           <button
             className="w-full flex items-center gap-3 px-4 py-3 text-[13px] text-white hover:bg-zinc-800 transition-colors text-left"
-            onClick={() => {
-              onToggle()
-              setOpen(false)
-            }}
+            onClick={() => { onToggle(); setOpen(false) }}
           >
             {locked ? (
               <>
@@ -188,7 +189,6 @@ const InlineEditor = ({
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { setVal(String(value)) }, [value])
-
   useEffect(() => {
     if (editing && inputRef.current) {
       inputRef.current.focus()
@@ -216,7 +216,7 @@ const InlineEditor = ({
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit() }}
         className={`bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-white outline-none ${className}`}
-        style={{ caretColor: "#D946EF", minWidth: 60 }}
+        style={{ caretColor: "#d63bcd", minWidth: 60 }}
       />
     )
   }
@@ -267,7 +267,7 @@ const GenderEditor = ({
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit() }}
         className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white text-center w-[70px] outline-none"
-        style={{ caretColor: "#D946EF" }}
+        style={{ caretColor: "#d63bcd" }}
       />
     )
   }
@@ -318,7 +318,7 @@ const CountryNameEditor = ({
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit() }}
         className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white outline-none flex-1"
-        style={{ caretColor: "#D946EF" }}
+        style={{ caretColor: "#d63bcd" }}
       />
     )
   }
@@ -476,7 +476,7 @@ const DraggableGraph = ({
             onBlur={commitEdit}
             onKeyDown={(e) => { if (e.key === "Enter") commitEdit() }}
             className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
-            style={{ caretColor: "#D946EF" }}
+            style={{ caretColor: "#d63bcd" }}
           />
         </div>
       )}
@@ -499,14 +499,11 @@ const DraggableGraph = ({
             x={padding.left - 6}
             y={yPositions[i] + 4}
             textAnchor="end"
-            fill={editingY === i ? "#D946EF" : "#a1a1aa"}
+            fill={editingY === i ? "#d63bcd" : "#a1a1aa"}
             fontSize="10"
             fontFamily="Roboto, sans-serif"
             className={locked ? "cursor-default" : "cursor-pointer"}
-            onClick={() => {
-              if (locked) return
-              setEditingY(i); setEditingX(null); setEditValue(label)
-            }}
+            onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}
           >
             {label}
           </text>
@@ -518,21 +515,18 @@ const DraggableGraph = ({
             x={xPositions[i]}
             y={height - 8}
             textAnchor="middle"
-            fill={editingX === i ? "#D946EF" : "#a1a1aa"}
+            fill={editingX === i ? "#d63bcd" : "#a1a1aa"}
             fontSize="10"
             fontFamily="Roboto, sans-serif"
             className={locked ? "cursor-default" : "cursor-pointer"}
-            onClick={() => {
-              if (locked) return
-              setEditingX(i); setEditingY(null); setEditValue(label)
-            }}
+            onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}
           >
             {label}
           </text>
         ))}
 
         <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
-        <path d={buildPath(thisReelPoints)} fill="none" stroke="#C026D3" strokeWidth={4} strokeLinecap="round" />
+        <path d={buildPath(thisReelPoints)} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
 
         {data.map((d, i) => (
           <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />
@@ -648,7 +642,7 @@ const DraggableRetentionGraph = ({
             onBlur={commitRightX}
             onKeyDown={(e) => { if (e.key === "Enter") commitRightX() }}
             className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
-            style={{ caretColor: "#D946EF" }}
+            style={{ caretColor: "#d63bcd" }}
           />
         </div>
       )}
@@ -670,20 +664,18 @@ const DraggableRetentionGraph = ({
           </g>
         ))}
 
-        {/* X axis first label only */}
         {data[firstIdx] && (
           <text x={getX(firstIdx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
             {data[firstIdx].time}
           </text>
         )}
 
-        {/* X axis last label — clickable */}
         {data[lastIdx] && (
           <text
             x={getX(lastIdx)}
             y={height - 8}
             textAnchor="middle"
-            fill={editingRightX ? "#D946EF" : "#a1a1aa"}
+            fill={editingRightX ? "#d63bcd" : "#a1a1aa"}
             fontSize="10"
             fontFamily="Roboto, sans-serif"
             className={locked ? "cursor-default" : "cursor-pointer"}
@@ -698,9 +690,7 @@ const DraggableRetentionGraph = ({
         )}
 
         <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH} stroke="#3f3f46" strokeWidth={1} />
-
-        {/* Thick line, no shadow/fill */}
-        <path d={pathD} fill="none" stroke="#C026D3" strokeWidth={4} strokeLinecap="round" />
+        <path d={pathD} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
 
         {data.map((d, i) => (
           <circle
@@ -903,6 +893,7 @@ export default function ReelInsights() {
     }
   }
 
+  // ===== UPDATED DONUT CHART with GAP between segments =====
   const DonutChart = ({
     value,
     label,
@@ -916,6 +907,8 @@ export default function ReelInsights() {
     const radius = 110
     const strokeWidth = 14
     const circumference = 2 * Math.PI * radius
+    // Gap between segments in px (on the circle)
+    const gap = 8
 
     useEffect(() => {
       if (animateCharts) {
@@ -924,15 +917,45 @@ export default function ReelInsights() {
       }
     }, [animateCharts])
 
-    const followerStroke = (followerPercent / 100) * circumference * progress
-    const nonFollowerStroke = ((100 - followerPercent) / 100) * circumference * progress
+    const followerArc = (followerPercent / 100) * circumference * progress
+    const nonFollowerArc = ((100 - followerPercent) / 100) * circumference * progress
+
+    // Subtract gap from each segment so there's visible space between them
+    const followerDash = Math.max(0, followerArc - gap)
+    const nonFollowerDash = Math.max(0, nonFollowerArc - gap)
 
     return (
       <div className="relative flex items-center justify-center py-6">
         <svg width="260" height="260" className="transform -rotate-90">
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#27272a" strokeWidth={strokeWidth} />
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#7C3AED" strokeWidth={strokeWidth} strokeDasharray={`${nonFollowerStroke} ${circumference}`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#C026D3" strokeWidth={strokeWidth} strokeDasharray={`${followerStroke} ${circumference}`} strokeDashoffset={-nonFollowerStroke} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          {/* Background ring */}
+          <circle
+            cx="130" cy="130" r={radius}
+            fill="none"
+            stroke="#1e2028"
+            strokeWidth={strokeWidth}
+          />
+          {/* Non-followers segment (purple) — drawn first (starts at 0) */}
+          <circle
+            cx="130" cy="130" r={radius}
+            fill="none"
+            stroke="#7639f6"
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${nonFollowerDash} ${circumference}`}
+            strokeDashoffset={0}
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-out"
+          />
+          {/* Followers segment (pink) — offset by nonFollowerArc to start after it */}
+          <circle
+            cx="130" cy="130" r={radius}
+            fill="none"
+            stroke="#d63bcd"
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${followerDash} ${circumference}`}
+            strokeDashoffset={-(nonFollowerArc)}
+            strokeLinecap="round"
+            className="transition-all duration-1000 ease-out"
+          />
         </svg>
         <div className="absolute flex flex-col items-center justify-center">
           <span className="text-xs text-zinc-400 tracking-wide">{label}</span>
@@ -960,17 +983,18 @@ export default function ReelInsights() {
       }
     }, [animateCharts, percentage, delay])
 
-    const colorClasses = {
-      magenta: "bg-fuchsia-600",
-      violet: "bg-violet-700",
-      blue: "bg-blue-500",
+    // Updated colors to match new brand colors
+    const colorStyles: Record<string, string> = {
+      magenta: "#d63bcd",
+      violet: "#7639f6",
+      blue: "#3b82f6",
     }
 
     return (
       <div className="relative w-full h-[9px] bg-zinc-800 rounded-full overflow-hidden">
         <div
-          className={`absolute left-0 top-0 h-full ${colorClasses[color]} rounded-full transition-all duration-700 ease-out`}
-          style={{ width: `${width}%` }}
+          className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${width}%`, backgroundColor: colorStyles[color] }}
         />
       </div>
     )
@@ -1083,14 +1107,14 @@ export default function ReelInsights() {
           <div className="space-y-3 mt-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
+                <div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#d63bcd" }} />
                 <span className="text-[13px] text-zinc-300">Followers</span>
               </div>
               <span className="text-[13px] text-zinc-300">{insightsData.followerPercentage.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-violet-600" />
+                <div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#7639f6" }} />
                 <span className="text-[13px] text-zinc-300">Non-followers</span>
               </div>
               <span className="text-[13px] text-zinc-300">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
@@ -1119,7 +1143,7 @@ export default function ReelInsights() {
           <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
           <div className="flex items-center justify-center gap-6 mt-2">
             <div className="flex items-center gap-2">
-              <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
+              <div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#d63bcd" }} />
               <span className="text-[11px] text-zinc-400">This reel</span>
             </div>
             <div className="flex items-center gap-2">
@@ -1249,14 +1273,14 @@ export default function ReelInsights() {
           <div className="space-y-3 mt-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
+                <div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#d63bcd" }} />
                 <span className="text-[13px] text-zinc-300">Followers</span>
               </div>
               <span className="text-[13px] text-zinc-300">{insightsData.followerPercentage.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-violet-600" />
+                <div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#7639f6" }} />
                 <span className="text-[13px] text-zinc-300">Non-followers</span>
               </div>
               <span className="text-[13px] text-zinc-300">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
@@ -1377,6 +1401,23 @@ export default function ReelInsights() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Thick divider before Ad section */}
+        <div className="h-[6px] bg-zinc-900" />
+
+        {/* Ad / Boost This Reel Section */}
+        <section className="px-4 py-5">
+          <h3 className="text-[18px] font-semibold mb-4">Ad</h3>
+          <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                <BoostIcon />
+              </div>
+              <span className="text-[14px] text-white font-medium">Boost this Reel</span>
+            </div>
+            <ChevronRightIcon />
+          </button>
         </section>
 
         <div className="h-8" />
