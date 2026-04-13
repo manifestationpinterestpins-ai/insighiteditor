@@ -69,8 +69,8 @@ const InfoIcon = () => (
 )
 
 const PlayIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <polygon points="5 3 19 12 5 21 5 3" fill="white" fillOpacity="0.9" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" width="22" height="22">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
   </svg>
 )
 
@@ -89,7 +89,7 @@ const CloseIcon = () => (
   </svg>
 )
 
-// ===== DRAGGABLE GRAPH COMPONENT =====
+// ===== DRAGGABLE VIEWS GRAPH =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
 
 const DraggableGraph = ({
@@ -101,14 +101,11 @@ const DraggableGraph = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
-
   const [xLabels, setXLabels] = useState(["28 Jan", "29 Jan", "30 Jan"])
   const [yLabels, setYLabels] = useState(["0", "250", "500"])
-
   const [editingX, setEditingX] = useState<number | null>(null)
   const [editingY, setEditingY] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
-
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -143,14 +140,12 @@ const DraggableGraph = ({
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
 
-  // Y axis: fixed positions for 3 levels — graph does NOT change when Y labels change
   const yPositions = [
-    padding.top + chartH,        // bottom
-    padding.top + chartH / 2,    // middle
-    padding.top,                  // top
+    padding.top + chartH,
+    padding.top + chartH / 2,
+    padding.top,
   ]
 
-  // Graph uses its own fixed scale — NOT affected by Y label edits
   const maxVal = Math.max(...data.map(d => Math.max(d.thisReel, d.typical)))
   const graphMax = Math.ceil(maxVal / 100) * 100 || 500
 
@@ -201,7 +196,6 @@ const DraggableGraph = ({
 
   const handlePointerUp = () => setDragging(null)
 
-  // X label positions — evenly spaced 3 points
   const xPositions = [
     padding.left,
     padding.left + chartW / 2,
@@ -226,7 +220,6 @@ const DraggableGraph = ({
 
   return (
     <div className="relative">
-      {/* Floating input for editing axis labels */}
       {(editingX !== null || editingY !== null) && (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
           <input
@@ -249,109 +242,169 @@ const DraggableGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Y axis grid lines — fixed positions */}
         {yPositions.map((yPos, i) => (
-          <line
-            key={`yline-${i}`}
-            x1={padding.left}
-            y1={yPos}
-            x2={width - padding.right}
-            y2={yPos}
-            stroke="#27272a"
-            strokeWidth={1}
-          />
+          <line key={`yline-${i}`} x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos} stroke="#27272a" strokeWidth={1} />
         ))}
 
-        {/* Y axis clickable labels — bright grey, click to edit */}
         {yLabels.map((label, i) => (
-          <text
-            key={`ylabel-${i}`}
-            x={padding.left - 6}
-            y={yPositions[i] + 4}
-            textAnchor="end"
-            fill={editingY === i ? "#D946EF" : "#a1a1aa"}
-            fontSize="10"
-            fontFamily="Roboto, sans-serif"
-            className="cursor-pointer"
-            onClick={() => {
-              setEditingY(i)
-              setEditingX(null)
-              setEditValue(label)
-            }}
-          >
+          <text key={`ylabel-${i}`} x={padding.left - 6} y={yPositions[i] + 4} textAnchor="end" fill={editingY === i ? "#D946EF" : "#a1a1aa"} fontSize="10" fontFamily="Roboto, sans-serif" className="cursor-pointer" onClick={() => { setEditingY(i); setEditingX(null); setEditValue(label) }}>
             {label}
           </text>
         ))}
 
-        {/* X axis clickable labels — bright grey, click to edit */}
         {xLabels.map((label, i) => (
-          <text
-            key={`xlabel-${i}`}
-            x={xPositions[i]}
-            y={height - 8}
-            textAnchor="middle"
-            fill={editingX === i ? "#D946EF" : "#a1a1aa"}
-            fontSize="10"
-            fontFamily="Roboto, sans-serif"
-            className="cursor-pointer"
-            onClick={() => {
-              setEditingX(i)
-              setEditingY(null)
-              setEditValue(label)
-            }}
-          >
+          <text key={`xlabel-${i}`} x={xPositions[i]} y={height - 8} textAnchor="middle" fill={editingX === i ? "#D946EF" : "#a1a1aa"} fontSize="10" fontFamily="Roboto, sans-serif" className="cursor-pointer" onClick={() => { setEditingX(i); setEditingY(null); setEditValue(label) }}>
             {label}
           </text>
         ))}
 
-        {/* Typical reel line (grey dashed) */}
-        <path
-          d={buildPath(typicalPoints)}
-          fill="none"
-          stroke="#a1a1aa"
-          strokeWidth={3.5}
-          strokeDasharray="6 10"
-          strokeLinecap="round"
-        />
+        <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
+        <path d={buildPath(thisReelPoints)} fill="none" stroke="#C026D3" strokeWidth={4} strokeLinecap="round" />
 
-        {/* This reel line (pink) */}
-        <path
-          d={buildPath(thisReelPoints)}
-          fill="none"
-          stroke="#D946EF"
-          strokeWidth={4}
-          strokeLinecap="round"
-        />
-
-        {/* Invisible drag handles for thisReel */}
         {data.map((d, i) => (
-          <circle
-            key={`tr-${i}`}
-            cx={getX(i)}
-            cy={getY(d.thisReel)}
-            r={18}
-            fill="transparent"
-            className="cursor-grab active:cursor-grabbing"
-            onPointerDown={(e) => handlePointerDown(i, "thisReel", e)}
-            style={{ touchAction: "none" }}
-          />
+          <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className="cursor-grab active:cursor-grabbing" onPointerDown={(e) => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />
         ))}
-
-        {/* Invisible drag handles for typical */}
         {data.map((d, i) => (
-          <circle
-            key={`tp-${i}`}
-            cx={getX(i)}
-            cy={getY(d.typical)}
-            r={18}
-            fill="transparent"
-            className="cursor-grab active:cursor-grabbing"
-            onPointerDown={(e) => handlePointerDown(i, "typical", e)}
-            style={{ touchAction: "none" }}
-          />
+          <circle key={`tp-${i}`} cx={getX(i)} cy={getY(d.typical)} r={18} fill="transparent" className="cursor-grab active:cursor-grabbing" onPointerDown={(e) => handlePointerDown(i, "typical", e)} style={{ touchAction: "none" }} />
         ))}
       </svg>
     </div>
+  )
+}
+
+// ===== DRAGGABLE RETENTION GRAPH =====
+type RetentionPoint = { time: string; retention: number }
+
+const DraggableRetentionGraph = ({
+  data,
+  onChange,
+}: {
+  data: RetentionPoint[]
+  onChange: (newData: RetentionPoint[]) => void
+}) => {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [dragging, setDragging] = useState<number | null>(null)
+
+  const padding = { top: 20, right: 15, bottom: 35, left: 45 }
+  const width = 340
+  const height = 180
+  const chartW = width - padding.left - padding.right
+  const chartH = height - padding.top - padding.bottom
+
+  const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH
+
+  const getValFromY = (clientY: number) => {
+    const svg = svgRef.current
+    if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * height
+    const val = ((padding.top + chartH - svgY) / chartH) * 100
+    return Math.max(0, Math.min(100, Math.round(val)))
+  }
+
+  const buildPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1]
+      const curr = points[i]
+      const cpx1 = prev.x + (curr.x - prev.x) * 0.35
+      const cpx2 = prev.x + (curr.x - prev.x) * 0.65
+      d += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`
+    }
+    return d
+  }
+
+  const points = data.map((d, i) => ({ x: getX(i), y: getY(d.retention) }))
+  const pathD = buildPath(points)
+
+  // Filled area path
+  const areaD = points.length > 1
+    ? `${pathD} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`
+    : ""
+
+  const handlePointerDown = (index: number, e: React.PointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const target = e.target as Element
+    target.setPointerCapture?.(e.pointerId)
+    setDragging(index)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (dragging === null) return
+    e.preventDefault()
+    const val = getValFromY(e.clientY)
+    const newData = [...data]
+    newData[dragging] = { ...newData[dragging], retention: val }
+    onChange(newData)
+  }
+
+  const handlePointerUp = () => setDragging(null)
+
+  const yTicks = [0, 50, 100]
+  const xTicks = data.filter((_, i) => i % Math.floor(data.length / 4) === 0 || i === data.length - 1)
+
+  return (
+    <svg
+      ref={svgRef}
+      viewBox={`0 0 ${width} ${height}`}
+      className="w-full touch-none select-none"
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
+      <defs>
+        <linearGradient id="retentionDragGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#C026D3" stopOpacity={0.2} />
+          <stop offset="100%" stopColor="#C026D3" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+
+      {/* Grid lines */}
+      {yTicks.map((tick) => (
+        <g key={tick}>
+          <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#3f3f46" strokeWidth={1} />
+          <text x={padding.left - 4} y={getY(tick) + 4} textAnchor="end" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
+            {tick}%
+          </text>
+        </g>
+      ))}
+
+      {/* X axis labels */}
+      {xTicks.map((d, i) => {
+        const idx = data.indexOf(d)
+        return (
+          <text key={i} x={getX(idx)} y={height - 8} textAnchor="middle" fill="#a1a1aa" fontSize="10" fontFamily="Roboto, sans-serif">
+            {d.time}
+          </text>
+        )
+      })}
+
+      {/* X axis line */}
+      <line x1={padding.left} y1={padding.top + chartH} x2={width - padding.right} y2={padding.top + chartH} stroke="#3f3f46" strokeWidth={1} />
+
+      {/* Filled area */}
+      <path d={areaD} fill="url(#retentionDragGradient)" />
+
+      {/* Line */}
+      <path d={pathD} fill="none" stroke="#C026D3" strokeWidth={2.5} strokeLinecap="round" />
+
+      {/* Invisible drag handles */}
+      {data.map((d, i) => (
+        <circle
+          key={i}
+          cx={getX(i)}
+          cy={getY(d.retention)}
+          r={16}
+          fill="transparent"
+          className="cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => handlePointerDown(i, e)}
+          style={{ touchAction: "none" }}
+        />
+      ))}
+    </svg>
   )
 }
 
@@ -379,24 +432,31 @@ export default function ReelInsights() {
   ]
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
+  const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("graph-data")
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setGraphData(parsed)
-        }
+        if (Array.isArray(parsed) && parsed.length > 0) setGraphData(parsed)
+      }
+      const savedRetention = localStorage.getItem("retention-data")
+      if (savedRetention) {
+        const parsed = JSON.parse(savedRetention)
+        if (Array.isArray(parsed) && parsed.length > 0) setRetentionData(parsed)
       }
     } catch {}
   }, [])
 
   const handleGraphChange = (newData: GraphPoint[]) => {
     setGraphData(newData)
-    try {
-      localStorage.setItem("graph-data", JSON.stringify(newData))
-    } catch {}
+    try { localStorage.setItem("graph-data", JSON.stringify(newData)) } catch {}
+  }
+
+  const handleRetentionChange = (newData: RetentionPoint[]) => {
+    setRetentionData(newData)
+    try { localStorage.setItem("retention-data", JSON.stringify(newData)) } catch {}
   }
 
   useEffect(() => {
@@ -456,10 +516,10 @@ export default function ReelInsights() {
       <div className="relative flex items-center justify-center py-6">
         <svg width="260" height="260" className="transform -rotate-90">
           <circle cx="130" cy="130" r={radius} fill="none" stroke="#27272a" strokeWidth={strokeWidth} />
-          {/* Darker purple */}
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#6D28D9" strokeWidth={strokeWidth} strokeDasharray={`${nonFollowerStroke} ${circumference}`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-          {/* Darker pink */}
-          <circle cx="130" cy="130" r={radius} fill="none" stroke="#B91CD4" strokeWidth={strokeWidth} strokeDasharray={`${followerStroke} ${circumference}`} strokeDashoffset={-nonFollowerStroke} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          {/* Slightly less dark purple */}
+          <circle cx="130" cy="130" r={radius} fill="none" stroke="#7C3AED" strokeWidth={strokeWidth} strokeDasharray={`${nonFollowerStroke} ${circumference}`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+          {/* Slightly less dark pink */}
+          <circle cx="130" cy="130" r={radius} fill="none" stroke="#C026D3" strokeWidth={strokeWidth} strokeDasharray={`${followerStroke} ${circumference}`} strokeDashoffset={-nonFollowerStroke} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
         </svg>
         <div className="absolute flex flex-col items-center justify-center">
           <span className="text-xs text-zinc-400 tracking-wide">{label}</span>
@@ -623,7 +683,7 @@ export default function ReelInsights() {
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-violet-700" />
+                <div className="w-[6px] h-[6px] rounded-full bg-violet-600" />
                 <span className="text-[13px] text-zinc-300">Non-followers</span>
               </div>
               <span className="text-[13px] text-zinc-300">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
@@ -651,10 +711,7 @@ export default function ReelInsights() {
               </button>
             ))}
           </div>
-
           <DraggableGraph data={graphData} onChange={handleGraphChange} />
-
-          {/* Legend */}
           <div className="flex items-center justify-center gap-6 mt-2">
             <div className="flex items-center gap-2">
               <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-600" />
@@ -684,14 +741,88 @@ export default function ReelInsights() {
             ))}
           </div>
           <div className="flex justify-between mt-6 pt-5 border-t border-zinc-800">
-            <span className="text-[13px] text-zinc-300">Accounts reached</span>
-            <span className="text-[13px] text-zinc-300">{insightsData.accountsReached.toLocaleString()}</span>
+            <span className="text-[14px] text-zinc-300">Accounts reached</span>
+            <span className="text-[14px] text-zinc-300">{insightsData.accountsReached.toLocaleString()}</span>
           </div>
         </section>
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Interactions Section — swapped above Retention */}
+        {/* Retention Section — now comes BEFORE Interactions */}
+        <section className="px-4 py-5">
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="text-[18px] font-semibold">Retention</h3>
+            <InfoIcon />
+          </div>
+          <div className="flex justify-center mb-6">
+            <div
+              className="relative w-[105px] h-[180px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl"
+              onClick={() => retentionInputRef.current?.click()}
+            >
+              {retentionThumbnail ? (
+                <>
+                  <img src={retentionThumbnail || "/placeholder.svg"} alt="Retention thumbnail" className="w-full h-full object-cover" />
+                  <button
+                    className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                    onClick={(e) => { e.stopPropagation(); setRetentionThumbnail(null) }}
+                  >
+                    <CloseIcon />
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span className="text-[10px] mt-2">Upload</span>
+                </div>
+              )}
+              {/* New Play Icon */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-11 h-11 rounded-full border-[2.5px] border-white/70 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <PlayIcon />
+                </div>
+              </div>
+              <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
+            </div>
+          </div>
+
+          {/* Draggable Retention Chart */}
+          <div className="-ml-2">
+            <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} />
+          </div>
+
+          <div className="mt-6">
+            <h4 className="text-[15px] font-semibold mb-4">Skip rate</h4>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-[13px] text-zinc-300">{"This reel's skip rate"}</span>
+                <span className="text-[13px] text-zinc-300">{insightsData.skipRateThis.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[13px] text-zinc-300">Your typical skip rate</span>
+                <span className="text-[13px] text-zinc-300">{insightsData.skipRateTypical.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-5 border-t border-zinc-800 space-y-3">
+            <div className="flex justify-between">
+              <span className="text-[13px] text-zinc-300">Watch time</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[13px] text-zinc-300">Average watch time</span>
+              <span className="text-[13px] text-zinc-300">{insightsData.avgWatchTime}</span>
+            </div>
+          </div>
+        </section>
+
+        <div className="h-[6px] bg-zinc-900" />
+
+        {/* Interactions Section — now comes AFTER Retention */}
         <section className="px-4 py-5">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-[18px] font-semibold">Interactions</h3>
@@ -712,7 +843,7 @@ export default function ReelInsights() {
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-violet-700" />
+                <div className="w-[6px] h-[6px] rounded-full bg-violet-600" />
                 <span className="text-[13px] text-zinc-300">Non-followers</span>
               </div>
               <span className="text-[13px] text-zinc-300">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
@@ -757,90 +888,6 @@ export default function ReelInsights() {
           <div className="flex justify-between">
             <span className="text-[13px] text-zinc-300">Follows</span>
             <span className="text-[13px] text-zinc-300">1</span>
-          </div>
-        </section>
-
-        <div className="h-[6px] bg-zinc-900" />
-
-        {/* Retention Section — swapped below Interactions */}
-        <section className="px-4 py-5">
-          <div className="flex items-center gap-2 mb-5">
-            <h3 className="text-[18px] font-semibold">Retention</h3>
-            <InfoIcon />
-          </div>
-          <div className="flex justify-center mb-6">
-            <div
-              className="relative w-[90px] h-[180px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl"
-              onClick={() => retentionInputRef.current?.click()}
-            >
-              {retentionThumbnail ? (
-                <>
-                  <img src={retentionThumbnail || "/placeholder.svg"} alt="Retention thumbnail" className="w-full h-full object-cover" />
-                  <button
-                    className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                    onClick={(e) => { e.stopPropagation(); setRetentionThumbnail(null) }}
-                  >
-                    <CloseIcon />
-                  </button>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-500">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  <span className="text-[10px] mt-2">Upload</span>
-                </div>
-              )}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-11 h-11 rounded-full border-[2.5px] border-white/70 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                  <PlayIcon />
-                </div>
-              </div>
-              <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
-            </div>
-          </div>
-
-          <div className="h-44 -ml-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={insightsData.retentionData}>
-                <defs>
-                  <linearGradient id="retentionGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#B91CD4" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#B91CD4" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="time" axisLine={{ stroke: "#3f3f46", strokeWidth: 1 }} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} dy={8} />
-                <YAxis axisLine={{ stroke: "#3f3f46", strokeWidth: 1 }} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} tickFormatter={(value) => `${value}%`} domain={[0, 100]} ticks={[0, 50, 100]} width={40} />
-                <Area type="monotone" dataKey="retention" stroke="#B91CD4" strokeWidth={2.5} fill="url(#retentionGradient)" animationDuration={1500} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-6">
-            <h4 className="text-[15px] font-semibold mb-4">Skip rate</h4>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-[13px] text-zinc-300">{"This reel's skip rate"}</span>
-                <span className="text-[13px] text-zinc-300">{insightsData.skipRateThis.toFixed(1)}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[13px] text-zinc-300">Your typical skip rate</span>
-                <span className="text-[13px] text-zinc-300">{insightsData.skipRateTypical.toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 pt-5 border-t border-zinc-800 space-y-3">
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Watch time</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[13px] text-zinc-300">Average watch time</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.avgWatchTime}</span>
-            </div>
           </div>
         </section>
 
