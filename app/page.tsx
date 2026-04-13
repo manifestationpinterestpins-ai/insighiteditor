@@ -3,13 +3,11 @@
 import React from "react"
 import { useState, useRef, useEffect } from "react"
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   ResponsiveContainer,
-  AreaChart,
-  Area,
 } from "recharts"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
@@ -69,6 +67,7 @@ const InfoIcon = () => (
     <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.569 16.777h2.863M10.569 11.05H12v5.727"/>
   </svg>
 )
+
 const PlayIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <polygon points="5 3 19 12 5 21 5 3" fill="white" fillOpacity="0.9" stroke="none" />
@@ -90,8 +89,291 @@ const CloseIcon = () => (
   </svg>
 )
 
-// ✅ EDIT THESE to control Y-axis levels on the graph
-const yAxisTicks = [0, 250, 500]
+// ===== DRAGGABLE GRAPH COMPONENT =====
+const DraggableGraph = ({
+  data,
+  onChange,
+}: {
+  data: { date: string; thisReel: number; typical: number }[]
+  onChange: (newData: { date: string; thisReel: number; typical: number }[]) => void
+}) => {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
+  const [yTicks, setYTicks] = useState([0, 250, 500])
+  const [showEditor, setShowEditor] = useState(false)
+  const [tempYTicks, setTempYTicks] = useState([0, 250, 500])
+  const [tempData, setTempData] = useState(data)
+
+  const padding = { top: 20, right: 15, bottom: 35, left: 42 }
+  const width = 340
+  const height = 180
+  const chartW = width - padding.left - padding.right
+  const chartH = height - padding.top - padding.bottom
+  const yMax = yTicks[yTicks.length - 1] || 500
+
+  const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, yMax) / yMax) * chartH
+
+  const getValFromY = (clientY: number) => {
+    const svg = svgRef.current
+    if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * height
+    const val = ((padding.top + chartH - svgY) / chartH) * yMax
+    return Math.max(0, Math.min(yMax, Math.round(val)))
+  }
+
+  const buildPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1]
+      const curr = points[i]
+      const cpx1 = prev.x + (curr.x - prev.x) * 0.35
+      const cpx2 = prev.x + (curr.x - prev.x) * 0.65
+      d += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`
+    }
+    return d
+  }
+
+  const thisReelPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
+  const typicalPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
+
+  const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const target = e.target as Element
+    target.setPointerCapture?.(e.pointerId)
+    setDragging({ index, line })
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragging) return
+    e.preventDefault()
+    const val = getValFromY(e.clientY)
+    const newData = [...data]
+    newData[dragging.index] = { ...newData[dragging.index], [dragging.line]: val }
+    onChange(newData)
+  }
+
+  const handlePointerUp = () => {
+    setDragging(null)
+  }
+
+  // Get unique dates for x-axis labels
+  const uniqueDates: { date: string; x: number }[] = []
+  const seen = new Set<string>()
+  data.forEach((d, i) => {
+    if (!seen.has(d.date)) {
+      seen.add(d.date)
+      uniqueDates.push({ date: d.date, x: getX(i) })
+    }
+  })
+
+  return (
+    <div>
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full touch-none select-none"
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        {/* Y axis lines and labels */}
+        {yTicks.map((tick) => (
+          <g key={tick}>
+            <line x1={padding.left} y1={getY(tick)} x2={width - padding.right} y2={getY(tick)} stroke="#27272a" strokeWidth={1} />
+            <text x={padding.left - 6} y={getY(tick) + 4} textAnchor="end" fill="#71717a" fontSize="10" fontFamily="Roboto, sans-serif">
+              {tick >= 1000 ? `${(tick / 1000).toFixed(1)}K` : tick}
+            </text>
+          </g>
+        ))}
+
+        {/* X axis date labels */}
+        {uniqueDates.map((d) => (
+          <text key={d.date} x={d.x} y={height - 8} textAnchor="middle" fill="#71717a" fontSize="10" fontFamily="Roboto, sans-serif">
+            {d.date}
+          </text>
+        ))}
+
+        {/* Typical reel line (grey dashed) */}
+        <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="5 4" strokeLinecap="round" />
+
+        {/* This reel line (pink) */}
+        <path d={buildPath(thisReelPoints)} fill="none" stroke="#D946EF" strokeWidth={4} strokeLinecap="round" />
+
+        {/* Draggable points for thisReel */}
+        {data.map((d, i) => (
+          <circle
+            key={`tr-${i}`}
+            cx={getX(i)}
+            cy={getY(d.thisReel)}
+            r={dragging?.index === i && dragging?.line === "thisReel" ? 10 : 7}
+            fill="#D946EF"
+            fillOpacity={0.9}
+            stroke="#000"
+            strokeWidth={1.5}
+            className="cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => handlePointerDown(i, "thisReel", e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
+
+        {/* Draggable points for typical */}
+        {data.map((d, i) => (
+          <circle
+            key={`tp-${i}`}
+            cx={getX(i)}
+            cy={getY(d.typical)}
+            r={dragging?.index === i && dragging?.line === "typical" ? 10 : 7}
+            fill="#a1a1aa"
+            fillOpacity={0.9}
+            stroke="#000"
+            strokeWidth={1.5}
+            className="cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => handlePointerDown(i, "typical", e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
+      </svg>
+
+      {/* Tap to edit label */}
+      <p
+        className="text-center text-[10px] text-zinc-600 mt-1 cursor-pointer hover:text-zinc-400 transition-colors"
+        onClick={() => {
+          setTempData([...data])
+          setTempYTicks([...yTicks])
+          setShowEditor(true)
+        }}
+      >
+        Drag points to edit · Tap here to edit values
+      </p>
+
+      {/* Value Editor Popup */}
+      {showEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800">
+              <h3 className="text-[15px] font-semibold">Edit Graph Data</h3>
+              <button onClick={() => setShowEditor(false)} className="text-zinc-400 hover:text-white">
+                <CloseIcon />
+              </button>
+            </div>
+
+            {/* Y Axis Editor */}
+            <div className="px-4 py-4 border-b border-zinc-800">
+              <p className="text-[12px] font-semibold text-zinc-400 mb-3">Y Axis Levels</p>
+              <div className="flex gap-2">
+                {tempYTicks.map((tick, i) => (
+                  <div key={i} className="flex-1">
+                    <p className="text-[10px] text-zinc-500 mb-1">Level {i + 1}</p>
+                    <input
+                      type="number"
+                      value={tick}
+                      onChange={(e) => {
+                        const updated = [...tempYTicks]
+                        updated[i] = parseInt(e.target.value) || 0
+                        setTempYTicks(updated)
+                      }}
+                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[12px] text-white text-center"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Data Points */}
+            <div className="px-4 py-4">
+              <p className="text-[12px] font-semibold text-zinc-400 mb-3">Data Points</p>
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <p className="text-[10px] text-zinc-500 text-center">Date</p>
+                <p className="text-[10px] text-fuchsia-400 text-center">This Reel</p>
+                <p className="text-[10px] text-zinc-400 text-center">Typical</p>
+              </div>
+              <div className="space-y-2">
+                {tempData.map((point, index) => (
+                  <div key={index} className="grid grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      value={point.date}
+                      onChange={(e) => {
+                        const updated = [...tempData]
+                        updated[index] = { ...updated[index], date: e.target.value }
+                        setTempData(updated)
+                      }}
+                      className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[11px] text-white text-center"
+                    />
+                    <input
+                      type="number"
+                      value={point.thisReel}
+                      onChange={(e) => {
+                        const updated = [...tempData]
+                        updated[index] = { ...updated[index], thisReel: parseInt(e.target.value) || 0 }
+                        setTempData(updated)
+                      }}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-fuchsia-400 text-center"
+                    />
+                    <input
+                      type="number"
+                      value={point.typical}
+                      onChange={(e) => {
+                        const updated = [...tempData]
+                        updated[index] = { ...updated[index], typical: parseInt(e.target.value) || 0 }
+                        setTempData(updated)
+                      }}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 text-center"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Add/Remove */}
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setTempData([...tempData, { date: "", thisReel: 0, typical: 0 }])}
+                  className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+                >
+                  + Add Point
+                </button>
+                {tempData.length > 2 && (
+                  <button
+                    onClick={() => setTempData(tempData.slice(0, -1))}
+                    className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-red-400 hover:border-red-800 transition-colors"
+                  >
+                    − Remove Last
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Save/Cancel */}
+            <div className="flex gap-2 px-4 pb-4">
+              <button
+                onClick={() => setShowEditor(false)}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setYTicks(tempYTicks)
+                  onChange(tempData)
+                  setShowEditor(false)
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function ReelInsights() {
   const { data: insightsData, saveData, isLoaded } = useInsightsStorage()
@@ -101,21 +383,19 @@ export default function ReelInsights() {
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Gender")
   const [animateCharts, setAnimateCharts] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
-    const thumbnailInputRef = useRef<HTMLInputElement>(null)
+  const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
-  const [graphEditorOpen, setGraphEditorOpen] = useState(false)
   const [graphData, setGraphData] = useState([
-    { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 80,  typical: 60  },
-    { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 200, typical: 80  },
-    { date: insightsData.viewsTimeData[0]?.date ?? "28 Jan", thisReel: 170, typical: 90  },
-    { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 320, typical: 75  },
-    { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 290, typical: 100 },
-    { date: insightsData.viewsTimeData[1]?.date ?? "29 Jan", thisReel: 400, typical: 85  },
-    { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 370, typical: 95  },
-    { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 460, typical: 80  },
-    { date: insightsData.viewsTimeData[2]?.date ?? "30 Jan", thisReel: 481, typical: 110 },
+    { date: "28 Jan", thisReel: 80,  typical: 60  },
+    { date: "28 Jan", thisReel: 200, typical: 80  },
+    { date: "28 Jan", thisReel: 170, typical: 90  },
+    { date: "29 Jan", thisReel: 320, typical: 75  },
+    { date: "29 Jan", thisReel: 290, typical: 100 },
+    { date: "29 Jan", thisReel: 400, typical: 85  },
+    { date: "30 Jan", thisReel: 370, typical: 95  },
+    { date: "30 Jan", thisReel: 460, typical: 80  },
+    { date: "30 Jan", thisReel: 481, typical: 110 },
   ])
-  const [tempGraphData, setTempGraphData] = useState(graphData)
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimateCharts(true), 300)
@@ -251,17 +531,10 @@ export default function ReelInsights() {
           >
             {thumbnailImage ? (
               <>
-                <img
-                  src={thumbnailImage || "/placeholder.svg"}
-                  alt="Reel thumbnail"
-                  className="w-full h-full object-cover"
-                />
+                <img src={thumbnailImage || "/placeholder.svg"} alt="Reel thumbnail" className="w-full h-full object-cover" />
                 <button
                   className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setThumbnailImage(null)
-                  }}
+                  onClick={(e) => { e.stopPropagation(); setThumbnailImage(null) }}
                 >
                   <CloseIcon />
                 </button>
@@ -272,22 +545,11 @@ export default function ReelInsights() {
                 <span className="text-[10px] mt-2 font-medium">Upload thumbnail</span>
               </div>
             )}
-            <input
-              ref={thumbnailInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleThumbnailUpload}
-            />
+            <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
           </div>
 
-          {/* Title and Date */}
-          <h2 className="text-[13px] font-semibold mt-4 text-center px-4 leading-tight">
-            {insightsData.caption}
-          </h2>
-          <p className="text-[10px] text-zinc-500 mt-1">
-            {insightsData.publishDate} · Duration {insightsData.videoDuration}
-          </p>
+          <h2 className="text-[13px] font-semibold mt-4 text-center px-4 leading-tight">{insightsData.caption}</h2>
+          <p className="text-[10px] text-zinc-500 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
 
           {/* Engagement Stats Row */}
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
@@ -314,7 +576,6 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Section Divider */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Overview Section */}
@@ -334,9 +595,7 @@ export default function ReelInsights() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[13px]">Interactions</span>
-              <span className="text-[13px]">
-                {insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}
-              </span>
+              <span className="text-[13px]">{insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[13px]">Profile activity</span>
@@ -345,7 +604,6 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Section Divider */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Views Section with Donut */}
@@ -354,11 +612,7 @@ export default function ReelInsights() {
             <h3 className="text-[18px] font-semibold">Views</h3>
             <InfoIcon />
           </div>
-          <DonutChart
-            value={insightsData.views.toString()}
-            label="Views"
-            followerPercent={insightsData.followerPercentage}
-          />
+          <DonutChart value={insightsData.views.toString()} label="Views" followerPercent={insightsData.followerPercentage} />
           <div className="space-y-3 mt-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
@@ -377,10 +631,9 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Thin Divider */}
         <div className="h-px bg-zinc-800 mx-4" />
 
-                {/* Views Over Time */}
+        {/* Views Over Time — DRAGGABLE GRAPH */}
         <section className="px-4 py-5">
           <h4 className="text-[15px] font-semibold mb-4">Views over time</h4>
           <div className="flex gap-2 mb-5">
@@ -399,63 +652,8 @@ export default function ReelInsights() {
             ))}
           </div>
 
-          {/* Clickable graph area */}
-          <div
-            className="h-44 -ml-2 cursor-pointer"
-            onClick={() => {
-              setTempGraphData(graphData)
-              setGraphEditorOpen(true)
-            }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={graphData}
-                margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
-              >
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#71717a", fontSize: 10 }}
-                  dy={8}
-                  interval={2}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#71717a", fontSize: 10 }}
-                  tickFormatter={(value) =>
-                    value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value.toString()
-                  }
-                  ticks={yAxisTicks}
-                  domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
-                  width={38}
-                />
-                <Line
-                  type="natural"
-                  dataKey="thisReel"
-                  stroke="#D946EF"
-                  strokeWidth={4}
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#D946EF" }}
-                  animationDuration={1500}
-                />
-                <Line
-                  type="natural"
-                  dataKey="typical"
-                  stroke="#a1a1aa"
-                  strokeWidth={3.5}
-                  strokeDasharray="5 4"
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#a1a1aa" }}
-                  animationDuration={1500}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Click to edit hint */}
-          <p className="text-center text-[10px] text-zinc-600 mt-1">Tap graph to edit data</p>
+          {/* Draggable Graph */}
+          <DraggableGraph data={graphData} onChange={setGraphData} />
 
           {/* Legend */}
           <div className="flex items-center justify-center gap-6 mt-2">
@@ -468,146 +666,8 @@ export default function ReelInsights() {
               <span className="text-[11px] text-zinc-500">Your typical reel views</span>
             </div>
           </div>
-
-          {/* Graph Editor Popup */}
-          {graphEditorOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
-                
-                {/* Popup Header */}
-                <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800">
-                  <h3 className="text-[15px] font-semibold">Edit Graph Data</h3>
-                  <button
-                    onClick={() => setGraphEditorOpen(false)}
-                    className="text-zinc-400 hover:text-white"
-                  >
-                    <CloseIcon />
-                  </button>
-                </div>
-
-                {/* Y Axis Editor */}
-                <div className="px-4 py-4 border-b border-zinc-800">
-                  <p className="text-[12px] font-semibold text-zinc-400 mb-3">Y Axis Levels (3 values)</p>
-                  <div className="flex gap-2">
-                    {yAxisTicks.map((tick, i) => (
-                      <div key={i} className="flex-1">
-                        <p className="text-[10px] text-zinc-500 mb-1">Level {i + 1}</p>
-                        <input
-                          type="number"
-                          value={tick}
-                          onChange={(e) => {
-                            const newTicks = [...yAxisTicks]
-                            newTicks[i] = parseInt(e.target.value) || 0
-                            // Update yAxisTicks — we use a workaround via state
-                            setTempGraphData([...tempGraphData])
-                          }}
-                          className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[12px] text-white text-center"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Data Points Editor */}
-                <div className="px-4 py-4">
-                  <p className="text-[12px] font-semibold text-zinc-400 mb-3">Data Points</p>
-
-                  {/* Column Headers */}
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    <p className="text-[10px] text-zinc-500 text-center">Date</p>
-                    <p className="text-[10px] text-fuchsia-400 text-center">This Reel</p>
-                    <p className="text-[10px] text-zinc-400 text-center">Typical</p>
-                  </div>
-
-                  {/* Each data point row */}
-                  <div className="space-y-2">
-                    {tempGraphData.map((point, index) => (
-                      <div key={index} className="grid grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          value={point.date}
-                          onChange={(e) => {
-                            const updated = [...tempGraphData]
-                            updated[index] = { ...updated[index], date: e.target.value }
-                            setTempGraphData(updated)
-                          }}
-                          className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1.5 text-[11px] text-white text-center"
-                          placeholder="28 Jan"
-                        />
-                        <input
-                          type="number"
-                          value={point.thisReel}
-                          onChange={(e) => {
-                            const updated = [...tempGraphData]
-                            updated[index] = { ...updated[index], thisReel: parseInt(e.target.value) || 0 }
-                            setTempGraphData(updated)
-                          }}
-                          className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-fuchsia-400 text-center"
-                          placeholder="0"
-                        />
-                        <input
-                          type="number"
-                          value={point.typical}
-                          onChange={(e) => {
-                            const updated = [...tempGraphData]
-                            updated[index] = { ...updated[index], typical: parseInt(e.target.value) || 0 }
-                            setTempGraphData(updated)
-                          }}
-                          className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 text-center"
-                          placeholder="0"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Add / Remove row buttons */}
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => {
-                        setTempGraphData([...tempGraphData, { date: "", thisReel: 0, typical: 0 }])
-                      }}
-                      className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
-                    >
-                      + Add Row
-                    </button>
-                    {tempGraphData.length > 2 && (
-                      <button
-                        onClick={() => {
-                          setTempGraphData(tempGraphData.slice(0, -1))
-                        }}
-                        className="flex-1 py-2 rounded-lg border border-zinc-700 text-[11px] text-zinc-400 hover:text-red-400 hover:border-red-800 transition-colors"
-                      >
-                        − Remove Last
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Save / Cancel buttons */}
-                <div className="flex gap-2 px-4 pb-4">
-                  <button
-                    onClick={() => setGraphEditorOpen(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-[13px] text-zinc-400 hover:bg-zinc-900 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      setGraphData(tempGraphData)
-                      setGraphEditorOpen(false)
-                    }}
-                    className="flex-1 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-700 text-[13px] text-white font-medium transition-colors"
-                  >
-                    Save
-                  </button>
-                </div>
-
-              </div>
-            </div>
-          )}
         </section>
 
-        {/* Thin Divider */}
         <div className="h-px bg-zinc-800 mx-4" />
 
         {/* Top Sources of Views */}
@@ -630,7 +690,6 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Section Divider */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Interactions Section */}
@@ -685,7 +744,6 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Section Divider */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Profile Activity Section */}
@@ -703,7 +761,6 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Section Divider */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Retention Section */}
@@ -722,10 +779,7 @@ export default function ReelInsights() {
                   <img src={retentionThumbnail || "/placeholder.svg"} alt="Retention thumbnail" className="w-full h-full object-cover" />
                   <button
                     className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setRetentionThumbnail(null)
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setRetentionThumbnail(null) }}
                   >
                     <CloseIcon />
                   </button>
@@ -791,7 +845,6 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Section Divider */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Audience Section */}
