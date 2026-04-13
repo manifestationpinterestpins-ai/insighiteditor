@@ -38,20 +38,20 @@ const HeartIcon = ({ filled = false }: { filled?: boolean }) => (
 )
 
 const CommentIcon = ({ filled = false }: { filled?: boolean }) => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
   </svg>
 )
 
 const SendIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="22" y1="2" x2="11" y2="13" />
     <polygon points="22 2 15 22 11 13 2 9 22 2" />
   </svg>
 )
 
 const RepostIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 1l4 4-4 4" />
     <path d="M3 11V9a4 4 0 0 1 4-4h14" />
     <path d="M7 23l-4-4 4-4" />
@@ -60,7 +60,7 @@ const RepostIcon = () => (
 )
 
 const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
   </svg>
 )
@@ -268,7 +268,7 @@ export default function ReelInsights() {
         {/* Thumbnail Section */}
         <section className="flex flex-col items-center pt-4 pb-6 px-4">
           <div
-            className="relative w-[160px] h-[250px] bg-zinc-900 rounded-lg overflow-hidden cursor-pointer group shadow-lg"
+            className="relative w-[130px] h-[200px] bg-zinc-900 rounded-lg overflow-hidden cursor-pointer group shadow-lg"
             onClick={() => thumbnailInputRef.current?.click()}
           >
             {thumbnailImage ? (
@@ -304,10 +304,10 @@ export default function ReelInsights() {
           </div>
 
           {/* Title and Date */}
-          <h2 className="text-[17px] font-semibold mt-5 text-center px-4 leading-tight">
+          <h2 className="text-[14px] font-semibold mt-4 text-center px-4 leading-tight">
             {insightsData.caption}
           </h2>
-          <p className="text-[13px] text-zinc-500 mt-1">
+          <p className="text-[11px] text-zinc-500 mt-1">
             {insightsData.publishDate} · Duration {insightsData.videoDuration}
           </p>
 
