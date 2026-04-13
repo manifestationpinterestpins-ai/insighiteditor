@@ -1305,10 +1305,10 @@ export default function ReelInsights() {
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-[18px] font-semibold">Profile activity</h3>
+              <h3 className="text-[17px] font-semibold">Profile activity</h3>
               <InfoIcon />
             </div>
-            <span className="text-[18px] font-semibold">{profileActivity}</span>
+            <span className="text-[17px] font-semibold">{profileActivity}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[13px] text-zinc-300">Follows</span>
