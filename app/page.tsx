@@ -720,8 +720,12 @@ export default function ReelInsights() {
   const [locked, setLocked] = useState(false)
   const [accountsReachedLabel, setAccountsReachedLabel] = useState("Accounts reached")
   const [profileActivity, setProfileActivity] = useState(0)
-  const thumbnailInputRef = useRef<HTMLInputElement>(null)
+    const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
+  const [overviewVisible, setOverviewVisible] = useState(false)
+  const [countedViews, setCountedViews] = useState(0)
+  const [countedInteractions, setCountedInteractions] = useState(0)
+  const overviewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -739,6 +743,41 @@ export default function ReelInsights() {
     setLocked(newLocked)
     try { localStorage.setItem("site-locked", JSON.stringify(newLocked)) } catch {}
   }
+
+  // Overview entry animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !overviewVisible) {
+          setOverviewVisible(true)
+
+          // Count up views
+          const viewTarget = insightsData.views
+          const interactionTarget = insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks
+          const duration = 1000
+          const steps = 40
+          const interval = duration / steps
+
+          let step = 0
+          const timer = setInterval(() => {
+            step++
+            const progress = step / steps
+            const eased = 1 - Math.pow(1 - progress, 3)
+            setCountedViews(Math.round(viewTarget * eased))
+            setCountedInteractions(Math.round(interactionTarget * eased))
+            if (step >= steps) {
+              setCountedViews(viewTarget)
+              setCountedInteractions(interactionTarget)
+              clearInterval(timer)
+            }
+          }, interval)
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (overviewRef.current) observer.observe(overviewRef.current)
+    return () => observer.disconnect()
+  }, [insightsData, overviewVisible])
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
@@ -1062,26 +1101,77 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Overview */}
-        <section className="px-4 py-5">
-          <div className="flex items-center gap-2 mb-5">
+                {/* Overview — with entry animation */}
+        <section
+          ref={overviewRef}
+          className="px-4 py-5"
+          style={{
+            opacity: overviewVisible ? 1 : 0,
+            transform: overviewVisible ? "translateY(0)" : "translateY(20px)",
+            transition: "opacity 0.5s ease, transform 0.5s ease",
+          }}
+        >
+          <div
+            className="flex items-center gap-2 mb-5"
+            style={{
+              opacity: overviewVisible ? 1 : 0,
+              transform: overviewVisible ? "translateY(0)" : "translateY(10px)",
+              transition: "opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s",
+            }}
+          >
             <h3 className="text-[18px] font-semibold">Overview</h3>
             <InfoIcon />
           </div>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            {/* Views row */}
+            <div
+              className="flex justify-between items-center"
+              style={{
+                opacity: overviewVisible ? 1 : 0,
+                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
+                transition: "opacity 0.4s ease 0.15s, transform 0.4s ease 0.15s",
+              }}
+            >
               <span className="text-[13px] text-zinc-300">Views</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.views}</span>
+              <span className="text-[13px] text-zinc-300">
+                {overviewVisible ? countedViews.toLocaleString("en-IN") : "0"}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            {/* Watch time row */}
+            <div
+              className="flex justify-between items-center"
+              style={{
+                opacity: overviewVisible ? 1 : 0,
+                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
+                transition: "opacity 0.4s ease 0.25s, transform 0.4s ease 0.25s",
+              }}
+            >
               <span className="text-[13px] text-zinc-300">Watch time</span>
               <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
             </div>
-            <div className="flex justify-between items-center">
+            {/* Interactions row */}
+            <div
+              className="flex justify-between items-center"
+              style={{
+                opacity: overviewVisible ? 1 : 0,
+                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
+                transition: "opacity 0.4s ease 0.35s, transform 0.4s ease 0.35s",
+              }}
+            >
               <span className="text-[13px] text-zinc-300">Interactions</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks}</span>
+              <span className="text-[13px] text-zinc-300">
+                {overviewVisible ? countedInteractions.toLocaleString("en-IN") : "0"}
+              </span>
             </div>
-            <div className="flex justify-between items-center">
+            {/* Profile activity row */}
+            <div
+              className="flex justify-between items-center"
+              style={{
+                opacity: overviewVisible ? 1 : 0,
+                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
+                transition: "opacity 0.4s ease 0.45s, transform 0.4s ease 0.45s",
+              }}
+            >
               <span className="text-[13px] text-zinc-300">Profile activity</span>
               <InlineEditor
                 value={profileActivity}
