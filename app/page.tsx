@@ -722,10 +722,8 @@ export default function ReelInsights() {
   const [profileActivity, setProfileActivity] = useState(0)
     const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
-  const [overviewVisible, setOverviewVisible] = useState(false)
-  const [countedViews, setCountedViews] = useState(0)
-  const [countedInteractions, setCountedInteractions] = useState(0)
-  const overviewRef = useRef<HTMLDivElement>(null)
+  const [pageLoaded, setPageLoaded] = useState(false)
+const overviewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -745,39 +743,11 @@ export default function ReelInsights() {
   }
 
   // Overview entry animation
+    // Page load slide-in animation
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !overviewVisible) {
-          setOverviewVisible(true)
-
-          // Count up views
-          const viewTarget = insightsData.views
-          const interactionTarget = insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks
-          const duration = 1000
-          const steps = 40
-          const interval = duration / steps
-
-          let step = 0
-          const timer = setInterval(() => {
-            step++
-            const progress = step / steps
-            const eased = 1 - Math.pow(1 - progress, 3)
-            setCountedViews(Math.round(viewTarget * eased))
-            setCountedInteractions(Math.round(interactionTarget * eased))
-            if (step >= steps) {
-              setCountedViews(viewTarget)
-              setCountedInteractions(interactionTarget)
-              clearInterval(timer)
-            }
-          }, interval)
-        }
-      },
-      { threshold: 0.3 }
-    )
-    if (overviewRef.current) observer.observe(overviewRef.current)
-    return () => observer.disconnect()
-  }, [insightsData, overviewVisible])
+    const timer = setTimeout(() => setPageLoaded(true), 50)
+    return () => clearTimeout(timer)
+  }, [])
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
@@ -1042,8 +1012,8 @@ export default function ReelInsights() {
     )
   }
 
-  return (
-    <div className="min-h-screen text-white font-sans antialiased" style={{ backgroundColor: BG }}>
+    return (
+    <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden" style={{ backgroundColor: BG }}>
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-sm border-b border-zinc-900" style={{ backgroundColor: BG + "f5" }}>
         <div className="flex items-center justify-between px-4 h-[52px]">
@@ -1059,7 +1029,13 @@ export default function ReelInsights() {
         </div>
       </header>
 
-      <main className="pb-12">
+            <main
+        className="pb-12"
+        style={{
+          transform: pageLoaded ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 350ms ease-out",
+        }}
+      >
         {/* Thumbnail Section */}
         <section className="flex flex-col items-center pt-4 pb-6 px-4">
           <div
@@ -1101,77 +1077,30 @@ export default function ReelInsights() {
 
         <div className="h-[6px] bg-zinc-900" />
 
-                {/* Overview — with entry animation */}
-        <section
-          ref={overviewRef}
-          className="px-4 py-5"
-          style={{
-            opacity: overviewVisible ? 1 : 0,
-            transform: overviewVisible ? "translateY(0)" : "translateY(20px)",
-            transition: "opacity 0.5s ease, transform 0.5s ease",
-          }}
-        >
-          <div
-            className="flex items-center gap-2 mb-5"
-            style={{
-              opacity: overviewVisible ? 1 : 0,
-              transform: overviewVisible ? "translateY(0)" : "translateY(10px)",
-              transition: "opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s",
-            }}
-          >
+                        {/* Overview */}
+        <section ref={overviewRef} className="px-4 py-5">
+          <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Overview</h3>
             <InfoIcon />
           </div>
           <div className="space-y-4">
-            {/* Views row */}
-            <div
-              className="flex justify-between items-center"
-              style={{
-                opacity: overviewVisible ? 1 : 0,
-                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
-                transition: "opacity 0.4s ease 0.15s, transform 0.4s ease 0.15s",
-              }}
-            >
+            <div className="flex justify-between items-center">
               <span className="text-[13px] text-zinc-300">Views</span>
               <span className="text-[13px] text-zinc-300">
-                {overviewVisible ? countedViews.toLocaleString("en-IN") : "0"}
+                {insightsData.views.toLocaleString("en-IN")}
               </span>
             </div>
-            {/* Watch time row */}
-            <div
-              className="flex justify-between items-center"
-              style={{
-                opacity: overviewVisible ? 1 : 0,
-                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
-                transition: "opacity 0.4s ease 0.25s, transform 0.4s ease 0.25s",
-              }}
-            >
+            <div className="flex justify-between items-center">
               <span className="text-[13px] text-zinc-300">Watch time</span>
               <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
             </div>
-            {/* Interactions row */}
-            <div
-              className="flex justify-between items-center"
-              style={{
-                opacity: overviewVisible ? 1 : 0,
-                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
-                transition: "opacity 0.4s ease 0.35s, transform 0.4s ease 0.35s",
-              }}
-            >
+            <div className="flex justify-between items-center">
               <span className="text-[13px] text-zinc-300">Interactions</span>
               <span className="text-[13px] text-zinc-300">
-                {overviewVisible ? countedInteractions.toLocaleString("en-IN") : "0"}
+                {(insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks).toLocaleString("en-IN")}
               </span>
             </div>
-            {/* Profile activity row */}
-            <div
-              className="flex justify-between items-center"
-              style={{
-                opacity: overviewVisible ? 1 : 0,
-                transform: overviewVisible ? "translateY(0)" : "translateY(12px)",
-                transition: "opacity 0.4s ease 0.45s, transform 0.4s ease 0.45s",
-              }}
-            >
+            <div className="flex justify-between items-center">
               <span className="text-[13px] text-zinc-300">Profile activity</span>
               <InlineEditor
                 value={profileActivity}
