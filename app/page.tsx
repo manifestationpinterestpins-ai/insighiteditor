@@ -1423,7 +1423,6 @@ export default function ReelInsights() {
           </button>
         </section>
 
-        <div className="h-8" />
       </main>
 
       <InsightEditorModal
