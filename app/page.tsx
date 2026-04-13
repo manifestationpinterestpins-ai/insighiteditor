@@ -764,6 +764,7 @@ export default function ReelInsights() {
   const [overviewVisible, setOverviewVisible] = useState(false)
   const overviewRef = useRef<HTMLDivElement>(null)
   const overviewTriggeredRef = useRef(false)
+const [animationKey, setAnimationKey] = useState(0)
 
   // Counting numbers
   const interactionsTarget = insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks
@@ -787,7 +788,7 @@ export default function ReelInsights() {
     try { localStorage.setItem("site-locked", JSON.stringify(newLocked)) } catch {}
   }
 
-  // Trigger overview animation when section enters viewport — once only
+    // Trigger overview animation when section enters viewport — once only
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -801,6 +802,12 @@ export default function ReelInsights() {
     if (overviewRef.current) observer.observe(overviewRef.current)
     return () => observer.disconnect()
   }, [])
+
+  const replayOverviewAnimation = () => {
+    setOverviewVisible(false)
+    setAnimationKey(prev => prev + 1)
+    setTimeout(() => setOverviewVisible(true), 30)
+  }
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
@@ -1121,7 +1128,8 @@ export default function ReelInsights() {
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Overview — fade+slide with staggered rows and counting numbers */}
-        <section
+                <section
+          key={animationKey}
           ref={overviewRef}
           className="px-4 py-5"
           style={{
@@ -1131,9 +1139,14 @@ export default function ReelInsights() {
             willChange: "opacity, transform",
           }}
         >
-          <div className="flex items-center gap-2 mb-5" style={overviewRowStyle(0)}>
+                    <div className="flex items-center gap-2 mb-5" style={overviewRowStyle(0)}>
             <h3 className="text-[18px] font-semibold">Overview</h3>
-            <InfoIcon />
+            <button
+              onClick={replayOverviewAnimation}
+              className="focus:outline-none active:opacity-60 transition-opacity"
+            >
+              <InfoIcon />
+            </button>
           </div>
 
           <div className="space-y-4">
