@@ -246,7 +246,7 @@ export default function ReelInsights() {
   <button className="p-1 -ml-1 active:opacity-60 transition-opacity">
     <ChevronLeftIcon />
   </button>
-  <h1 className="text-[17px] font-semibold flex-1 ml-3">Reel insights</h1>
+  <h1 className="text-[17px] font-semibold flex-1 ml-3">   Reel insights</h1>
   <button 
     className="p-1 -mr-1 active:opacity-60 transition-opacity"
     onClick={() => setEditorOpen(true)}
