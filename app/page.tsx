@@ -720,10 +720,13 @@ export default function ReelInsights() {
   const [locked, setLocked] = useState(false)
   const [accountsReachedLabel, setAccountsReachedLabel] = useState("Accounts reached")
   const [profileActivity, setProfileActivity] = useState(0)
-    const thumbnailInputRef = useRef<HTMLInputElement>(null)
+  const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
-  const [pageLoaded, setPageLoaded] = useState(false)
-const overviewRef = useRef<HTMLDivElement>(null)
+
+  // Overview animation state
+  const [overviewVisible, setOverviewVisible] = useState(false)
+  const [overviewRowsReady, setOverviewRowsReady] = useState(false)
+  const overviewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -742,12 +745,22 @@ const overviewRef = useRef<HTMLDivElement>(null)
     try { localStorage.setItem("site-locked", JSON.stringify(newLocked)) } catch {}
   }
 
-  // Overview entry animation
-    // Page load slide-in animation
+  // Overview section slide-in animation via IntersectionObserver
   useEffect(() => {
-    const timer = setTimeout(() => setPageLoaded(true), 50)
-    return () => clearTimeout(timer)
-  }, [])
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !overviewVisible) {
+          setOverviewVisible(true)
+          // Slight delay so section itself starts animating first, then rows follow
+          const rowTimer = setTimeout(() => setOverviewRowsReady(true), 60)
+          return () => clearTimeout(rowTimer)
+        }
+      },
+      { threshold: 0.2 }
+    )
+    if (overviewRef.current) observer.observe(overviewRef.current)
+    return () => observer.disconnect()
+  }, [overviewVisible])
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80,  typical: 60  },
@@ -902,8 +915,8 @@ const overviewRef = useRef<HTMLDivElement>(null)
     }
   }
 
-  // ===== UPDATED DONUT CHART with GAP between segments =====
-    const DonutChart = ({
+  // ===== DONUT CHART =====
+  const DonutChart = ({
     value,
     label,
     followerPercent,
@@ -931,20 +944,12 @@ const overviewRef = useRef<HTMLDivElement>(null)
     const followerDash = Math.max(0, followerFull - gap) * progress
     const nonFollowerDash = Math.max(0, nonFollowerFull - gap) * progress
 
-    // Half gap offset so gap is centered between segments
     const halfGap = gap / 2
 
     return (
       <div className="relative flex items-center justify-center py-6">
         <svg width="260" height="260" className="transform -rotate-90">
-          {/* Background ring */}
-          <circle
-            cx="130" cy="130" r={radius}
-            fill="none"
-            stroke="#1e2028"
-            strokeWidth={strokeWidth}
-          />
-          {/* Non-followers segment (purple) — starts with half gap offset */}
+          <circle cx="130" cy="130" r={radius} fill="none" stroke="#1e2028" strokeWidth={strokeWidth} />
           <circle
             cx="130" cy="130" r={radius}
             fill="none"
@@ -955,7 +960,6 @@ const overviewRef = useRef<HTMLDivElement>(null)
             strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
           />
-          {/* Followers segment (pink) — starts after non-followers + gap */}
           <circle
             cx="130" cy="130" r={radius}
             fill="none"
@@ -995,7 +999,6 @@ const overviewRef = useRef<HTMLDivElement>(null)
       }
     }, [animateCharts, percentage, delay])
 
-    // Updated colors to match new brand colors
     const colorStyles: Record<string, string> = {
       magenta: "#d63bcd",
       violet: "#7639f6",
@@ -1012,7 +1015,29 @@ const overviewRef = useRef<HTMLDivElement>(null)
     )
   }
 
-    return (
+  // Overview row items for staggered animation
+  const overviewRows = [
+    {
+      label: "Views",
+      value: insightsData.views.toLocaleString("en-IN"),
+    },
+    {
+      label: "Watch time",
+      value: insightsData.watchTime,
+    },
+    {
+      label: "Interactions",
+      value: (
+        insightsData.likes +
+        insightsData.comments +
+        insightsData.shares +
+        insightsData.reposts +
+        insightsData.bookmarks
+      ).toLocaleString("en-IN"),
+    },
+  ]
+
+  return (
     <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden" style={{ backgroundColor: BG }}>
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-sm border-b border-zinc-900" style={{ backgroundColor: BG + "f5" }}>
@@ -1029,13 +1054,7 @@ const overviewRef = useRef<HTMLDivElement>(null)
         </div>
       </header>
 
-            <main
-        className="pb-12"
-        style={{
-          transform: pageLoaded ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 350ms ease-out",
-        }}
-      >
+      <main className="pb-12">
         {/* Thumbnail Section */}
         <section className="flex flex-col items-center pt-4 pb-6 px-4">
           <div
@@ -1077,30 +1096,47 @@ const overviewRef = useRef<HTMLDivElement>(null)
 
         <div className="h-[6px] bg-zinc-900" />
 
-                        {/* Overview */}
-        <section ref={overviewRef} className="px-4 py-5">
+        {/* Overview — section-based left→right pan with staggered rows */}
+        <section
+          ref={overviewRef}
+          className="px-4 py-5"
+          style={{
+            transform: overviewVisible ? "translateX(0)" : "translateX(-30px)",
+            transition: "transform 300ms ease-out",
+            willChange: "transform",
+          }}
+        >
           <div className="flex items-center gap-2 mb-5">
             <h3 className="text-[18px] font-semibold">Overview</h3>
             <InfoIcon />
           </div>
+
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-[13px] text-zinc-300">Views</span>
-              <span className="text-[13px] text-zinc-300">
-                {insightsData.views.toLocaleString("en-IN")}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[13px] text-zinc-300">Watch time</span>
-              <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[13px] text-zinc-300">Interactions</span>
-              <span className="text-[13px] text-zinc-300">
-                {(insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks).toLocaleString("en-IN")}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
+            {/* Staggered rows: Views, Watch time, Interactions */}
+            {overviewRows.map((row, i) => (
+              <div
+                key={row.label}
+                className="flex justify-between items-center"
+                style={{
+                  transform: overviewRowsReady ? "translateX(0)" : "translateX(-30px)",
+                  transition: `transform 300ms ease-out ${i * 120}ms`,
+                  willChange: "transform",
+                }}
+              >
+                <span className="text-[13px] text-zinc-300">{row.label}</span>
+                <span className="text-[13px] text-zinc-300">{row.value}</span>
+              </div>
+            ))}
+
+            {/* Profile activity row — staggered last */}
+            <div
+              className="flex justify-between items-center"
+              style={{
+                transform: overviewRowsReady ? "translateX(0)" : "translateX(-30px)",
+                transition: `transform 300ms ease-out ${3 * 120}ms`,
+                willChange: "transform",
+              }}
+            >
               <span className="text-[13px] text-zinc-300">Profile activity</span>
               <InlineEditor
                 value={profileActivity}
@@ -1425,7 +1461,6 @@ const overviewRef = useRef<HTMLDivElement>(null)
           )}
         </section>
 
-        {/* Thick divider before Ad section */}
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Ad / Boost This Reel Section */}
@@ -1433,7 +1468,7 @@ const overviewRef = useRef<HTMLDivElement>(null)
           <h3 className="text-[18px] font-semibold mb-4">Ad</h3>
           <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
             <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center">
                 <BoostIcon />
               </div>
               <span className="text-[14px] text-white font-medium">Boost this Reel</span>
@@ -1441,7 +1476,6 @@ const overviewRef = useRef<HTMLDivElement>(null)
             <ChevronRightIcon />
           </button>
         </section>
-
       </main>
 
       <InsightEditorModal
