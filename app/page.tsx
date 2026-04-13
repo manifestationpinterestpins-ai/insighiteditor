@@ -894,7 +894,7 @@ export default function ReelInsights() {
   }
 
   // ===== UPDATED DONUT CHART with GAP between segments =====
-  const DonutChart = ({
+    const DonutChart = ({
     value,
     label,
     followerPercent,
@@ -905,10 +905,9 @@ export default function ReelInsights() {
   }) => {
     const [progress, setProgress] = useState(0)
     const radius = 110
-    const strokeWidth = 14
+    const strokeWidth = 16
     const circumference = 2 * Math.PI * radius
-    // Gap between segments in px (on the circle)
-    const gap = 8
+    const gap = 12
 
     useEffect(() => {
       if (animateCharts) {
@@ -917,12 +916,14 @@ export default function ReelInsights() {
       }
     }, [animateCharts])
 
-    const followerArc = (followerPercent / 100) * circumference * progress
-    const nonFollowerArc = ((100 - followerPercent) / 100) * circumference * progress
+    const followerFull = (followerPercent / 100) * circumference
+    const nonFollowerFull = ((100 - followerPercent) / 100) * circumference
 
-    // Subtract gap from each segment so there's visible space between them
-    const followerDash = Math.max(0, followerArc - gap)
-    const nonFollowerDash = Math.max(0, nonFollowerArc - gap)
+    const followerDash = Math.max(0, followerFull - gap) * progress
+    const nonFollowerDash = Math.max(0, nonFollowerFull - gap) * progress
+
+    // Half gap offset so gap is centered between segments
+    const halfGap = gap / 2
 
     return (
       <div className="relative flex items-center justify-center py-6">
@@ -934,30 +935,30 @@ export default function ReelInsights() {
             stroke="#1e2028"
             strokeWidth={strokeWidth}
           />
-          {/* Non-followers segment (purple) — drawn first (starts at 0) */}
+          {/* Non-followers segment (purple) — starts with half gap offset */}
           <circle
             cx="130" cy="130" r={radius}
             fill="none"
             stroke="#7639f6"
             strokeWidth={strokeWidth}
             strokeDasharray={`${nonFollowerDash} ${circumference}`}
-            strokeDashoffset={0}
+            strokeDashoffset={-halfGap}
             strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
           />
-          {/* Followers segment (pink) — offset by nonFollowerArc to start after it */}
+          {/* Followers segment (pink) — starts after non-followers + gap */}
           <circle
             cx="130" cy="130" r={radius}
             fill="none"
             stroke="#d63bcd"
             strokeWidth={strokeWidth}
             strokeDasharray={`${followerDash} ${circumference}`}
-            strokeDashoffset={-(nonFollowerArc)}
+            strokeDashoffset={-(nonFollowerFull + halfGap)}
             strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
           />
         </svg>
-                <div className="absolute flex flex-col items-center justify-center">
+        <div className="absolute flex flex-col items-center justify-center">
           <span className="text-xs text-zinc-400 tracking-wide">{label}</span>
           <span className="text-[38px] font-semibold text-white tracking-tight">
             {Number(value).toLocaleString("en-IN")}
@@ -1304,10 +1305,10 @@ export default function ReelInsights() {
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-[15px] font-semibold">Profile activity</h3>
+              <h3 className="text-[18px] font-semibold">Profile activity</h3>
               <InfoIcon />
             </div>
-            <span className="text-[15px] font-semibold">{profileActivity}</span>
+            <span className="text-[18px] font-semibold">{profileActivity}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[13px] text-zinc-300">Follows</span>
