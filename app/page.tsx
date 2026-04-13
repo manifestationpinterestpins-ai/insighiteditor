@@ -796,9 +796,7 @@ export default function ReelInsights() {
         <div className="h-8" />
       </main>
 
-      {/* iOS Home Indicator */}
-      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 w-[134px] h-[5px] bg-white/90 rounded-full" />
-
+    
       {/* Insight Editor Modal */}
       <InsightEditorModal
         open={editorOpen}
