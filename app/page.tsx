@@ -66,8 +66,12 @@ const BookmarkIcon = () => (
 )
 
 const InfoIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" aria-label="Info" class="x1lliihq x1n2onr6 x5n08af" viewBox="0 0 24 24"><circle cx="12.001" cy="12.005" r="10.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><circle cx="11.819" cy="7.709" r="1.25"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.569 16.777h2.863M10.569 11.05H12v5.727"/></svg>
-
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-zinc-500">
+    <circle cx="12.001" cy="12.005" r="10.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+    <circle cx="11.819" cy="7.709" r="1.25"/>
+    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.569 16.777h2.863M10.569 11.05H12v5.727"/>
+  </svg>
+)
 const PlayIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <polygon points="5 3 19 12 5 21 5 3" fill="white" fillOpacity="0.9" stroke="none" />
