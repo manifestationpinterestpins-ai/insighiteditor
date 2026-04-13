@@ -17,8 +17,8 @@ import { InsightsData } from "@/lib/insights-state"
 
 // Custom Icons matching Instagram exactly
 const ChevronLeftIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M14 6L8 12L14 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
 
