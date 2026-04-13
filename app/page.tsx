@@ -372,7 +372,7 @@ export default function ReelInsights() {
               <button
                 key={filter}
                 onClick={() => setViewsFilter(filter)}
-                className={`px-4 py-[9px] rounded-lg text-[11px] font-medium transition-all duration-200 ${
+                className={`px-4 py-[9px] rounded-full text-[11px] font-medium transition-all duration-200 ${
                   viewsFilter === filter
                     ? "bg-zinc-800 text-white"
                     : "bg-transparent text-zinc-400 border border-zinc-800"
@@ -382,27 +382,64 @@ export default function ReelInsights() {
               </button>
             ))}
           </div>
-          <div className="h-44 -ml-2">
+                    <div className="h-44 -ml-2">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={insightsData.viewsTimeData}>
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 10 }} dy={8} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 10 }} tickFormatter={(value) => value >= 1000 ? `${value / 1000}K` : value.toString()} domain={[0, 3000]} ticks={[0, 1500, 3000]} width={35} />
-                <Line type="monotone" dataKey="thisReel" stroke="#D946EF" strokeWidth={2.5} dot={false} animationDuration={1500} />
-                <Line type="monotone" dataKey="typical" stroke="#52525b" strokeWidth={2} strokeDasharray="6 6" dot={false} animationDuration={1500} />
+              <LineChart
+                data={insightsData.viewsTimeData}
+                margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+              >
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#71717a", fontSize: 10 }}
+                  dy={8}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#71717a", fontSize: 10 }}
+                  tickFormatter={(value) =>
+                    value >= 1000 ? `${value / 1000}K` : value.toString()
+                  }
+                  domain={[0, Math.max(...insightsData.viewsTimeData.map(d => Math.max(d.thisReel, d.typical))) * 1.2]}
+                  width={35}
+                />
+                {/* This reel - bright pink, more engaging, natural curve */}
+                <Line
+                  type="monotone"
+                  dataKey="thisReel"
+                  stroke="#D946EF"
+                  strokeWidth={3}
+                  dot={{ fill: "#D946EF", r: 3, strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: "#D946EF" }}
+                  animationDuration={1500}
+                />
+                {/* Typical reel - bright grey, smooth natural curve, dashed */}
+                <Line
+                  type="natural"
+                  dataKey="typical"
+                  stroke="#a1a1aa"
+                  strokeWidth={2}
+                  strokeDasharray="5 4"
+                  dot={false}
+                  animationDuration={1500}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
+
+          {/* Legend */}
           <div className="flex items-center justify-center gap-6 mt-3">
             <div className="flex items-center gap-2">
               <div className="w-[6px] h-[6px] rounded-full bg-fuchsia-500" />
               <span className="text-[11px] text-zinc-500">This reel</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-[6px] h-[6px] rounded-full bg-zinc-600" />
+              <div className="w-[6px] h-[6px] rounded-full bg-zinc-400" />
               <span className="text-[11px] text-zinc-500">Your typical reel views</span>
             </div>
-          </div>
-        </section>
+          </div>        </section>
 
         {/* Thin Divider */}
         <div className="h-px bg-zinc-800 mx-4" />
