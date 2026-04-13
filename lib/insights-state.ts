@@ -101,8 +101,7 @@ export const DEFAULT_INSIGHTS_DATA: InsightsData = {
     { name: "55-64", percentage: 0.5 },
     { name: "65+", percentage: 0.7 },
   ],
-  viewsTimeData: [
-      viewsTimeData: [
+    viewsTimeData: [
     { date: "28 Jan", thisReel: 100, typical: 60 },
     { date: "29 Jan", thisReel: 300, typical: 80 },
     { date: "30 Jan", thisReel: 481, typical: 110 },
