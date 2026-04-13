@@ -203,34 +203,28 @@ const DraggableGraph = ({
         {/* This reel line (pink) */}
         <path d={buildPath(thisReelPoints)} fill="none" stroke="#D946EF" strokeWidth={4} strokeLinecap="round" />
 
-        {/* Draggable points for thisReel */}
+                {/* Invisible drag handles for thisReel — no visible dots */}
         {data.map((d, i) => (
           <circle
             key={`tr-${i}`}
             cx={getX(i)}
             cy={getY(d.thisReel)}
-            r={dragging?.index === i && dragging?.line === "thisReel" ? 10 : 7}
-            fill="#D946EF"
-            fillOpacity={0.9}
-            stroke="#000"
-            strokeWidth={1.5}
+            r={18}
+            fill="transparent"
             className="cursor-grab active:cursor-grabbing"
             onPointerDown={(e) => handlePointerDown(i, "thisReel", e)}
             style={{ touchAction: "none" }}
           />
         ))}
 
-        {/* Draggable points for typical */}
+        {/* Invisible drag handles for typical — no visible dots */}
         {data.map((d, i) => (
           <circle
             key={`tp-${i}`}
             cx={getX(i)}
             cy={getY(d.typical)}
-            r={dragging?.index === i && dragging?.line === "typical" ? 10 : 7}
-            fill="#a1a1aa"
-            fillOpacity={0.9}
-            stroke="#000"
-            strokeWidth={1.5}
+            r={18}
+            fill="transparent"
             className="cursor-grab active:cursor-grabbing"
             onPointerDown={(e) => handlePointerDown(i, "typical", e)}
             style={{ touchAction: "none" }}
