@@ -1,14 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState, useRef, useEffect, useCallback } from "react"
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-} from "recharts"
+import { useState, useRef, useEffect } from "react"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
 import { InsightsData } from "@/lib/insights-state"
@@ -480,12 +473,7 @@ const DraggableGraph = ({
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [visibleCount, setVisibleCount] = useState(data.length)
-  const [draggingEndpoint, setDraggingEndpoint] = useState(false)
-
-  useEffect(() => {
-    setVisibleCount(data.length)
-  }, [])
+  const [visibleCount, setVisibleCount] = useState(Math.ceil(data.length / 2))
 
   useEffect(() => {
     try {
@@ -540,17 +528,6 @@ const DraggableGraph = ({
     return Math.max(0, Math.min(graphMax, Math.round(val)))
   }
 
-  const getIndexFromX = (clientX: number) => {
-    const svg = svgRef.current
-    if (!svg) return data.length - 1
-    const rect = svg.getBoundingClientRect()
-    const svgX = ((clientX - rect.left) / rect.width) * width
-    const relX = svgX - padding.left
-    const ratio = relX / chartW
-    const index = Math.round(ratio * (data.length - 1))
-    return Math.max(1, Math.min(data.length, index + 1))
-  }
-
   const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
@@ -576,35 +553,17 @@ const DraggableGraph = ({
     setDragging({ index, line })
   }
 
-  const handleEndpointPointerDown = (e: React.PointerEvent) => {
-    if (locked) return
-    e.preventDefault()
-    e.stopPropagation()
-    const target = e.target as Element
-    target.setPointerCapture?.(e.pointerId)
-    setDraggingEndpoint(true)
-  }
-
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (locked) return
+    if (!dragging || locked) return
     e.preventDefault()
-
-    if (dragging) {
-      const val = getValFromY(e.clientY)
-      const newData = [...data]
-      newData[dragging.index] = { ...newData[dragging.index], [dragging.line]: val }
-      onChange(newData)
-    }
-
-    if (draggingEndpoint) {
-      const newCount = getIndexFromX(e.clientX)
-      setVisibleCount(newCount)
-    }
+    const val = getValFromY(e.clientY)
+    const newData = [...data]
+    newData[dragging.index] = { ...newData[dragging.index], [dragging.line]: val }
+    onChange(newData)
   }
 
   const handlePointerUp = () => {
     setDragging(null)
-    setDraggingEndpoint(false)
   }
 
   const xPositions = [
@@ -628,8 +587,6 @@ const DraggableGraph = ({
     }
     setEditValue("")
   }
-
-  const thisReelEndpoint = visibleThisReel[visibleThisReel.length - 1]
 
   return (
     <div className="relative">
@@ -691,24 +648,11 @@ const DraggableGraph = ({
           </text>
         ))}
 
-        {/* Typical dashed line — full length, not adjustable */}
-        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={5} strokeDasharray="6 10" strokeLinecap="round" />
+        {/* Typical dashed line — full length */}
+        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
 
-        {/* This reel pink line — adjustable length */}
-        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={5.5} strokeLinecap="round" />
-
-        {/* Invisible endpoint drag handle for pink line length */}
-        {thisReelEndpoint && !locked && (
-          <circle
-            cx={thisReelEndpoint.x}
-            cy={thisReelEndpoint.y}
-            r={20}
-            fill="transparent"
-            className="cursor-ew-resize"
-            onPointerDown={handleEndpointPointerDown}
-            style={{ touchAction: "none" }}
-          />
-        )}
+        {/* This reel pink line — half length, no endpoint dot */}
+        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
 
         {/* Up/down drag handles for visible pink line points */}
         {data.slice(0, visibleCount).map((d, i) => (
@@ -1022,68 +966,6 @@ export default function ReelInsights() {
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
-
-  useEffect(() => {
-    const alreadySaved = localStorage.getItem("instagram-reel-insights")
-    if (alreadySaved) return
-
-    const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
-    const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
-    const skipTypical = parseFloat((Math.random() * (30 - 20) + 20).toFixed(1))
-
-    const us = parseFloat((Math.random() * (45 - 35) + 35).toFixed(1))
-    const uk = parseFloat((Math.random() * (28 - 20) + 20).toFixed(1))
-    const ca = parseFloat((Math.random() * (18 - 12) + 12).toFixed(1))
-    const au = parseFloat((Math.random() * (13 - 8) + 8).toFixed(1))
-    const de = parseFloat((Math.random() * (7 - 4) + 4).toFixed(1))
-    const others = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
-
-    const a1824 = parseFloat((Math.random() * (48 - 35) + 35).toFixed(1))
-    const a2534 = parseFloat((Math.random() * (42 - 30) + 30).toFixed(1))
-    const a3544 = parseFloat((Math.random() * (10 - 5) + 5).toFixed(1))
-    const a4554 = parseFloat((Math.random() * (4 - 1) + 1).toFixed(1))
-    const a5564 = parseFloat((Math.random() * (1.5 - 0.3) + 0.3).toFixed(1))
-    const a65 = parseFloat((Math.random() * (1 - 0.2) + 0.2).toFixed(1))
-    const a1317 = parseFloat((100 - a1824 - a2534 - a3544 - a4554 - a5564 - a65).toFixed(1))
-
-    const reels = parseFloat((Math.random() * (85 - 75) + 75).toFixed(1))
-    const explore = parseFloat((Math.random() * (15 - 10) + 10).toFixed(1))
-    const remaining = parseFloat((100 - reels - explore).toFixed(1))
-    const stories = parseFloat((remaining * 0.55).toFixed(1))
-    const profile = parseFloat((remaining * 0.28).toFixed(1))
-    const feed = parseFloat((remaining - stories - profile).toFixed(1))
-
-    saveData({
-      ...insightsData,
-      followerPercentage: followerPct,
-      skipRateThis: skipThis,
-      skipRateTypical: skipTypical,
-      countryData: [
-        { name: "United States", percentage: us },
-        { name: "United Kingdom", percentage: uk },
-        { name: "Canada", percentage: ca },
-        { name: "Australia", percentage: au },
-        { name: "Germany", percentage: de },
-        { name: "Others", percentage: Math.max(0, others) },
-      ],
-      ageData: [
-        { name: "13-17", percentage: Math.max(0, a1317) },
-        { name: "18-24", percentage: a1824 },
-        { name: "25-34", percentage: a2534 },
-        { name: "35-44", percentage: a3544 },
-        { name: "45-54", percentage: a4554 },
-        { name: "55-64", percentage: a5564 },
-        { name: "65+", percentage: a65 },
-      ],
-      sourcesData: [
-        { name: "Reels tab", percentage: reels },
-        { name: "Explore", percentage: explore },
-        { name: "Stories", percentage: stories },
-        { name: "Profile", percentage: profile },
-        { name: "Feed", percentage: Math.max(0, feed) },
-      ],
-    })
-  }, [])
 
   useEffect(() => {
     try {
