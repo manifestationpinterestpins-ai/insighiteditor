@@ -1495,7 +1495,7 @@ const [animationKey, setAnimationKey] = useState(0)
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-[7px] h-[7px] rounded-full bg-red-500 shrink-0" />
-              <span className="text-[13px] text-zinc-400">Not monetising</span>
+              <span className="text-[13px] text-zinc-300">Not monetising</span>
             </div>
             <button className="text-[13px] text-blue-500 font-medium active:opacity-60 transition-opacity">
               Add payment details
