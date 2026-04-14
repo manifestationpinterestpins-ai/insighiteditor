@@ -1483,6 +1483,26 @@ const [animationKey, setAnimationKey] = useState(0)
           )}
         </section>
 
+                <div className="h-[6px] bg-zinc-900" />
+
+        {/* Monetisation */}
+        <section className="px-4 py-5">
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="text-[18px] font-semibold">Monetisation</h3>
+            <InfoIcon />
+          </div>
+          <h4 className="text-[15px] font-semibold mb-4">Gifts</h4>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-[7px] h-[7px] rounded-full bg-red-500 shrink-0" />
+              <span className="text-[13px] text-zinc-400">Not monetising</span>
+            </div>
+            <button className="text-[13px] text-blue-500 font-medium active:opacity-60 transition-opacity">
+              Add payment details
+            </button>
+          </div>
+        </section>
+
         <div className="h-[6px] bg-zinc-900" />
 
         {/* Ad / Boost This Reel Section */}
