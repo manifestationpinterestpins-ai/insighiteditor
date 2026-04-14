@@ -1239,7 +1239,7 @@ export default function ReelInsights() {
           </div>
 
           <h2 className="text-[13px] font-semibold mt-4 text-center px-4 leading-tight">{insightsData.caption}</h2>
-          <p className="text-[13px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
+          <p className="text-[11px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
 
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
             <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] font-medium">{insightsData.likes}</span></div>
