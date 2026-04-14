@@ -964,8 +964,69 @@ export default function ReelInsights() {
     { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
 
-  const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
+    const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
+
+  // Randomize percentage data on every page load
+  useEffect(() => {
+    const followerPct = parseFloat((Math.random() * (10 - 2) + 2).toFixed(1))
+
+    const reels = parseFloat((Math.random() * (85 - 75) + 75).toFixed(1))
+    const explore = parseFloat((Math.random() * (15 - 10) + 10).toFixed(1))
+    const remaining = parseFloat((100 - reels - explore).toFixed(1))
+    const stories = parseFloat((remaining * 0.55).toFixed(1))
+    const profile = parseFloat((remaining * 0.28).toFixed(1))
+    const feed = parseFloat((remaining - stories - profile).toFixed(1))
+
+    const skipThis = parseFloat((Math.random() * (20 - 10) + 10).toFixed(1))
+    const skipTypical = parseFloat((Math.random() * (30 - 20) + 20).toFixed(1))
+
+    const us = parseFloat((Math.random() * (45 - 35) + 35).toFixed(1))
+    const uk = parseFloat((Math.random() * (28 - 20) + 20).toFixed(1))
+    const ca = parseFloat((Math.random() * (18 - 12) + 12).toFixed(1))
+    const au = parseFloat((Math.random() * (13 - 8) + 8).toFixed(1))
+    const de = parseFloat((Math.random() * (7 - 4) + 4).toFixed(1))
+    const others = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
+
+    const a1824 = parseFloat((Math.random() * (48 - 35) + 35).toFixed(1))
+    const a2534 = parseFloat((Math.random() * (42 - 30) + 30).toFixed(1))
+    const a3544 = parseFloat((Math.random() * (10 - 5) + 5).toFixed(1))
+    const a4554 = parseFloat((Math.random() * (4 - 1) + 1).toFixed(1))
+    const a5564 = parseFloat((Math.random() * (1.5 - 0.3) + 0.3).toFixed(1))
+    const a65 = parseFloat((Math.random() * (1 - 0.2) + 0.2).toFixed(1))
+    const a1317 = parseFloat((100 - a1824 - a2534 - a3544 - a4554 - a5564 - a65).toFixed(1))
+
+    saveData({
+      ...insightsData,
+      followerPercentage: followerPct,
+      skipRateThis: skipThis,
+      skipRateTypical: skipTypical,
+      countryData: [
+        { name: insightsData.countryData[0]?.name ?? "United States", percentage: us },
+        { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk },
+        { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca },
+        { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au },
+        { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de },
+        { name: insightsData.countryData[5]?.name ?? "Others", percentage: Math.max(0, others) },
+      ],
+      ageData: [
+        { name: "13-17", percentage: Math.max(0, a1317) },
+        { name: "18-24", percentage: a1824 },
+        { name: "25-34", percentage: a2534 },
+        { name: "35-44", percentage: a3544 },
+        { name: "45-54", percentage: a4554 },
+        { name: "55-64", percentage: a5564 },
+        { name: "65+", percentage: a65 },
+      ],
+      sourcesData: [
+        { name: "Reels tab", percentage: reels },
+        { name: "Explore", percentage: explore },
+        { name: "Stories", percentage: stories },
+        { name: "Profile", percentage: profile },
+        { name: "Feed", percentage: Math.max(0, feed) },
+      ],
+    })
+  }, [])
 
   useEffect(() => {
     try {
