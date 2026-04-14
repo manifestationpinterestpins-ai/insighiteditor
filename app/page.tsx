@@ -494,6 +494,14 @@ const DraggableGraph = ({
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // visibleCount controls how many points are shown (line length)
+  const [visibleCount, setVisibleCount] = useState(data.length)
+  const [draggingEndpoint, setDraggingEndpoint] = useState<"thisReel" | "typical" | null>(null)
+
+  useEffect(() => {
+    setVisibleCount(data.length)
+  }, [])
+
   useEffect(() => {
     try {
       const savedX = localStorage.getItem("graph-xlabels")
@@ -547,6 +555,18 @@ const DraggableGraph = ({
     return Math.max(0, Math.min(graphMax, Math.round(val)))
   }
 
+  // Convert clientX to nearest data index
+  const getIndexFromX = (clientX: number) => {
+    const svg = svgRef.current
+    if (!svg) return data.length - 1
+    const rect = svg.getBoundingClientRect()
+    const svgX = ((clientX - rect.left) / rect.width) * width
+    const relX = svgX - padding.left
+    const ratio = relX / chartW
+    const index = Math.round(ratio * (data.length - 1))
+    return Math.max(1, Math.min(data.length, index + 1))
+  }
+
   const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
@@ -560,6 +580,11 @@ const DraggableGraph = ({
     return d
   }
 
+  // Sliced visible data
+  const visibleThisReel = data.slice(0, visibleCount).map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
+  const visibleTypical = data.slice(0, visibleCount).map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
+
+  // All points for drag handles (full data)
   const thisReelPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
   const typicalPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
 
@@ -572,16 +597,36 @@ const DraggableGraph = ({
     setDragging({ index, line })
   }
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragging || locked) return
+  const handleEndpointPointerDown = (line: "thisReel" | "typical", e: React.PointerEvent) => {
+    if (locked) return
     e.preventDefault()
-    const val = getValFromY(e.clientY)
-    const newData = [...data]
-    newData[dragging.index] = { ...newData[dragging.index], [dragging.line]: val }
-    onChange(newData)
+    e.stopPropagation()
+    const target = e.target as Element
+    target.setPointerCapture?.(e.pointerId)
+    setDraggingEndpoint(line)
   }
 
-  const handlePointerUp = () => setDragging(null)
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (locked) return
+    e.preventDefault()
+
+    if (dragging) {
+      const val = getValFromY(e.clientY)
+      const newData = [...data]
+      newData[dragging.index] = { ...newData[dragging.index], [dragging.line]: val }
+      onChange(newData)
+    }
+
+    if (draggingEndpoint) {
+      const newCount = getIndexFromX(e.clientX)
+      setVisibleCount(newCount)
+    }
+  }
+
+  const handlePointerUp = () => {
+    setDragging(null)
+    setDraggingEndpoint(null)
+  }
 
   const xPositions = [
     padding.left,
@@ -604,6 +649,10 @@ const DraggableGraph = ({
     }
     setEditValue("")
   }
+
+  // Endpoint positions for drag handles
+  const thisReelEndpoint = visibleThisReel[visibleThisReel.length - 1]
+  const typicalEndpoint = visibleTypical[visibleTypical.length - 1]
 
   return (
     <div className="relative">
@@ -629,10 +678,12 @@ const DraggableGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
+        {/* Grid lines */}
         {yPositions.map((yPos, i) => (
           <line key={`yline-${i}`} x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos} stroke="#27272a" strokeWidth={1} />
         ))}
 
+        {/* Y labels */}
         {yLabels.map((label, i) => (
           <text
             key={`ylabel-${i}`}
@@ -649,6 +700,7 @@ const DraggableGraph = ({
           </text>
         ))}
 
+        {/* X labels */}
         {xLabels.map((label, i) => (
           <text
             key={`xlabel-${i}`}
@@ -665,13 +717,74 @@ const DraggableGraph = ({
           </text>
         ))}
 
-        <path d={buildPath(typicalPoints)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
-        <path d={buildPath(thisReelPoints)} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
+        {/* Typical dashed line (visible portion) */}
+        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
 
-        {data.map((d, i) => (
+        {/* This reel pink line (visible portion) */}
+        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
+
+        {/* Endpoint drag handle — typical (grey) */}
+        {typicalEndpoint && !locked && (
+          <g>
+            <circle
+              cx={typicalEndpoint.x}
+              cy={typicalEndpoint.y}
+              r={7}
+              fill="#a1a1aa"
+              stroke="#0c0f14"
+              strokeWidth={2}
+              className="cursor-ew-resize"
+              onPointerDown={(e) => handleEndpointPointerDown("typical", e)}
+              style={{ touchAction: "none" }}
+            />
+            {/* Left right arrows hint */}
+            <text
+              x={typicalEndpoint.x}
+              y={typicalEndpoint.y + 4}
+              textAnchor="middle"
+              fill="#0c0f14"
+              fontSize="8"
+              fontFamily="Roboto, sans-serif"
+              style={{ pointerEvents: "none", userSelect: "none" }}
+            >
+              ↔
+            </text>
+          </g>
+        )}
+
+        {/* Endpoint drag handle — this reel (pink) */}
+        {thisReelEndpoint && !locked && (
+          <g>
+            <circle
+              cx={thisReelEndpoint.x}
+              cy={thisReelEndpoint.y}
+              r={7}
+              fill="#d63bcd"
+              stroke="#0c0f14"
+              strokeWidth={2}
+              className="cursor-ew-resize"
+              onPointerDown={(e) => handleEndpointPointerDown("thisReel", e)}
+              style={{ touchAction: "none" }}
+            />
+            <text
+              x={thisReelEndpoint.x}
+              y={thisReelEndpoint.y + 4}
+              textAnchor="middle"
+              fill="#0c0f14"
+              fontSize="8"
+              fontFamily="Roboto, sans-serif"
+              style={{ pointerEvents: "none", userSelect: "none" }}
+            >
+              ↔
+            </text>
+          </g>
+        )}
+
+        {/* Invisible drag circles for moving points up/down (only visible points) */}
+        {data.slice(0, visibleCount).map((d, i) => (
           <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />
         ))}
-        {data.map((d, i) => (
+        {data.slice(0, visibleCount).map((d, i) => (
           <circle key={`tp-${i}`} cx={getX(i)} cy={getY(d.typical)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "typical", e)} style={{ touchAction: "none" }} />
         ))}
       </svg>
