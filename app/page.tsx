@@ -43,7 +43,7 @@ const CommentIcon = () => (
 )
 
 const SendIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
     <path fill="white" stroke="#0c0f14" strokeLinejoin="round" strokeWidth="2"
       d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/>
     <path fill="none" stroke="#0c0f14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
