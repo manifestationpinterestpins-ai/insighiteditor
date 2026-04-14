@@ -1,3 +1,6 @@
+Here is the full updated `app/page.tsx`:
+
+```tsx
 "use client"
 
 import React from "react"
@@ -31,7 +34,7 @@ const MoreVerticalIcon = () => (
 )
 
 const HeartIcon = () => (
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="white" stroke="none">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="none">
     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
   </svg>
 )
@@ -43,7 +46,7 @@ const CommentIcon = () => (
 )
 
 const SendIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
     <path fill="white" stroke="#0c0f14" strokeLinejoin="round" strokeWidth="2"
       d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/>
     <path fill="none" stroke="#0c0f14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
@@ -58,7 +61,7 @@ const RepostIcon = () => (
 )
 
 const BookmarkIcon = () => (
-  <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
     <path fill="white" d="m20 21-8-7.56L4 21V3h16z"/>
   </svg>
 )
@@ -116,7 +119,6 @@ const BottomSheet = ({
         onClose()
       }
     }
-    // Small delay so the opening touch doesn't immediately close it
     const timer = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside)
       document.addEventListener("touchstart", handleClickOutside as any)
@@ -130,7 +132,6 @@ const BottomSheet = ({
 
   return (
     <>
-      {/* Overlay */}
       <div
         className="fixed inset-0 z-[60] transition-opacity duration-300"
         style={{
@@ -139,8 +140,6 @@ const BottomSheet = ({
         }}
         onClick={onClose}
       />
-
-      {/* Sheet */}
       <div
         ref={sheetRef}
         className="fixed left-0 right-0 bottom-0 z-[70] transition-transform duration-300 ease-out"
@@ -148,14 +147,10 @@ const BottomSheet = ({
           transform: open ? "translateY(0)" : "translateY(100%)",
         }}
       >
-        {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl">
           <div className="w-10 h-1 bg-zinc-600 rounded-full" />
         </div>
-
-        {/* Content */}
         <div className="bg-[#1c1c1e] px-4 pb-8">
-          {/* Boost this reel */}
           <button
             className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
             onClick={onClose}
@@ -173,11 +168,7 @@ const BottomSheet = ({
               <path d="m9 18 6-6-6-6"/>
             </svg>
           </button>
-
-          {/* Divider */}
           <div className="h-px bg-zinc-800" />
-
-          {/* View on Edits */}
           <button
             className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
             onClick={onClose}
@@ -196,8 +187,6 @@ const BottomSheet = ({
             </svg>
           </button>
         </div>
-
-        {/* Safe area for bottom notch phones */}
         <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
       </div>
     </>
@@ -494,9 +483,8 @@ const DraggableGraph = ({
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // visibleCount controls how many points are shown (line length)
   const [visibleCount, setVisibleCount] = useState(data.length)
-  const [draggingEndpoint, setDraggingEndpoint] = useState<"thisReel" | "typical" | null>(null)
+  const [draggingEndpoint, setDraggingEndpoint] = useState(false)
 
   useEffect(() => {
     setVisibleCount(data.length)
@@ -555,7 +543,6 @@ const DraggableGraph = ({
     return Math.max(0, Math.min(graphMax, Math.round(val)))
   }
 
-  // Convert clientX to nearest data index
   const getIndexFromX = (clientX: number) => {
     const svg = svgRef.current
     if (!svg) return data.length - 1
@@ -580,13 +567,8 @@ const DraggableGraph = ({
     return d
   }
 
-  // Sliced visible data
   const visibleThisReel = data.slice(0, visibleCount).map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
-  const visibleTypical = data.slice(0, visibleCount).map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
-
-  // All points for drag handles (full data)
-  const thisReelPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
-  const typicalPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
+  const visibleTypical = data.map((d, i) => ({ x: getX(i), y: getY(d.typical) }))
 
   const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
@@ -597,13 +579,13 @@ const DraggableGraph = ({
     setDragging({ index, line })
   }
 
-  const handleEndpointPointerDown = (line: "thisReel" | "typical", e: React.PointerEvent) => {
+  const handleEndpointPointerDown = (e: React.PointerEvent) => {
     if (locked) return
     e.preventDefault()
     e.stopPropagation()
     const target = e.target as Element
     target.setPointerCapture?.(e.pointerId)
-    setDraggingEndpoint(line)
+    setDraggingEndpoint(true)
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -625,7 +607,7 @@ const DraggableGraph = ({
 
   const handlePointerUp = () => {
     setDragging(null)
-    setDraggingEndpoint(null)
+    setDraggingEndpoint(false)
   }
 
   const xPositions = [
@@ -650,9 +632,7 @@ const DraggableGraph = ({
     setEditValue("")
   }
 
-  // Endpoint positions for drag handles
   const thisReelEndpoint = visibleThisReel[visibleThisReel.length - 1]
-  const typicalEndpoint = visibleTypical[visibleTypical.length - 1]
 
   return (
     <div className="relative">
@@ -678,12 +658,10 @@ const DraggableGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Grid lines */}
         {yPositions.map((yPos, i) => (
           <line key={`yline-${i}`} x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos} stroke="#27272a" strokeWidth={1} />
         ))}
 
-        {/* Y labels */}
         {yLabels.map((label, i) => (
           <text
             key={`ylabel-${i}`}
@@ -700,7 +678,6 @@ const DraggableGraph = ({
           </text>
         ))}
 
-        {/* X labels */}
         {xLabels.map((label, i) => (
           <text
             key={`xlabel-${i}`}
@@ -717,75 +694,51 @@ const DraggableGraph = ({
           </text>
         ))}
 
-        {/* Typical dashed line (visible portion) */}
-        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
+        {/* Typical dashed line — full length, not adjustable */}
+        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={5} strokeDasharray="6 10" strokeLinecap="round" />
 
-        {/* This reel pink line (visible portion) */}
-        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
+        {/* This reel pink line — adjustable length */}
+        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={5.5} strokeLinecap="round" />
 
-        {/* Endpoint drag handle — typical (grey) */}
-        {typicalEndpoint && !locked && (
-          <g>
-            <circle
-              cx={typicalEndpoint.x}
-              cy={typicalEndpoint.y}
-              r={7}
-              fill="#a1a1aa"
-              stroke="#0c0f14"
-              strokeWidth={2}
-              className="cursor-ew-resize"
-              onPointerDown={(e) => handleEndpointPointerDown("typical", e)}
-              style={{ touchAction: "none" }}
-            />
-            {/* Left right arrows hint */}
-            <text
-              x={typicalEndpoint.x}
-              y={typicalEndpoint.y + 4}
-              textAnchor="middle"
-              fill="#0c0f14"
-              fontSize="8"
-              fontFamily="Roboto, sans-serif"
-              style={{ pointerEvents: "none", userSelect: "none" }}
-            >
-              ↔
-            </text>
-          </g>
-        )}
-
-        {/* Endpoint drag handle — this reel (pink) */}
+        {/* Invisible endpoint drag handle for pink line length */}
         {thisReelEndpoint && !locked && (
-          <g>
-            <circle
-              cx={thisReelEndpoint.x}
-              cy={thisReelEndpoint.y}
-              r={7}
-              fill="#d63bcd"
-              stroke="#0c0f14"
-              strokeWidth={2}
-              className="cursor-ew-resize"
-              onPointerDown={(e) => handleEndpointPointerDown("thisReel", e)}
-              style={{ touchAction: "none" }}
-            />
-            <text
-              x={thisReelEndpoint.x}
-              y={thisReelEndpoint.y + 4}
-              textAnchor="middle"
-              fill="#0c0f14"
-              fontSize="8"
-              fontFamily="Roboto, sans-serif"
-              style={{ pointerEvents: "none", userSelect: "none" }}
-            >
-              ↔
-            </text>
-          </g>
+          <circle
+            cx={thisReelEndpoint.x}
+            cy={thisReelEndpoint.y}
+            r={20}
+            fill="transparent"
+            className="cursor-ew-resize"
+            onPointerDown={handleEndpointPointerDown}
+            style={{ touchAction: "none" }}
+          />
         )}
 
-        {/* Invisible drag circles for moving points up/down (only visible points) */}
+        {/* Up/down drag handles for visible pink line points */}
         {data.slice(0, visibleCount).map((d, i) => (
-          <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />
+          <circle
+            key={`tr-${i}`}
+            cx={getX(i)}
+            cy={getY(d.thisReel)}
+            r={18}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={(e) => handlePointerDown(i, "thisReel", e)}
+            style={{ touchAction: "none" }}
+          />
         ))}
-        {data.slice(0, visibleCount).map((d, i) => (
-          <circle key={`tp-${i}`} cx={getX(i)} cy={getY(d.typical)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={(e) => handlePointerDown(i, "typical", e)} style={{ touchAction: "none" }} />
+
+        {/* Up/down drag handles for full typical line */}
+        {data.map((d, i) => (
+          <circle
+            key={`tp-${i}`}
+            cx={getX(i)}
+            cy={getY(d.typical)}
+            r={18}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={(e) => handlePointerDown(i, "typical", e)}
+            style={{ touchAction: "none" }}
+          />
         ))}
       </svg>
     </div>
@@ -973,10 +926,8 @@ function useCountUp(target: number, play: boolean, duration = 900, delay = 0): n
       return
     }
     let startTime: number | null = null
-    let started = false
 
     const delayTimer = setTimeout(() => {
-      started = true
       const animate = (timestamp: number) => {
         if (!startTime) startTime = timestamp
         const elapsed = timestamp - startTime
@@ -1014,13 +965,11 @@ export default function ReelInsights() {
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
 
-  // Overview animation state
   const [overviewVisible, setOverviewVisible] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
   const overviewRef = useRef<HTMLDivElement>(null)
   const overviewTriggeredRef = useRef(false)
-const [animationKey, setAnimationKey] = useState(0)
 
-  // Counting numbers
   const interactionsTarget = insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks
   const countedViews = useCountUp(insightsData.views, overviewVisible, 900, 150)
   const countedInteractions = useCountUp(interactionsTarget, overviewVisible, 900, 400)
@@ -1042,7 +991,6 @@ const [animationKey, setAnimationKey] = useState(0)
     try { localStorage.setItem("site-locked", JSON.stringify(newLocked)) } catch {}
   }
 
-    // Trigger overview animation when section enters viewport — once only
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1070,13 +1018,15 @@ const [animationKey, setAnimationKey] = useState(0)
     { date: "29 Jan", thisReel: 320, typical: 75  },
     { date: "29 Jan", thisReel: 290, typical: 100 },
     { date: "29 Jan", thisReel: 400, typical: 85  },
+    { date: "30 Jan", thisReel: 370, typical: 95  },
+    { date: "30 Jan", thisReel: 460, typical: 80  },
+    { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
   const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
 
-    useEffect(() => {
-    // Only run if no saved data exists yet (first ever visit)
+  useEffect(() => {
     const alreadySaved = localStorage.getItem("instagram-reel-insights")
     if (alreadySaved) return
 
@@ -1294,7 +1244,6 @@ const [animationKey, setAnimationKey] = useState(0)
     )
   }
 
-  // Overview row animation helper
   const overviewRowStyle = (index: number): React.CSSProperties => ({
     opacity: overviewVisible ? 1 : 0,
     transform: overviewVisible ? "translateY(0)" : "translateY(20px)",
@@ -1304,6 +1253,7 @@ const [animationKey, setAnimationKey] = useState(0)
 
   return (
     <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden" style={{ backgroundColor: BG }}>
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-sm border-b border-zinc-900" style={{ backgroundColor: BG + "f5" }}>
         <div className="flex items-center justify-between px-4 h-[52px]">
@@ -1311,7 +1261,7 @@ const [animationKey, setAnimationKey] = useState(0)
             <ChevronLeftIcon />
           </button>
           <h1 className="text-[17px] font-semibold flex-1 ml-5">Reel insights</h1>
-                    <LockMenu
+          <LockMenu
             locked={locked}
             onToggle={toggleLock}
             onOpenEditor={() => setEditorOpen(true)}
@@ -1349,7 +1299,7 @@ const [animationKey, setAnimationKey] = useState(0)
           </div>
 
           <h2 className="text-[13px] font-semibold mt-4 text-center px-4 leading-tight">{insightsData.caption}</h2>
-          <p className="text-[11px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
+          <p className="text-[13px] text-zinc-400 mt-1">{insightsData.publishDate} · Duration {insightsData.videoDuration}</p>
 
           <div className="flex items-center justify-between w-full max-w-[340px] mt-5 px-2">
             <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] font-medium">{insightsData.likes}</span></div>
@@ -1362,8 +1312,8 @@ const [animationKey, setAnimationKey] = useState(0)
 
         <div className="h-[6px] bg-zinc-900" />
 
-        {/* Overview — fade+slide with staggered rows and counting numbers */}
-                <section
+        {/* Overview */}
+        <section
           key={animationKey}
           ref={overviewRef}
           className="px-4 py-5"
@@ -1374,7 +1324,7 @@ const [animationKey, setAnimationKey] = useState(0)
             willChange: "opacity, transform",
           }}
         >
-                    <div className="flex items-center gap-2 mb-5" style={overviewRowStyle(0)}>
+          <div className="flex items-center gap-2 mb-5" style={overviewRowStyle(0)}>
             <h3 className="text-[18px] font-semibold">Overview</h3>
             <button
               onClick={replayOverviewAnimation}
@@ -1385,7 +1335,6 @@ const [animationKey, setAnimationKey] = useState(0)
           </div>
 
           <div className="space-y-4">
-            {/* Views */}
             <div className="flex justify-between items-center" style={overviewRowStyle(1)}>
               <span className="text-[13px] text-zinc-300">Views</span>
               <span className="text-[13px] text-zinc-300">
@@ -1393,13 +1342,11 @@ const [animationKey, setAnimationKey] = useState(0)
               </span>
             </div>
 
-            {/* Watch time */}
             <div className="flex justify-between items-center" style={overviewRowStyle(2)}>
               <span className="text-[13px] text-zinc-300">Watch time</span>
               <span className="text-[13px] text-zinc-300">{insightsData.watchTime}</span>
             </div>
 
-            {/* Interactions */}
             <div className="flex justify-between items-center" style={overviewRowStyle(3)}>
               <span className="text-[13px] text-zinc-300">Interactions</span>
               <span className="text-[13px] text-zinc-300">
@@ -1407,7 +1354,6 @@ const [animationKey, setAnimationKey] = useState(0)
               </span>
             </div>
 
-            {/* Profile activity */}
             <div className="flex justify-between items-center" style={overviewRowStyle(4)}>
               <span className="text-[13px] text-zinc-300">Profile activity</span>
               <InlineEditor
@@ -1733,7 +1679,7 @@ const [animationKey, setAnimationKey] = useState(0)
           )}
         </section>
 
-                <div className="h-[6px] bg-zinc-900" />
+        <div className="h-[6px] bg-zinc-900" />
 
         {/* Monetisation */}
         <section className="px-4 py-5">
@@ -1745,7 +1691,7 @@ const [animationKey, setAnimationKey] = useState(0)
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-[7px] h-[7px] rounded-full bg-red-500 shrink-0" />
-              <span className="text-[13px] text-zinc-300">Not monetising</span>
+              <span className="text-[13px] text-zinc-400">Not monetising</span>
             </div>
             <button className="text-[13px] text-blue-500 font-medium active:opacity-60 transition-opacity">
               Add payment details
@@ -1770,7 +1716,7 @@ const [animationKey, setAnimationKey] = useState(0)
         </section>
       </main>
 
-            <InsightEditorModal
+      <InsightEditorModal
         open={editorOpen}
         onOpenChange={setEditorOpen}
         data={insightsData}
@@ -1784,3 +1730,4 @@ const [animationKey, setAnimationKey] = useState(0)
     </div>
   )
 }
+```
