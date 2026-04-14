@@ -957,9 +957,6 @@ const [animationKey, setAnimationKey] = useState(0)
     { date: "29 Jan", thisReel: 320, typical: 75  },
     { date: "29 Jan", thisReel: 290, typical: 100 },
     { date: "29 Jan", thisReel: 400, typical: 85  },
-    { date: "30 Jan", thisReel: 370, typical: 95  },
-    { date: "30 Jan", thisReel: 460, typical: 80  },
-    { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
 
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
