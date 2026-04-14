@@ -1,5 +1,3 @@
-Here is the full updated `app/page.tsx`:
-
 ```tsx
 "use client"
 
