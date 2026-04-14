@@ -55,7 +55,7 @@ const RepostIcon = () => (
 )
 
 const BookmarkIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+  <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
     <path fill="white" d="m20 21-8-7.56L4 21V3h16z"/>
   </svg>
 )
