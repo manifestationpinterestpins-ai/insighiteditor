@@ -131,8 +131,24 @@ export const DEFAULT_INSIGHTS_DATA: InsightsData = {
     women: 71.5,
   },
 
-  countryData: randomCountryData(),
-  ageData: randomAgeData(),
+  countryData: [
+    { name: "United States", percentage: 38.4 },
+    { name: "United Kingdom", percentage: 23.1 },
+    { name: "Canada", percentage: 14.7 },
+    { name: "Australia", percentage: 10.2 },
+    { name: "Germany", percentage: 5.8 },
+    { name: "Others", percentage: 7.8 },
+  ],
+
+  ageData: [
+    { name: "13-17", percentage: 4.2 },
+    { name: "18-24", percentage: 41.3 },
+    { name: "25-34", percentage: 35.6 },
+    { name: "35-44", percentage: 11.2 },
+    { name: "45-54", percentage: 4.8 },
+    { name: "55-64", percentage: 1.8 },
+    { name: "65+", percentage: 1.1 },
+  ],
 
   viewsTimeData: [
     { date: "28 Jan", thisReel: 100, typical: 60 },
@@ -152,12 +168,19 @@ export const DEFAULT_INSIGHTS_DATA: InsightsData = {
     { time: "0:08", retention: 25 },
   ],
 
-  skipRateThis: rand(10, 20),
-  skipRateTypical: rand(20, 30),
+  skipRateThis: 14.3,
+  skipRateTypical: 24.7,
   watchTime: "2h 48m 21s",
   avgWatchTime: "21s",
 
-  sourcesData: randomSourcesData(),
+  sourcesData: [
+    { name: "Reels tab", percentage: 79.2 },
+    { name: "Explore", percentage: 12.4 },
+    { name: "Stories", percentage: 4.6 },
+    { name: "Profile", percentage: 2.3 },
+    { name: "Feed", percentage: 1.5 },
+  ],
+
   accountsReached: 2118,
 }
 
