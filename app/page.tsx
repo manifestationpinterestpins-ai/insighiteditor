@@ -99,18 +99,127 @@ const BoostIcon = () => (
   </svg>
 )
 
+// ===== BOTTOM SHEET =====
+const BottomSheet = ({
+  open,
+  onClose,
+}: {
+  open: boolean
+  onClose: () => void
+}) => {
+  const sheetRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
+        onClose()
+      }
+    }
+    // Small delay so the opening touch doesn't immediately close it
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("touchstart", handleClickOutside as any)
+    }, 100)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("touchstart", handleClickOutside as any)
+    }
+  }, [open, onClose])
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 z-[60] transition-opacity duration-300"
+        style={{
+          backgroundColor: open ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0)",
+          pointerEvents: open ? "auto" : "none",
+        }}
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <div
+        ref={sheetRef}
+        className="fixed left-0 right-0 bottom-0 z-[70] transition-transform duration-300 ease-out"
+        style={{
+          transform: open ? "translateY(0)" : "translateY(100%)",
+        }}
+      >
+        {/* Handle bar */}
+        <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl">
+          <div className="w-10 h-1 bg-zinc-600 rounded-full" />
+        </div>
+
+        {/* Content */}
+        <div className="bg-[#1c1c1e] px-4 pb-8">
+          {/* Boost this reel */}
+          <button
+            className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
+            onClick={onClose}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                </svg>
+              </div>
+              <span className="text-[15px] text-white font-normal">Boost this reel</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+
+          {/* Divider */}
+          <div className="h-px bg-zinc-800" />
+
+          {/* View on Edits */}
+          <button
+            className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
+            onClick={onClose}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9"/>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+              </div>
+              <span className="text-[15px] text-white font-normal">View on Edits</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Safe area for bottom notch phones */}
+        <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
+      </div>
+    </>
+  )
+}
+
 // ===== LOCK MENU =====
 const LockMenu = ({
   locked,
   onToggle,
   onOpenEditor,
+  onLongPress,
 }: {
   locked: boolean
   onToggle: () => void
   onOpenEditor: () => void
+  onLongPress: () => void
 }) => {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isLongPress = useRef(false)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -122,11 +231,40 @@ const LockMenu = ({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [open])
 
+  const handlePressStart = () => {
+    isLongPress.current = false
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true
+      onLongPress()
+    }, 500)
+  }
+
+  const handlePressEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+
+  const handleClick = () => {
+    if (isLongPress.current) {
+      isLongPress.current = false
+      return
+    }
+    setOpen((prev) => !prev)
+  }
+
   return (
     <div className="relative" ref={menuRef}>
       <button
-        className="p-1 -mr-1 active:opacity-60 transition-opacity"
-        onClick={() => setOpen((prev) => !prev)}
+        className="p-1 -mr-1 active:opacity-60 transition-opacity select-none"
+        onClick={handleClick}
+        onMouseDown={handlePressStart}
+        onMouseUp={handlePressEnd}
+        onMouseLeave={handlePressEnd}
+        onTouchStart={handlePressStart}
+        onTouchEnd={handlePressEnd}
+        onTouchCancel={handlePressEnd}
       >
         <MoreHorizontalIcon />
       </button>
@@ -756,6 +894,7 @@ export default function ReelInsights() {
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Gender")
   const [animateCharts, setAnimateCharts] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
   const [locked, setLocked] = useState(false)
   const [accountsReachedLabel, setAccountsReachedLabel] = useState("Accounts reached")
   const [profileActivity, setProfileActivity] = useState(0)
@@ -1062,10 +1201,11 @@ const [animationKey, setAnimationKey] = useState(0)
             <ChevronLeftIcon />
           </button>
           <h1 className="text-[17px] font-semibold flex-1 ml-5">Reel insights</h1>
-          <LockMenu
+                    <LockMenu
             locked={locked}
             onToggle={toggleLock}
             onOpenEditor={() => setEditorOpen(true)}
+            onLongPress={() => setBottomSheetOpen(true)}
           />
         </div>
       </header>
@@ -1520,11 +1660,16 @@ const [animationKey, setAnimationKey] = useState(0)
         </section>
       </main>
 
-      <InsightEditorModal
+            <InsightEditorModal
         open={editorOpen}
         onOpenChange={setEditorOpen}
         data={insightsData}
         onSave={handleEditorSave}
+      />
+
+      <BottomSheet
+        open={bottomSheetOpen}
+        onClose={() => setBottomSheetOpen(false)}
       />
     </div>
   )
