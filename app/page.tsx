@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React from "react" 
 import { useState, useRef, useEffect } from "react"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
