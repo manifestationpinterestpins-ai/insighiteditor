@@ -266,7 +266,7 @@ const LockMenu = ({
         onTouchEnd={handlePressEnd}
         onTouchCancel={handlePressEnd}
       >
-        <MoreHorizontalIcon />
+        <MoreVerticalIcon />
       </button>
 
       {open && (
