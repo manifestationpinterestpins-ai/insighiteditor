@@ -528,15 +528,11 @@ const DraggableGraph = ({
     return Math.max(0, Math.min(graphMax, Math.round(val)))
   }
 
-  const buildPath = (points: { x: number; y: number }[]) => {
+   const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1]
-      const curr = points[i]
-      const cpx1 = prev.x + (curr.x - prev.x) * 0.35
-      const cpx2 = prev.x + (curr.x - prev.x) * 0.65
-      d += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`
+      d += ` L ${points[i].x} ${points[i].y}`
     }
     return d
   }
@@ -729,15 +725,11 @@ const DraggableRetentionGraph = ({
     return Math.max(0, Math.min(100, Math.round(val)))
   }
 
-  const buildPath = (points: { x: number; y: number }[]) => {
+    const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1]
-      const curr = points[i]
-      const cpx1 = prev.x + (curr.x - prev.x) * 0.35
-      const cpx2 = prev.x + (curr.x - prev.x) * 0.65
-      d += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`
+      d += ` L ${points[i].x} ${points[i].y}`
     }
     return d
   }
