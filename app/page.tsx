@@ -529,7 +529,7 @@ const DraggableGraph = ({
   }
 
    const buildPath = (points: { x: number; y: number }[]) => {
-    if (points.length < 3) return ""
+    if (points.length < 5) return ""
     let d = `M ${points[0].x} ${points[0].y}`
     for (let i = 1; i < points.length; i++) {
       d += ` L ${points[i].x} ${points[i].y}`
