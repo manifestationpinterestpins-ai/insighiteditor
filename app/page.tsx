@@ -645,10 +645,10 @@ const DraggableGraph = ({
         ))}
 
         {/* Typical dashed line — full length */}
-        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={3.5} strokeDasharray="6 10" strokeLinecap="round" />
+        <path d={buildPath(visibleTypical)} fill="none" stroke="#a1a1aa" strokeWidth={5} strokeDasharray="6 10" strokeLinecap="round" />
 
         {/* This reel pink line — half length, no endpoint dot */}
-        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={4} strokeLinecap="round" />
+        <path d={buildPath(visibleThisReel)} fill="none" stroke="#d63bcd" strokeWidth={5.5} strokeLinecap="round" />
 
         {/* Up/down drag handles for visible pink line points */}
         {data.slice(0, visibleCount).map((d, i) => (
