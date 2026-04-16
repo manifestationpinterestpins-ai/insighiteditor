@@ -14,11 +14,19 @@ const BAR_BG = "#2a2d31"
 
 // ===== ICONS =====
 const ChevronLeftIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M73.4 297.4C60.9 309.9 60.9 330.2 73.4 342.7L233.4 502.7C245.9 515.2 266.2 515.2 278.7 502.7C291.2 490.2 291.2 469.9 278.7 457.4L173.3 352L544 352C561.7 352 576 337.7 576 320C576 302.3 561.7 288 544 288L173.3 288L278.7 182.6C291.2 170.1 291.2 149.8 278.7 137.3C266.2 124.8 245.9 124.8 233.4 137.3L73.4 297.3z"/></svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+  </svg>
 )
 const MoreVerticalIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
     <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+  </svg>
+)
+const HeaderBoostIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+    <polyline points="17 6 23 6 23 12"/>
   </svg>
 )
 const HeartIcon = () => (
@@ -78,8 +86,6 @@ const BoostIcon = () => (
     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
   </svg>
 )
-
-// "What affects your views" icons — updated
 const SkipRateIcon = () => (
   <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
     <circle cx="24" cy="24" r="18" stroke="white" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 6"/>
@@ -118,90 +124,55 @@ const CommentRateIcon = () => (
   </svg>
 )
 
-// ===== AUDIENCE ROW =====
+// ===== AUDIENCE ROW — rectangular bars =====
 const AudienceRow = ({
-  labelNode,
-  percentage,
-  barColor,
-  animateCharts,
-  delay = 0,
+  labelNode, percentage, barColor, animateCharts, delay = 0,
 }: {
-  labelNode: React.ReactNode
-  percentage: number
-  barColor: string
-  animateCharts: boolean
-  delay?: number
+  labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts: boolean; delay?: number
 }) => {
   const [width, setWidth] = useState(0)
   useEffect(() => {
-    if (animateCharts) {
-      const t = setTimeout(() => setWidth(percentage), delay)
-      return () => clearTimeout(t)
-    }
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
   }, [animateCharts, percentage, delay])
-
   return (
     <div className="mb-3.5">
       <div className="mb-1 text-[13px] text-white">{labelNode}</div>
       <div className="flex items-center gap-3">
-        <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-          <div
-            className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
-            style={{ width: `${width}%`, backgroundColor: barColor }}
-          />
+        <div className="flex-1 relative h-[10px] rounded-md overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+          <div className="absolute left-0 top-0 h-full rounded-md transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: barColor }} />
         </div>
-        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">
-          {percentage.toFixed(1)}%
-        </span>
+        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
       </div>
     </div>
   )
 }
 
-// ===== ANIMATED BAR (for gender) =====
+// ===== ANIMATED BAR — rectangular (gender) =====
 const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
   const [width, setWidth] = useState(0)
   useEffect(() => {
-    if (animateCharts) {
-      const t = setTimeout(() => setWidth(percentage), delay)
-      return () => clearTimeout(t)
-    }
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
   }, [animateCharts, percentage, delay])
   return (
-    <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-      <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
+    <div className="flex-1 relative h-[10px] rounded-md overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+      <div className="absolute left-0 top-0 h-full rounded-md transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
     </div>
   )
 }
 
-// ===== GENDER PERCENTAGE EDITOR (right side only) =====
+// ===== GENDER PERCENTAGE EDITOR =====
 const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave: (n: number) => void; locked: boolean }) => {
   const [editing, setEditing] = useState(false)
   const [val, setVal] = useState(value.toFixed(1))
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { setVal(value.toFixed(1)) }, [value])
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
-  const commit = () => {
-    const p = parseFloat(val)
-    if (!isNaN(p) && p >= 0 && p <= 100) onSave(p)
-    setEditing(false)
-  }
+  const commit = () => { const p = parseFloat(val); if (!isNaN(p) && p >= 0 && p <= 100) onSave(p); setEditing(false) }
   if (editing) return (
-    <input
-      ref={inputRef}
-      value={val}
-      onChange={e => setVal(e.target.value)}
-      onBlur={commit}
-      onKeyDown={e => { if (e.key === "Enter") commit() }}
-      className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-1 py-0.5 text-[13px] text-white text-center outline-none"
-      style={{ caretColor: PINK, width: 60 }}
-    />
+    <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-1 py-0.5 text-[13px] text-white text-center outline-none" style={{ caretColor: PINK, width: 60 }} />
   )
   return (
-    <span
-      className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`}
-      onClick={() => { if (!locked) setEditing(true) }}
-    >
+    <span className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) setEditing(true) }}>
       {value.toFixed(1)}%
     </span>
   )
@@ -386,15 +357,20 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   )
 }
 
-// ===== DRAGGABLE RETENTION GRAPH =====
+// ===== DRAGGABLE RETENTION GRAPH — dynamic duration from prop =====
 type RetentionPoint = { time: string; retention: number }
-const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPoint[]; onChange: (d: RetentionPoint[]) => void; locked: boolean }) => {
+const DraggableRetentionGraph = ({
+  data, onChange, locked, videoDuration,
+}: {
+  data: RetentionPoint[]; onChange: (d: RetentionPoint[]) => void; locked: boolean; videoDuration: string
+}) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<number | null>(null)
   const [editingRightX, setEditingRightX] = useState(false)
   const [rightXValue, setRightXValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
+
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 150
   const chartW = width - padding.left - padding.right
@@ -411,13 +387,32 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
 
+  // Dynamic duration label from prop — updates when duration changes
+  const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
+  const durMin = Math.floor(totalSec / 60)
+  const durSec = totalSec % 60
+  const dynamicDurLabel = `${durMin}:${durSec.toString().padStart(2, "0")}`
+
   return (
     <div className="relative -mx-1">
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
+        {/* Left x label */}
         {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
-        {data[lastIdx] && <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx].time); setEditingRightX(true) }}>{data[lastIdx].time}</text>}
+        {/* Right x label — dynamic from videoDuration, shifted slightly left */}
+        <text
+          x={getX(lastIdx) - 6}
+          y={height - 7}
+          textAnchor="middle"
+          fill={editingRightX ? PINK : "#d1d5db"}
+          fontSize="13"
+          fontFamily="sans-serif"
+          className={locked ? "cursor-default" : "cursor-pointer"}
+          onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}
+        >
+          {dynamicDurLabel}
+        </text>
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
@@ -562,6 +557,12 @@ export default function ReelInsights() {
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
 
+  const saveGender = (newMen: number) => {
+    const nw = parseFloat((100 - newMen).toFixed(1))
+    try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
+    saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
+  }
+
   const totalViews = insightsData.views || 1
   const affectsData = [
     { icon: <SkipRateIcon />, label: "Skip rate", value: `${insightsData.skipRateThis.toFixed(1)}%` },
@@ -572,13 +573,6 @@ export default function ReelInsights() {
     { icon: <CommentRateIcon />, label: "Comment rate", value: `${((insightsData.comments / totalViews) * 100).toFixed(1)}%` },
   ]
 
-  // Gender save helper
-  const saveGender = (newMen: number) => {
-    const nw = parseFloat((100 - newMen).toFixed(1))
-    try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
-    saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
-  }
-
   return (
     <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center" style={{ backgroundColor: BG }}>
       <div className="w-full max-w-[420px]">
@@ -588,7 +582,13 @@ export default function ReelInsights() {
           <div className="flex items-center justify-between px-4 h-[48px]">
             <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
             <h1 className="text-[16px] font-semibold flex-1 ml-4">Reel insights</h1>
-            <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+            {/* Boost icon left of 3-dot menu */}
+            <div className="flex items-center gap-2">
+              <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}>
+                <HeaderBoostIcon />
+              </button>
+              <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+            </div>
           </div>
         </header>
 
@@ -692,7 +692,8 @@ export default function ReelInsights() {
                     <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                   </div>
                 </div>
-                <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} locked={locked} />
+                {/* Pass videoDuration so right label updates dynamically */}
+                <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} locked={locked} videoDuration={insightsData.videoDuration} />
               </section>
 
               <section className="px-4 py-5">
@@ -758,83 +759,40 @@ export default function ReelInsights() {
           {/* ===== AUDIENCE ===== */}
           {mainTab === "Audience" && (
             <>
-              {/* Who viewed your reel */}
               <section className="px-4 pt-5 pb-3">
                 <div className="flex items-center gap-2 mb-4">
                   <h3 className="text-[15px] font-semibold">Who viewed your reel</h3>
                   <InfoIcon />
                 </div>
-                <AudienceRow
-                  labelNode={<span>Followers</span>}
-                  percentage={insightsData.followerPercentage}
-                  barColor={PINK}
-                  animateCharts={animateCharts}
-                  delay={0}
-                />
-                <AudienceRow
-                  labelNode={<span>Non-followers</span>}
-                  percentage={100 - insightsData.followerPercentage}
-                  barColor={PURPLE}
-                  animateCharts={animateCharts}
-                  delay={120}
-                />
+                <AudienceRow labelNode={<span>Followers</span>} percentage={insightsData.followerPercentage} barColor={PINK} animateCharts={animateCharts} delay={0} />
+                <AudienceRow labelNode={<span>Non-followers</span>} percentage={100 - insightsData.followerPercentage} barColor={PURPLE} animateCharts={animateCharts} delay={120} />
               </section>
 
-              {/* Audience details */}
               <section className="px-4 pt-3 pb-5">
                 <div className="flex items-center gap-2 mb-3">
                   <h3 className="text-[15px] font-semibold">Audience details</h3>
                   <InfoIcon />
                 </div>
-
-                {/* Pills */}
                 <div className="flex gap-2 mb-5">
                   {(["Age", "Country", "Gender"] as const).map(tab => (
-                    <button
-                      key={tab}
-                      onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")}
-                      className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`}
-                      style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}
-                    >
-                      {tab}
-                    </button>
+                    <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
                   ))}
                 </div>
 
-                {/* Age */}
                 {audienceTab === "Age" && (
                   <div>
                     {insightsData.ageData.map((age, index) => (
-                      <AudienceRow
-                        key={age.name}
-                        labelNode={<span>{age.name}</span>}
-                        percentage={age.percentage}
-                        barColor={PINK}
-                        animateCharts={animateCharts}
-                        delay={index * 60}
-                      />
+                      <AudienceRow key={age.name} labelNode={<span>{age.name}</span>} percentage={age.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 60} />
                     ))}
                   </div>
                 )}
 
-                {/* Country */}
                 {audienceTab === "Country" && (
                   <div>
                     {insightsData.countryData.map((country, index) => (
                       <AudienceRow
                         key={index}
-                        labelNode={
-                          <CountryNameEditor
-                            locked={locked}
-                            name={country.name}
-                            onSave={newName => {
-                              const uc = [...insightsData.countryData]
-                              uc[index] = { ...uc[index], name: newName }
-                              try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}
-                              saveData({ ...insightsData, countryData: uc })
-                            }}
-                          />
-                        }
+                        labelNode={<CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />}
                         percentage={country.percentage}
                         barColor={PINK}
                         animateCharts={animateCharts}
@@ -844,30 +802,20 @@ export default function ReelInsights() {
                   </div>
                 )}
 
-                {/* Gender — label is plain text, percentage on right is editable */}
                 {audienceTab === "Gender" && (
                   <div>
-                    {/* Men */}
                     <div className="mb-3.5">
                       <div className="mb-1 text-[13px] text-white">Men</div>
                       <div className="flex items-center gap-3">
                         <AnimatedBar percentage={insightsData.genderData.men} color={PINK} animateCharts={animateCharts} delay={0} />
-                        <GenderPercentEditor
-                          value={insightsData.genderData.men}
-                          locked={locked}
-                          onSave={saveGender}
-                        />
+                        <GenderPercentEditor value={insightsData.genderData.men} locked={locked} onSave={saveGender} />
                       </div>
                     </div>
-
-                    {/* Women */}
                     <div className="mb-3.5">
                       <div className="mb-1 text-[13px] text-white">Women</div>
                       <div className="flex items-center gap-3">
                         <AnimatedBar percentage={insightsData.genderData.women} color={PURPLE} animateCharts={animateCharts} delay={120} />
-                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">
-                          {insightsData.genderData.women.toFixed(1)}%
-                        </span>
+                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.women.toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>
