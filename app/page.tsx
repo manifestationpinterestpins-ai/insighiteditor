@@ -44,11 +44,11 @@ const tabContent = {
 
 // ===== SINGLE ODOMETER DIGIT =====
 const DIGIT_HEIGHT = 22
-const DIGITS_STACK = [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9]
+const DIGITS_STACK = [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9]
 
 const OdometerSingleDigit = ({ target, delay }: { target: number; delay: number }) => {
   // Target position: roll through 2 full cycles + land on target in 3rd cycle
-  const finalIndex = 20 + target // 3rd cycle start (index 20) + target digit
+  const finalIndex = 50 + target // 3rd cycle start (index 20) + target digit
   const translateY = -(finalIndex * DIGIT_HEIGHT)
 
   return (
