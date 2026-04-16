@@ -593,7 +593,6 @@ export default function ReelInsights() {
   ]
 
   return (
-    <>
     
             <div
         className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
