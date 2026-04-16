@@ -638,7 +638,7 @@ export default function ReelInsights() {
               {mainTab === "Overview" && (
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
-                                                      <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
+                                                                        <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
                       <button onClick={() => { setSummaryLoading(true); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
@@ -653,22 +653,28 @@ export default function ReelInsights() {
                         <div
                           key={card.label}
                           className="rounded-xl p-3.5 relative overflow-hidden"
-                          style={{ backgroundColor: CARD_BG, transform: "none" }}
+                          style={{ backgroundColor: CARD_BG, minHeight: 72, transform: "none" }}
                         >
-                          {summaryLoading ? (
-                            <div className="absolute inset-0" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
-                          ) : (
-                            <div style={{ animation: "fadeIn 0.2s ease-out" }}>
+                          {/* Shimmer overlay — sits on top, doesn't affect layout */}
+                          {summaryLoading && (
+                            <div className="absolute inset-0 z-10" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
+                          )}
+
+                          {/* Content — ALWAYS rendered to maintain fixed height */}
+                          <div style={{ opacity: summaryLoading ? 0 : 1, transition: "opacity 0.2s ease-out" }}>
+                            <div className="h-[14px] mb-1 flex items-center">
                               <span className="text-[11px] text-gray-400">{card.label}</span>
+                            </div>
+                            <div className="h-[24px] flex items-center">
                               {card.label === "Average watch time" ? (
-                                <p className="text-[17px] font-bold text-white mt-0.5">{card.value}</p>
+                                <span className="text-[17px] font-bold text-white">{card.value}</span>
                               ) : card.label === "Follows" ? (
-                                <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                                <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
                               ) : (
-                                <p className="text-[17px] font-bold text-white mt-0.5">{(card.value as number).toLocaleString("en-IN")}</p>
+                                <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
                               )}
                             </div>
-                          )}
+                          </div>
                         </div>
                       ))}
                     </div>
