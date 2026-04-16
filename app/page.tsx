@@ -76,34 +76,34 @@ const BoostIcon = () => (
   </svg>
 )
 const SkipIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
   </svg>
 )
 const ShareIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
     <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
   </svg>
 )
 const LikeIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
   </svg>
 )
 const SaveIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
     <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
   </svg>
 )
 const RepostSmallIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
     <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
   </svg>
 )
 const CommentSmallIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
 )
@@ -201,10 +201,10 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { if (value.trim()) onSave(value.trim()); else setValue(name); setEditing(false) }
   if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[11px] text-white outline-none w-full" style={{ caretColor: PINK }} />
-  return <span className={`text-[11px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity leading-none`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
+  return <span className={`text-[12px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
 }
 
-// ===== DRAGGABLE VIEWS GRAPH =====
+// ===== DRAGGABLE VIEWS GRAPH (full line to end) =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
 const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; locked: boolean }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -215,7 +215,6 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const [editingY, setEditingY] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
-  const [visibleCount] = useState(Math.ceil(data.length / 2))
 
   useEffect(() => { try { const sx = localStorage.getItem("graph-xlabels"); const sy = localStorage.getItem("graph-ylabels"); if (sx) setXLabels(JSON.parse(sx)); if (sy) setYLabels(JSON.parse(sy)) } catch {} }, [])
   useEffect(() => { if ((editingX !== null || editingY !== null) && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingX, editingY])
@@ -233,12 +232,13 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const getY = (val: number) => padding.top + chartH - (Math.min(val, graphMax) / graphMax) * chartH
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(graphMax, Math.round(((padding.top + chartH - svgY) / chartH) * graphMax))) }
   const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
-  const visibleThisReel = data.slice(0, visibleCount).map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
+  // Full line: all data points
+  const allThisReel = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
   const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging({ index, line }) }
   const handlePointerMove = (e: React.PointerEvent) => { if (!dragging || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }; onChange(nd) }
   const handlePointerUp = () => setDragging(null)
-  // First x label shifted slightly RIGHT
-  const xPositions = [padding.left + 8, padding.left + chartW / 2, padding.left + chartW]
+  // First x label shifted more to the right
+  const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW]
   const commitEdit = () => { if (editingX !== null) { const u = [...xLabels]; u[editingX] = editValue; saveXLabels(u); setEditingX(null) }; if (editingY !== null) { const u = [...yLabels]; u[editingY] = editValue; saveYLabels(u); setEditingY(null) }; setEditValue("") }
 
   return (
@@ -247,14 +247,15 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
         {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
-        <path d={buildPath(visibleThisReel)} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
-        {data.slice(0, visibleCount).map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
+        {/* Full pink line to end */}
+        <path d={buildPath(allThisReel)} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
+        {data.map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
   )
 }
 
-// ===== DRAGGABLE ENGAGEMENT GRAPH (fully editable) =====
+// ===== DRAGGABLE ENGAGEMENT GRAPH (persisted) =====
 type EngagementPoint = { time: string; value: number }
 const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { data: EngagementPoint[]; onChange: (d: EngagementPoint[]) => void; locked: boolean; videoDuration: string }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -279,8 +280,6 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const handlePointerUp = () => setDragging(null)
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
-
-  // Determine duration string for right x label
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
   const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60
   const defaultRightLabel = `${durMin}:${durSec.toString().padStart(2, "0")}`
@@ -290,8 +289,7 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-        {/* First x label slightly to the right */}
-        <text x={padding.left + 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
+        <text x={padding.left + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx]?.time || defaultRightLabel); setEditingRightX(true) }}>{data[lastIdx]?.time || defaultRightLabel}</text>
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
@@ -330,7 +328,7 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-        {data[0] && <text x={getX(0) + 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
+        {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
         {data[lastIdx] && <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx].time); setEditingRightX(true) }}>{data[lastIdx].time}</text>}
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
@@ -339,20 +337,25 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
   )
 }
 
-// ===== BAR WITH LABEL INSIDE =====
-const BarWithLabel = ({ label, percentage, color = "magenta", animateCharts, delay = 0, showPctRight = false }: { label: string; percentage: number; color?: "magenta" | "violet"; animateCharts: boolean; delay?: number; showPctRight?: boolean }) => {
+// ===== AUDIENCE BAR ROW (label above, pct on right) =====
+const AudienceBarRow = ({
+  label, percentage, color = "magenta", animateCharts, delay = 0,
+  labelNode,
+}: {
+  label?: string; percentage: number; color?: "magenta" | "violet"; animateCharts: boolean; delay?: number; labelNode?: React.ReactNode
+}) => {
   const [width, setWidth] = useState(0)
   useEffect(() => { if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) } }, [animateCharts, percentage, delay])
   const colorVal = color === "magenta" ? PINK : PURPLE
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative flex-1 h-[32px] rounded-lg overflow-hidden" style={{ backgroundColor: CARD_BG }}>
-        <div className="absolute left-0 top-0 h-full rounded-lg transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: colorVal }} />
-        <div className="absolute inset-0 flex items-center px-3">
-          <span className="text-[12px] text-white font-medium truncate z-10 drop-shadow">{label}</span>
-        </div>
+    <div className="mb-1">
+      <div className="flex items-center justify-between mb-1">
+        <div className="text-[12px] text-white">{labelNode ?? label}</div>
+        <span className="text-[12px] text-white font-medium ml-2 shrink-0">{percentage.toFixed(1)}%</span>
       </div>
-      {showPctRight && <span className="text-[12px] text-white font-medium w-[42px] text-right shrink-0">{percentage.toFixed(1)}%</span>}
+      <div className="relative w-full h-[10px] rounded-full overflow-hidden" style={{ backgroundColor: CARD_BG }}>
+        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: colorVal }} />
+      </div>
     </div>
   )
 }
@@ -375,11 +378,10 @@ export default function ReelInsights() {
   const [animationKey, setAnimationKey] = useState(0)
   const overviewRef = useRef<HTMLDivElement>(null)
 
-  // Engagement graph data
+  // Build default engagement data
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
     const numPoints = Math.min(totalSec + 1, 20)
-    const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60
     const data: EngagementPoint[] = []
     for (let i = 0; i < numPoints; i++) {
       const p = i / (numPoints - 1); let v = 0
@@ -394,7 +396,6 @@ export default function ReelInsights() {
   }
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
-  useEffect(() => { setEngagementData(buildEngagementData(insightsData.videoDuration)) }, [insightsData.videoDuration])
 
   useEffect(() => {
     try {
@@ -446,16 +447,24 @@ export default function ReelInsights() {
     })
   }, [])
 
+  // Load graph, retention, engagement from localStorage
   useEffect(() => {
     try {
       const s = localStorage.getItem("graph-data"); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) setGraphData(p) }
       const sr = localStorage.getItem("retention-data"); if (sr) { const p = JSON.parse(sr); if (Array.isArray(p) && p.length > 0) setRetentionData(p) }
-    } catch {}
+      // Load persisted engagement data
+      const se = localStorage.getItem("engagement-graph-data")
+      if (se) { const p = JSON.parse(se); if (Array.isArray(p) && p.length > 0) { setEngagementData(p); return } }
+      // If no saved engagement data, build default
+      setEngagementData(buildEngagementData(insightsData.videoDuration))
+    } catch {
+      setEngagementData(buildEngagementData(insightsData.videoDuration))
+    }
   }, [])
 
   const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd); try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {} }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd); try { localStorage.setItem("retention-data", JSON.stringify(nd)) } catch {} }
-  const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd) }
+  const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
   useEffect(() => { const t = setTimeout(() => setAnimateCharts(true), 300); return () => clearTimeout(t) }, [insightsData])
   const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
@@ -573,7 +582,7 @@ export default function ReelInsights() {
                   {affectsData.map((item, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG }}>{item.icon}</div>
+                        <div className="w-13 h-13 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
                         <span className="text-[14px] text-white font-medium">{item.label}</span>
                       </div>
                       <span className="text-[14px] text-white font-semibold">{item.value}</span>
@@ -627,35 +636,37 @@ export default function ReelInsights() {
                 <div className="flex items-center gap-2 mb-5">
                   <h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon />
                 </div>
-                <DraggableEngagementGraph
-                  data={engagementData}
-                  onChange={handleEngagementChange}
-                  locked={locked}
-                  videoDuration={insightsData.videoDuration}
-                />
+                {engagementData.length > 0 && (
+                  <DraggableEngagementGraph
+                    data={engagementData}
+                    onChange={handleEngagementChange}
+                    locked={locked}
+                    videoDuration={insightsData.videoDuration}
+                  />
+                )}
               </section>
 
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Actions after viewing</h3><InfoIcon /></div>
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-[15px] text-white">Follows</span>
-                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[15px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                    <span className="text-[13px] text-white">Follows</span>
+                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[15px] text-white">Profile visits</span>
-                    <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[15px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} />
+                    <span className="text-[13px] text-white">Profile visits</span>
+                    <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} />
                   </div>
                 </div>
               </section>
 
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Interactions</h3><InfoIcon /></div>
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val]) => (
                     <div key={label as string} className="flex justify-between items-center">
-                      <span className="text-[15px] text-white">{label}</span>
-                      <span className="text-[15px] text-white font-semibold">{val}</span>
+                      <span className="text-[13px] text-white">{label}</span>
+                      <span className="text-[13px] text-white font-semibold">{val}</span>
                     </div>
                   ))}
                 </div>
@@ -669,12 +680,20 @@ export default function ReelInsights() {
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Who viewed your reel</h3><InfoIcon /></div>
                 <div className="space-y-3">
-                  <div>
-                    <BarWithLabel label={`Followers  ${insightsData.followerPercentage.toFixed(1)}%`} percentage={insightsData.followerPercentage} color="magenta" animateCharts={animateCharts} delay={0} />
-                  </div>
-                  <div>
-                    <BarWithLabel label={`Non-followers  ${(100 - insightsData.followerPercentage).toFixed(1)}%`} percentage={100 - insightsData.followerPercentage} color="violet" animateCharts={animateCharts} delay={100} />
-                  </div>
+                  <AudienceBarRow
+                    label="Followers"
+                    percentage={insightsData.followerPercentage}
+                    color="magenta"
+                    animateCharts={animateCharts}
+                    delay={0}
+                  />
+                  <AudienceBarRow
+                    label="Non-followers"
+                    percentage={100 - insightsData.followerPercentage}
+                    color="violet"
+                    animateCharts={animateCharts}
+                    delay={100}
+                  />
                 </div>
               </section>
 
@@ -687,47 +706,67 @@ export default function ReelInsights() {
                 </div>
 
                 {audienceTab === "Age" && (
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {insightsData.ageData.map((age, index) => (
-                      <div key={age.name} className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <BarWithLabel label={age.name} percentage={age.percentage} color="magenta" animateCharts={animateCharts} delay={index * 60} />
-                        </div>
-                        <span className="text-[12px] text-white font-medium w-[42px] text-right shrink-0">{age.percentage.toFixed(1)}%</span>
-                      </div>
+                      <AudienceBarRow
+                        key={age.name}
+                        label={age.name}
+                        percentage={age.percentage}
+                        color="magenta"
+                        animateCharts={animateCharts}
+                        delay={index * 60}
+                      />
                     ))}
                   </div>
                 )}
 
                 {audienceTab === "Country" && (
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {insightsData.countryData.map((country, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <BarWithLabel label={country.name} percentage={country.percentage} color="magenta" animateCharts={animateCharts} delay={index * 80} />
-                        </div>
-                        <span className="text-[12px] text-white font-medium w-[42px] text-right shrink-0">{country.percentage.toFixed(1)}%</span>
-                      </div>
+                      <AudienceBarRow
+                        key={index}
+                        percentage={country.percentage}
+                        color="magenta"
+                        animateCharts={animateCharts}
+                        delay={index * 80}
+                        labelNode={
+                          <CountryNameEditor
+                            locked={locked}
+                            name={country.name}
+                            onSave={newName => {
+                              const uc = [...insightsData.countryData]
+                              uc[index] = { ...uc[index], name: newName }
+                              try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}
+                              saveData({ ...insightsData, countryData: uc })
+                            }}
+                          />
+                        }
+                      />
                     ))}
                   </div>
                 )}
 
                 {audienceTab === "Gender" && (
-                  <div className="space-y-2.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <BarWithLabel label="Men" percentage={insightsData.genderData.men} color="magenta" animateCharts={animateCharts} delay={0} />
-                      </div>
-                      <div className="w-[52px] text-right shrink-0">
-                        <GenderEditor locked={locked} menValue={insightsData.genderData.men} onSave={newMen => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }} />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <BarWithLabel label="Women" percentage={insightsData.genderData.women} color="violet" animateCharts={animateCharts} delay={100} />
-                      </div>
-                      <span className="text-[12px] text-white font-medium w-[52px] text-right shrink-0">{insightsData.genderData.women.toFixed(1)}%</span>
-                    </div>
+                  <div className="space-y-3">
+                    <AudienceBarRow
+                      percentage={insightsData.genderData.men}
+                      color="magenta"
+                      animateCharts={animateCharts}
+                      delay={0}
+                      labelNode={
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12px] text-white">Men</span>
+                          <GenderEditor locked={locked} menValue={insightsData.genderData.men} onSave={newMen => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }} />
+                        </div>
+                      }
+                    />
+                    <AudienceBarRow
+                      label="Women"
+                      percentage={insightsData.genderData.women}
+                      color="violet"
+                      animateCharts={animateCharts}
+                      delay={100}
+                    />
                   </div>
                 )}
               </section>
