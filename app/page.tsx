@@ -148,20 +148,13 @@ const CommentRateIcon = () => (
 )
 
 // ===== AUDIENCE ROW =====
-const AudienceRow = ({ labelNode, percentage, barColor, animateCharts, delay = 0 }: { labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts: boolean; delay?: number }) => {
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
-  }, [animateCharts, percentage, delay])
+const AudienceRow = ({ labelNode, percentage, barColor }: { labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts?: boolean; delay?: number }) => {
   return (
     <div className="mb-3.5">
       <div className="mb-1 text-[13px] text-white">{labelNode}</div>
       <div className="flex items-center gap-3">
         <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
-          <div
-            className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
-            style={{ width: `${width}%`, backgroundColor: barColor, borderRadius: 6 }}
-          />
+          <div className="absolute left-0 top-0 h-full" style={{ width: `${percentage}%`, backgroundColor: barColor, borderRadius: 6 }} />
         </div>
         <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
       </div>
@@ -170,33 +163,19 @@ const AudienceRow = ({ labelNode, percentage, barColor, animateCharts, delay = 0
 }
 
 // ===== ANIMATED BAR =====
-const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
-  }, [animateCharts, percentage, delay])
+const AnimatedBar = ({ percentage, color }: { percentage: number; color: string; animateCharts?: boolean; delay?: number }) => {
   return (
     <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
-      <div
-        className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
-        style={{ width: `${width}%`, backgroundColor: color, borderRadius: 6 }}
-      />
+      <div className="absolute left-0 top-0 h-full" style={{ width: `${percentage}%`, backgroundColor: color, borderRadius: 6 }} />
     </div>
   )
 }
 
 // ===== SIMPLE PROGRESS BAR =====
-const SimpleBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
-  }, [animateCharts, percentage, delay])
+const SimpleBar = ({ percentage, color }: { percentage: number; color: string; animateCharts?: boolean; delay?: number }) => {
   return (
     <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-      <div
-        className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
-        style={{ width: `${width}%`, backgroundColor: color }}
-      />
+      <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${percentage}%`, backgroundColor: color }} />
     </div>
   )
 }
