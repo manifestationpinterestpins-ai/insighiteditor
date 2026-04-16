@@ -20,17 +20,32 @@ const pageVariants = {
 }
 
 const fadeSlideUp = {
-  initial: { opacity: 0, y: 15, scale: 0.95 },
+  initial: { opacity: 0, y: 12 },
   animate: (i: number) => ({
-    opacity: 1, y: 0, scale: 1,
-    transition: { duration: 0.3, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] },
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.25,
+      delay: i * 0.04,
+      ease: [0.16, 1, 0.3, 1],
+    },
   }),
 }
 
 const tabContent = {
-  initial: { opacity: 0, y: 15 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.15, ease: "easeIn" } },
+  initial: { opacity: 0, y: 12 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.25,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.15 },
+  },
 }
 
 // ===== ANIMATED NUMBER =====
@@ -40,7 +55,7 @@ const AnimatedNumber = ({ value, className }: { value: number; className?: strin
   const [display, setDisplay] = useState("0")
 
   useEffect(() => {
-    const controls = animate(count, value, { duration: 0.9, ease: "easeOut" })
+    const controls = animate(count, value, { duration: 0.75, ease: [0.16, 1, 0.3, 1] })
     const unsub = rounded.on("change", (v) => setDisplay(v))
     return () => { controls.stop(); unsub() }
   }, [value])
@@ -49,9 +64,9 @@ const AnimatedNumber = ({ value, className }: { value: number; className?: strin
     <div className="overflow-hidden">
       <motion.span
         className={className}
-        initial={{ y: 14, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ y: 10, opacity: 0 }}
+animate={{ y: 0, opacity: 1 }}
+transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       >
         {display}
       </motion.span>
@@ -326,7 +341,7 @@ const AnimatedGraphPath = ({ d, stroke, strokeWidth, strokeDasharray, strokeLine
       strokeDasharray={strokeDasharray || `${length} ${length}`}
       initial={{ strokeDashoffset: length }}
       animate={{ strokeDashoffset: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
     />
   )
 }
@@ -613,7 +628,7 @@ export default function ReelInsights() {
           </header>
 
           {/* Thumbnail */}
-          <motion.section className="flex flex-col items-center pt-4 pb-4 px-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}>
+          <motion.section className="flex flex-col items-center pt-4 pb-4 px-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}>
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
@@ -708,7 +723,7 @@ export default function ReelInsights() {
                       {affectsData.map((item, i) => (
                         <motion.div key={i} className="flex items-center justify-between" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
                           <div className="flex items-center gap-5">
-                            <motion.div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }} initial={{ scale: 0.9 }} animate={{ scale: 1 }} transition={{ delay: i * 0.05 + 0.1, duration: 0.25 }}>
+                            <motion.div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }} >
                               {item.icon}
                             </motion.div>
                             <span className="text-[14px] text-white font-medium">{item.label}</span>
