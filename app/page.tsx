@@ -138,8 +138,8 @@ const AudienceRow = ({
     <div className="mb-3.5">
       <div className="mb-1 text-[13px] text-white">{labelNode}</div>
       <div className="flex items-center gap-3">
-        <div className="flex-1 relative h-[10px] rounded-md overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-          <div className="absolute left-0 top-0 h-full rounded-md transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: barColor }} />
+                <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
+          <div className="absolute left-0 top-0 h-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: barColor, borderRadius: 6 }} />
         </div>
         <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
       </div>
@@ -153,9 +153,9 @@ const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percenta
   useEffect(() => {
     if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
   }, [animateCharts, percentage, delay])
-  return (
-    <div className="flex-1 relative h-[10px] rounded-md overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-      <div className="absolute left-0 top-0 h-full rounded-md transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
+    return (
+    <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
+      <div className="absolute left-0 top-0 h-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color, borderRadius: 6 }} />
     </div>
   )
 }
