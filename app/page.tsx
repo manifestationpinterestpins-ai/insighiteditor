@@ -76,34 +76,34 @@ const BoostIcon = () => (
   </svg>
 )
 const SkipIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
   </svg>
 )
 const ShareIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
     <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
   </svg>
 )
 const LikeIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
   </svg>
 )
 const SaveIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
     <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
   </svg>
 )
 const RepostSmallIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
     <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
   </svg>
 )
 const CommentSmallIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
 )
@@ -186,7 +186,7 @@ const GenderEditor = ({ menValue, onSave, locked }: { menValue: number; onSave: 
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { const p = parseFloat(value); if (!isNaN(p) && p >= 0 && p <= 100) onSave(p); setEditing(false) }
   if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[12px] text-white text-center w-[65px] outline-none" style={{ caretColor: PINK }} />
-  return <span className={`text-[12px] text-gray-300 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>{menValue.toFixed(1)}%</span>
+  return <span className={`text-[12px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>{menValue.toFixed(1)}%</span>
 }
 
 // ===== COUNTRY NAME EDITOR =====
@@ -195,7 +195,7 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { if (value.trim()) onSave(value.trim()); else setValue(name); setEditing(false) }
   if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[12px] text-white outline-none flex-1" style={{ caretColor: PINK }} />
-  return <span className={`text-[12px] text-gray-300 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
+  return <span className={`text-[12px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
 }
 
 // ===== DRAGGABLE VIEWS GRAPH =====
@@ -216,7 +216,7 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const saveXLabels = (l: string[]) => { setXLabels(l); try { localStorage.setItem("graph-xlabels", JSON.stringify(l)) } catch {} }
   const saveYLabels = (l: string[]) => { setYLabels(l); try { localStorage.setItem("graph-ylabels", JSON.stringify(l)) } catch {} }
 
-  const padding = { top: 15, right: 10, bottom: 34, left: 40 }
+  const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 170
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
@@ -231,15 +231,16 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging({ index, line }) }
   const handlePointerMove = (e: React.PointerEvent) => { if (!dragging || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }; onChange(nd) }
   const handlePointerUp = () => setDragging(null)
-  const xPositions = [padding.left, padding.left + chartW / 2, padding.left + chartW]
+  // X positions: first label slightly left of first point
+  const xPositions = [padding.left - 4, padding.left + chartW / 2, padding.left + chartW]
   const commitEdit = () => { if (editingX !== null) { const u = [...xLabels]; u[editingX] = editValue; saveXLabels(u); setEditingX(null) }; if (editingY !== null) { const u = [...yLabels]; u[editingY] = editValue; saveYLabels(u); setEditingY(null) }; setEditValue("") }
 
   return (
     <div className="relative -mx-1">
       {(editingX !== null || editingY !== null) && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={editValue} onChange={e => setEditValue(e.target.value)} onBlur={commitEdit} onKeyDown={e => { if (e.key === "Enter") commitEdit() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-        {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 7} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#9ca3af"} fontSize="12" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
-        {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#9ca3af"} fontSize="12" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
+        {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
+        {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
         <path d={buildPath(visibleThisReel)} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.slice(0, visibleCount).map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
       </svg>
@@ -256,8 +257,8 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
   const [rightXValue, setRightXValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-  const padding = { top: 15, right: 10, bottom: 34, left: 40 }
-  const width = 380; const height = 140
+  const padding = { top: 15, right: 10, bottom: 38, left: 44 }
+  const width = 380; const height = 150
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
@@ -276,10 +277,10 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
     <div className="relative -mx-1">
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-        {[0, 50, 100].map(t => <text key={t} x={padding.left - 7} y={getY(t) + 4} textAnchor="end" fill="#9ca3af" fontSize="12" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-        {data[0] && <text x={getX(0)} y={height - 7} textAnchor="middle" fill="#9ca3af" fontSize="12" fontFamily="sans-serif">{data[0].time}</text>}
-        {data[lastIdx] && <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#9ca3af"} fontSize="12" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx].time); setEditingRightX(true) }}>{data[lastIdx].time}</text>}
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={3.5} strokeLinecap="round" />
+        {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
+        {data[0] && <text x={getX(0) - 4} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
+        {data[lastIdx] && <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx].time); setEditingRightX(true) }}>{data[lastIdx].time}</text>}
+        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -418,48 +419,38 @@ export default function ReelInsights() {
           </div>
         </header>
 
-        {/* Thumbnail Section */}
+        {/* Thumbnail */}
         <section className="flex flex-col items-center pt-4 pb-4 px-5">
-          <div
-            className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg"
-            onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}
-          >
+          <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
             {thumbnailImage ? (
-              <>
-                <img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />
-                {!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}
-              </>
+              <><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors">
-                <UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span>
-              </div>
+              <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>
             )}
             <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
           </div>
           <div className="flex items-center justify-between w-full max-w-[300px] mt-4 px-1">
-            <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] text-gray-300">{insightsData.likes}</span></div>
-            <div className="flex flex-col items-center gap-1"><CommentIcon /><span className="text-[10px] text-gray-300">{insightsData.comments}</span></div>
-            <div className="flex flex-col items-center gap-1"><SendIcon /><span className="text-[10px] text-gray-300">{insightsData.shares}</span></div>
-            <div className="flex flex-col items-center gap-1"><RepostIcon /><span className="text-[10px] text-gray-300">{insightsData.reposts}</span></div>
-            <div className="flex flex-col items-center gap-1"><BookmarkIcon /><span className="text-[10px] text-gray-300">{insightsData.bookmarks}</span></div>
+            <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] text-white">{insightsData.likes}</span></div>
+            <div className="flex flex-col items-center gap-1"><CommentIcon /><span className="text-[10px] text-white">{insightsData.comments}</span></div>
+            <div className="flex flex-col items-center gap-1"><SendIcon /><span className="text-[10px] text-white">{insightsData.shares}</span></div>
+            <div className="flex flex-col items-center gap-1"><RepostIcon /><span className="text-[10px] text-white">{insightsData.reposts}</span></div>
+            <div className="flex flex-col items-center gap-1"><BookmarkIcon /><span className="text-[10px] text-white">{insightsData.bookmarks}</span></div>
           </div>
         </section>
 
-        {/* Main Tabs */}
-        <div>
-          <div className="flex border-b border-zinc-800/40">
-            {(["Overview", "Engagement", "Audience"] as const).map(tab => (
-              <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-500"}`}>
-                {tab}
-                {mainTab === tab && <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full" />}
-              </button>
-            ))}
-          </div>
+        {/* Tabs */}
+        <div className="flex border-b border-zinc-800/40">
+          {(["Overview", "Engagement", "Audience"] as const).map(tab => (
+            <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
+              {tab}
+              {mainTab === tab && <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full" />}
+            </button>
+          ))}
         </div>
 
         <main className="pb-12">
 
-          {/* ===== OVERVIEW TAB ===== */}
+          {/* ===== OVERVIEW ===== */}
           {mainTab === "Overview" && (
             <>
               {/* Summary */}
@@ -471,19 +462,19 @@ export default function ReelInsights() {
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
                     <span className="text-[11px] text-gray-400">Views</span>
-                    <p className="text-[20px] font-bold text-white mt-0.5">{insightsData.views.toLocaleString("en-IN")}</p>
+                    <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.views.toLocaleString("en-IN")}</p>
                   </div>
                   <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
                     <span className="text-[11px] text-gray-400">Accounts reached</span>
-                    <p className="text-[20px] font-bold text-white mt-0.5">{insightsData.accountsReached.toLocaleString("en-IN")}</p>
+                    <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.accountsReached.toLocaleString("en-IN")}</p>
                   </div>
                   <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
                     <span className="text-[11px] text-gray-400">Average watch time</span>
-                    <p className="text-[20px] font-bold text-white mt-0.5">{insightsData.avgWatchTime}</p>
+                    <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.avgWatchTime}</p>
                   </div>
                   <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
                     <span className="text-[11px] text-gray-400">Follows</span>
-                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[20px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
                   </div>
                 </div>
               </section>
@@ -494,9 +485,9 @@ export default function ReelInsights() {
                   <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
                   <span className="text-[15px] font-semibold">{insightsData.views.toLocaleString("en-IN")}</span>
                 </div>
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-2 mb-6">
                   {(["All", "Followers", "Non-followers"] as const).map(filter => (
-                    <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-gray-300 border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
+                    <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
                   ))}
                 </div>
                 <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
@@ -505,14 +496,14 @@ export default function ReelInsights() {
               {/* What affects your views */}
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
-                <div className="space-y-3.5">
+                <div className="space-y-4">
                   {affectsData.map((item, i) => (
                     <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: CARD_BG }}>{item.icon}</div>
-                        <span className="text-[13px] text-gray-300 font-medium">{item.label}</span>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG }}>{item.icon}</div>
+                        <span className="text-[14px] text-white font-semibold">{item.label}</span>
                       </div>
-                      <span className="text-[13px] text-gray-300">{item.value}</span>
+                      <span className="text-[14px] text-white">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -528,9 +519,7 @@ export default function ReelInsights() {
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>
                     )}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg>
-                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
                     <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                   </div>
                 </div>
@@ -543,7 +532,7 @@ export default function ReelInsights() {
                 <div className="space-y-4">
                   {insightsData.sourcesData.map((source, index) => (
                     <div key={source.name}>
-                      <div className="flex justify-between mb-1.5"><span className="text-[12px] text-gray-400">{source.name}</span><span className="text-[12px] text-white font-medium">{source.percentage.toFixed(1)}%</span></div>
+                      <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">{source.name}</span><span className="text-[13px] text-white font-medium">{source.percentage.toFixed(1)}%</span></div>
                       <ProgressBar percentage={source.percentage} delay={index * 100} />
                     </div>
                   ))}
@@ -561,66 +550,81 @@ export default function ReelInsights() {
             </>
           )}
 
-          {/* ===== ENGAGEMENT TAB ===== */}
+          {/* ===== ENGAGEMENT ===== */}
           {mainTab === "Engagement" && (
             <>
+              {/* When people liked your reel */}
               <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
+                <div className="flex items-center gap-2 mb-5">
+                  <h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon />
+                </div>
                 {(() => {
-                  const svgW = 380; const svgH = 140; const pad = { top: 15, right: 10, bottom: 34, left: 40 }; const cW = svgW - pad.left - pad.right; const cH = svgH - pad.top - pad.bottom
+                  const svgW = 380; const svgH = 160
+                  const pad = { top: 15, right: 10, bottom: 38, left: 44 }
+                  const cW = svgW - pad.left - pad.right; const cH = svgH - pad.top - pad.bottom
                   const totalSec = (() => { const parts = insightsData.videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
                   const numPoints = Math.min(totalSec + 1, 32); const spikeData: number[] = []
                   for (let i = 0; i < numPoints; i++) { const p = i / (numPoints - 1); let v = 0; if (p < 0.1) v = 60 + Math.random() * 30; else if (p < 0.2) v = 40 + Math.random() * 35; else if (p < 0.4) v = 20 + Math.random() * 40; else if (p < 0.5) v = 50 + Math.random() * 40; else if (p < 0.7) v = 15 + Math.random() * 30; else v = 5 + Math.random() * 20; spikeData.push(Math.min(100, Math.max(0, v))) }
-                  const getX = (i: number) => pad.left + (i / (numPoints - 1)) * cW; const getY = (v: number) => pad.top + cH - (v / 100) * cH
+                  const getX = (i: number) => pad.left + (i / (numPoints - 1)) * cW
+                  const getY = (v: number) => pad.top + cH - (v / 100) * cH
                   let pathD = `M ${getX(0)} ${getY(spikeData[0])}`; for (let i = 1; i < numPoints; i++) pathD += ` L ${getX(i)} ${getY(spikeData[i])}`
-                  const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60; const durStr = `${durMin}:${durSec.toString().padStart(2, "0")}`
+                  const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60
+                  const durStr = `${durMin}:${durSec.toString().padStart(2, "0")}`
                   return (
                     <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full">
-                      {[0, 50, 100].map(t => <text key={t} x={pad.left - 7} y={getY(t) + 4} textAnchor="end" fill="#9ca3af" fontSize="12" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-                      <text x={pad.left} y={svgH - 7} textAnchor="middle" fill="#9ca3af" fontSize="12" fontFamily="sans-serif">0:00</text>
-                      <text x={svgW - pad.right} y={svgH - 7} textAnchor="middle" fill="#9ca3af" fontSize="12" fontFamily="sans-serif">{durStr}</text>
-                      <path d={pathD} fill="none" stroke={PINK} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                      {[0, 50, 100].map(t => <text key={t} x={pad.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
+                      <text x={pad.left - 4} y={svgH - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
+                      <text x={svgW - pad.right} y={svgH - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{durStr}</text>
+                      <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )
                 })()}
               </section>
 
+              {/* Actions after viewing */}
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Actions after viewing</h3><InfoIcon /></div>
-                <div className="space-y-3.5">
-                  <div className="flex justify-between items-center"><span className="text-[13px] text-gray-400">Follows</span><InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} /></div>
-                  <div className="flex justify-between items-center"><span className="text-[13px] text-gray-400">Profile visits</span><span className="text-[13px] text-white font-semibold">{Math.round(insightsData.views * 0.04)}</span></div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[15px] text-white">Follows</span>
+                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[15px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[15px] text-white">Profile visits</span>
+                    <span className="text-[15px] text-white font-semibold">{Math.round(insightsData.views * 0.04)}</span>
+                  </div>
                 </div>
               </section>
 
+              {/* Interactions */}
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Interactions</h3><InfoIcon /></div>
-                <div className="space-y-3.5">
+                <div className="space-y-4">
                   {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val]) => (
-                    <div key={label as string} className="flex justify-between items-center"><span className="text-[13px] text-gray-400">{label}</span><span className="text-[13px] text-white font-semibold">{val}</span></div>
+                    <div key={label as string} className="flex justify-between items-center">
+                      <span className="text-[15px] text-white">{label}</span>
+                      <span className="text-[15px] text-white font-semibold">{val}</span>
+                    </div>
                   ))}
-                </div>
-              </section>
-
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Monetisation</h3><InfoIcon /></div>
-                <h4 className="text-[14px] font-semibold mb-3">Gifts</h4>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2"><div className="w-[6px] h-[6px] rounded-full bg-red-500 shrink-0" /><span className="text-[12px] text-gray-400">Not monetising</span></div>
-                  <button className="text-[12px] text-blue-500 font-medium active:opacity-60 transition-opacity">Add payment details</button>
                 </div>
               </section>
             </>
           )}
 
-          {/* ===== AUDIENCE TAB ===== */}
+          {/* ===== AUDIENCE ===== */}
           {mainTab === "Audience" && (
             <>
               <section className="px-4 py-5">
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Who viewed your reel</h3><InfoIcon /></div>
                 <div className="space-y-4">
-                  <div><div className="flex justify-between mb-1.5"><span className="text-[13px] text-gray-400">Followers</span><span className="text-[13px] text-white font-semibold">{insightsData.followerPercentage.toFixed(1)}%</span></div><ProgressBar percentage={insightsData.followerPercentage} delay={0} /></div>
-                  <div><div className="flex justify-between mb-1.5"><span className="text-[13px] text-gray-400">Non-followers</span><span className="text-[13px] text-white font-semibold">{(100 - insightsData.followerPercentage).toFixed(1)}%</span></div><ProgressBar percentage={100 - insightsData.followerPercentage} color="violet" delay={100} /></div>
+                  <div>
+                    <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">Followers</span><span className="text-[13px] text-white font-semibold">{insightsData.followerPercentage.toFixed(1)}%</span></div>
+                    <ProgressBar percentage={insightsData.followerPercentage} delay={0} />
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">Non-followers</span><span className="text-[13px] text-white font-semibold">{(100 - insightsData.followerPercentage).toFixed(1)}%</span></div>
+                    <ProgressBar percentage={100 - insightsData.followerPercentage} color="violet" delay={100} />
+                  </div>
                 </div>
               </section>
 
@@ -628,7 +632,7 @@ export default function ReelInsights() {
                 <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Audience details</h3><InfoIcon /></div>
                 <div className="flex gap-2 mb-5">
                   {(["Age", "Country", "Gender"] as const).map(tab => (
-                    <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-gray-300 border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
+                    <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
                   ))}
                 </div>
 
@@ -636,9 +640,9 @@ export default function ReelInsights() {
                   <div className="space-y-3">
                     {insightsData.ageData.map((age, index) => (
                       <div key={age.name} className="flex items-center gap-2.5">
-                        <span className="text-[11px] text-gray-400 w-[40px] shrink-0">{age.name}</span>
+                        <span className="text-[12px] text-white w-[42px] shrink-0">{age.name}</span>
                         <div className="flex-1"><ProgressBar percentage={age.percentage} delay={index * 60} /></div>
-                        <span className="text-[11px] text-white font-medium w-[40px] text-right">{age.percentage.toFixed(1)}%</span>
+                        <span className="text-[12px] text-white font-medium w-[42px] text-right">{age.percentage.toFixed(1)}%</span>
                       </div>
                     ))}
                   </div>
@@ -650,7 +654,7 @@ export default function ReelInsights() {
                       <div key={index} className="flex items-center gap-2.5">
                         <div className="w-[85px] shrink-0"><CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} /></div>
                         <div className="flex-1"><ProgressBar percentage={country.percentage} delay={index * 80} /></div>
-                        <span className="text-[11px] text-white font-medium w-[40px] text-right">{country.percentage.toFixed(1)}%</span>
+                        <span className="text-[12px] text-white font-medium w-[42px] text-right">{country.percentage.toFixed(1)}%</span>
                       </div>
                     ))}
                   </div>
@@ -659,14 +663,14 @@ export default function ReelInsights() {
                 {audienceTab === "Gender" && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[11px] text-gray-400 w-[50px] shrink-0">Men</span>
+                      <span className="text-[12px] text-white w-[52px] shrink-0">Men</span>
                       <div className="flex-1"><ProgressBar percentage={insightsData.genderData.men} delay={0} /></div>
-                      <div className="w-[50px] text-right"><GenderEditor locked={locked} menValue={insightsData.genderData.men} onSave={newMen => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }} /></div>
+                      <div className="w-[52px] text-right"><GenderEditor locked={locked} menValue={insightsData.genderData.men} onSave={newMen => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }} /></div>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[11px] text-gray-400 w-[50px] shrink-0">Women</span>
+                      <span className="text-[12px] text-white w-[52px] shrink-0">Women</span>
                       <div className="flex-1"><ProgressBar percentage={insightsData.genderData.women} color="violet" delay={100} /></div>
-                      <span className="text-[11px] text-white font-medium w-[50px] text-right">{insightsData.genderData.women.toFixed(1)}%</span>
+                      <span className="text-[12px] text-white font-medium w-[52px] text-right">{insightsData.genderData.women.toFixed(1)}%</span>
                     </div>
                   </div>
                 )}
