@@ -509,12 +509,9 @@ export default function ReelInsights() {
     }
   }, [])
 
-  const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
+    const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
-
-  const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
-  const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
-
+  
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80, typical: 60 }, { date: "28 Jan", thisReel: 200, typical: 80 },
     { date: "28 Jan", thisReel: 170, typical: 90 }, { date: "29 Jan", thisReel: 320, typical: 75 },
