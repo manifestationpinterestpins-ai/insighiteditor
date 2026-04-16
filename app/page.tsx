@@ -159,7 +159,7 @@ const BookmarkIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" aria-label="Save" class="x1lliihq x1n2onr6 xyb1xck"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m20 21-8-7.56L4 21V3h16z"/></svg>
 )
 const InfoIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white">
     <circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
     <circle cx="12" cy="7.7" r="1.25"/>
     <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.5 16.8h3M10.5 11H12v5.7"/>
