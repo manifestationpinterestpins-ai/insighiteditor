@@ -450,6 +450,10 @@ export default function ReelInsights() {
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
   const [animationKey, setAnimationKey] = useState(0)
   const overviewRef = useRef<HTMLDivElement>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
+  const [tabsSticky, setTabsSticky] = useState(false)
+  const tabsOffsetTop = useRef(0)
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -479,6 +483,34 @@ export default function ReelInsights() {
       const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
     } catch {}
   }, [])
+
+    useEffect(() => {
+    const updateOffset = () => {
+      if (tabsPlaceholderRef.current) {
+        tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY
+      }
+    }
+    updateOffset()
+    window.addEventListener("resize", updateOffset)
+
+    const handleScroll = () => {
+      updateOffset()
+      if (window.scrollY >= tabsOffsetTop.current) {
+        setTabsSticky(true)
+      } else {
+        setTabsSticky(false)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", updateOffset)
+    }
+  }, [])
+
+  const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
+  const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
 
   const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
@@ -611,8 +643,24 @@ export default function ReelInsights() {
           </div>
         </section>
 
-                {/* Tabs — sticky */}
-        <div className="flex border-b border-zinc-800/40 sticky top-0 z-40" style={{ backgroundColor: BG }}>
+                        {/* Tabs placeholder — keeps layout when tabs go fixed */}
+        <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
+
+        {/* Tabs — scroll-based sticky */}
+        <div
+          ref={tabsRef}
+          className="flex border-b border-zinc-800/40 z-50"
+          style={{
+            position: tabsSticky ? "fixed" : "relative",
+            top: tabsSticky ? 0 : undefined,
+            left: tabsSticky ? 0 : undefined,
+            right: tabsSticky ? 0 : undefined,
+            width: tabsSticky ? "100%" : undefined,
+            maxWidth: tabsSticky ? 420 : undefined,
+            margin: tabsSticky ? "0 auto" : undefined,
+            backgroundColor: BG,
+          }}
+        >
           {(["Overview", "Engagement", "Audience"] as const).map(tab => (
             <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
               {tab}
