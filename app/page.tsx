@@ -594,16 +594,10 @@ export default function ReelInsights() {
 
   return (
     <>
-      {/* Dark overlay behind page */}
-      <motion.div className="fixed inset-0 z-0 bg-black" initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ duration: 0.4 }} />
-
-      {/* Main page — slide up */}
-      <motion.div
-        className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center relative z-10"
+    
+            <div
+        className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
         style={{ backgroundColor: BG }}
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
       >
         <div className="w-full max-w-[420px]">
 
@@ -854,7 +848,6 @@ export default function ReelInsights() {
           <BottomSheet open={bottomSheetOpen} onClose={() => setBottomSheetOpen(false)} />
 
         </div>
-      </motion.div>
-    </>
+      
   )
 }
