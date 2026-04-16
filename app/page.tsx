@@ -10,6 +10,7 @@ const BG = "#0c0f14"
 const PINK = "#d939cf"
 const PURPLE = "#7738fb"
 const CARD_BG = "#25282d"
+const BAR_BG = "#2a2d31"
 
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,31 +23,38 @@ const MoreVerticalIcon = () => (
   </svg>
 )
 const HeartIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="white" stroke="none">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
   </svg>
 )
+
 const CommentIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" strokeLinejoin="round" strokeWidth="2">
+    <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
   </svg>
 )
+
 const SendIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <path fill="white" stroke="#0c0f14" strokeLinejoin="round" strokeWidth="2"
+      d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/>
+    <path fill="none" stroke="#0c0f14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+      d="m7.488 12.208 8.027-4.567"/>
   </svg>
 )
+
 const RepostIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-    <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/>
   </svg>
 )
+
 const BookmarkIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+    <path fill="white" d="m20 21-8-7.56L4 21V3h16z"/>
   </svg>
 )
+
 const InfoIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white">
     <circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
@@ -107,6 +115,44 @@ const CommentSmallIcon = () => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
 )
+
+// ===== AUDIENCE STAT ROW =====
+// Label above bar, percentage to the right of bar
+const AudienceRow = ({
+  labelNode,
+  percentage,
+  gradientId,
+  animateCharts,
+  delay = 0,
+}: {
+  labelNode: React.ReactNode
+  percentage: number
+  gradientId: string
+  animateCharts: boolean
+  delay?: number
+}) => {
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
+  }, [animateCharts, percentage, delay])
+
+  return (
+    <div className="mb-4">
+      {/* Label above bar */}
+      <div className="mb-1.5 text-[13px] text-white">{labelNode}</div>
+      {/* Bar + percentage on same line */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+          <div
+            className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${width}%`, background: `linear-gradient(90deg, ${PURPLE}, ${PINK})` }}
+          />
+        </div>
+        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
+      </div>
+    </div>
+  )
+}
 
 // ===== BOTTOM SHEET =====
 const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
@@ -190,7 +236,7 @@ const GenderEditor = ({ menValue, onSave, locked }: { menValue: number; onSave: 
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { const p = parseFloat(value); if (!isNaN(p) && p >= 0 && p <= 100) onSave(p); setEditing(false) }
   if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[12px] text-white text-center w-[65px] outline-none" style={{ caretColor: PINK }} />
-  return <span className={`text-[12px] text-white font-medium ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>{menValue.toFixed(1)}%</span>
+  return <span className={`text-[13px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>{menValue.toFixed(1)}%</span>
 }
 
 // ===== COUNTRY NAME EDITOR =====
@@ -200,11 +246,11 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { if (value.trim()) onSave(value.trim()); else setValue(name); setEditing(false) }
-  if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[11px] text-white outline-none w-full" style={{ caretColor: PINK }} />
-  return <span className={`text-[12px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
+  if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white outline-none w-full" style={{ caretColor: PINK }} />
+  return <span className={`text-[13px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
 }
 
-// ===== DRAGGABLE VIEWS GRAPH (full line to end) =====
+// ===== DRAGGABLE VIEWS GRAPH =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
 const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; locked: boolean }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -232,12 +278,10 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const getY = (val: number) => padding.top + chartH - (Math.min(val, graphMax) / graphMax) * chartH
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(graphMax, Math.round(((padding.top + chartH - svgY) / chartH) * graphMax))) }
   const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
-  // Full line: all data points
   const allThisReel = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
   const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging({ index, line }) }
   const handlePointerMove = (e: React.PointerEvent) => { if (!dragging || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }; onChange(nd) }
   const handlePointerUp = () => setDragging(null)
-  // First x label shifted more to the right
   const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW]
   const commitEdit = () => { if (editingX !== null) { const u = [...xLabels]; u[editingX] = editValue; saveXLabels(u); setEditingX(null) }; if (editingY !== null) { const u = [...yLabels]; u[editingY] = editValue; saveYLabels(u); setEditingY(null) }; setEditValue("") }
 
@@ -247,7 +291,6 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
         {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
-        {/* Full pink line to end */}
         <path d={buildPath(allThisReel)} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
       </svg>
@@ -255,7 +298,7 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   )
 }
 
-// ===== DRAGGABLE ENGAGEMENT GRAPH (persisted) =====
+// ===== DRAGGABLE ENGAGEMENT GRAPH =====
 type EngagementPoint = { time: string; value: number }
 const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { data: EngagementPoint[]; onChange: (d: EngagementPoint[]) => void; locked: boolean; videoDuration: string }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -337,29 +380,6 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
   )
 }
 
-// ===== AUDIENCE BAR ROW (label above, pct on right) =====
-const AudienceBarRow = ({
-  label, percentage, color = "magenta", animateCharts, delay = 0,
-  labelNode,
-}: {
-  label?: string; percentage: number; color?: "magenta" | "violet"; animateCharts: boolean; delay?: number; labelNode?: React.ReactNode
-}) => {
-  const [width, setWidth] = useState(0)
-  useEffect(() => { if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) } }, [animateCharts, percentage, delay])
-  const colorVal = color === "magenta" ? PINK : PURPLE
-  return (
-    <div className="mb-1">
-      <div className="flex items-center justify-between mb-1">
-        <div className="text-[12px] text-white">{labelNode ?? label}</div>
-        <span className="text-[12px] text-white font-medium ml-2 shrink-0">{percentage.toFixed(1)}%</span>
-      </div>
-      <div className="relative w-full h-[10px] rounded-full overflow-hidden" style={{ backgroundColor: CARD_BG }}>
-        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: colorVal }} />
-      </div>
-    </div>
-  )
-}
-
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
@@ -378,7 +398,6 @@ export default function ReelInsights() {
   const [animationKey, setAnimationKey] = useState(0)
   const overviewRef = useRef<HTMLDivElement>(null)
 
-  // Build default engagement data
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
     const numPoints = Math.min(totalSec + 1, 20)
@@ -447,19 +466,14 @@ export default function ReelInsights() {
     })
   }, [])
 
-  // Load graph, retention, engagement from localStorage
   useEffect(() => {
     try {
       const s = localStorage.getItem("graph-data"); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) setGraphData(p) }
       const sr = localStorage.getItem("retention-data"); if (sr) { const p = JSON.parse(sr); if (Array.isArray(p) && p.length > 0) setRetentionData(p) }
-      // Load persisted engagement data
       const se = localStorage.getItem("engagement-graph-data")
       if (se) { const p = JSON.parse(se); if (Array.isArray(p) && p.length > 0) { setEngagementData(p); return } }
-      // If no saved engagement data, build default
       setEngagementData(buildEngagementData(insightsData.videoDuration))
-    } catch {
-      setEngagementData(buildEngagementData(insightsData.videoDuration))
-    }
+    } catch { setEngagementData(buildEngagementData(insightsData.videoDuration)) }
   }, [])
 
   const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd); try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {} }
@@ -470,13 +484,12 @@ export default function ReelInsights() {
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
 
-  const ProgressBar = ({ percentage, color = "magenta", delay = 0 }: { percentage: number; color?: "magenta" | "violet"; delay?: number }) => {
+  const ProgressBar = ({ percentage, delay = 0 }: { percentage: number; delay?: number }) => {
     const [width, setWidth] = useState(0)
     useEffect(() => { if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) } }, [animateCharts, percentage, delay])
-    const cs: Record<string, string> = { magenta: PINK, violet: PURPLE }
     return (
-      <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: CARD_BG }}>
-        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: cs[color] }} />
+      <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: PINK }} />
       </div>
     )
   }
@@ -582,7 +595,7 @@ export default function ReelInsights() {
                   {affectsData.map((item, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-5">
-                        <div className="w-13 h-13 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
+                        <div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
                         <span className="text-[14px] text-white font-medium">{item.label}</span>
                       </div>
                       <span className="text-[14px] text-white font-semibold">{item.value}</span>
@@ -637,12 +650,7 @@ export default function ReelInsights() {
                   <h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon />
                 </div>
                 {engagementData.length > 0 && (
-                  <DraggableEngagementGraph
-                    data={engagementData}
-                    onChange={handleEngagementChange}
-                    locked={locked}
-                    videoDuration={insightsData.videoDuration}
-                  />
+                  <DraggableEngagementGraph data={engagementData} onChange={handleEngagementChange} locked={locked} videoDuration={insightsData.videoDuration} />
                 )}
               </section>
 
@@ -677,42 +685,58 @@ export default function ReelInsights() {
           {/* ===== AUDIENCE ===== */}
           {mainTab === "Audience" && (
             <>
+              {/* Who viewed your reel */}
               <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Who viewed your reel</h3><InfoIcon /></div>
-                <div className="space-y-3">
-                  <AudienceBarRow
-                    label="Followers"
-                    percentage={insightsData.followerPercentage}
-                    color="magenta"
-                    animateCharts={animateCharts}
-                    delay={0}
-                  />
-                  <AudienceBarRow
-                    label="Non-followers"
-                    percentage={100 - insightsData.followerPercentage}
-                    color="violet"
-                    animateCharts={animateCharts}
-                    delay={100}
-                  />
+                <div className="flex items-center gap-2 mb-5">
+                  <h3 className="text-[15px] font-semibold">Who viewed your reel</h3>
+                  <InfoIcon />
                 </div>
+                <AudienceRow
+                  labelNode={<span className="text-[13px] text-white">Followers</span>}
+                  percentage={insightsData.followerPercentage}
+                  gradientId="grad-followers"
+                  animateCharts={animateCharts}
+                  delay={0}
+                />
+                <AudienceRow
+                  labelNode={<span className="text-[13px] text-white">Non-followers</span>}
+                  percentage={100 - insightsData.followerPercentage}
+                  gradientId="grad-nonfollowers"
+                  animateCharts={animateCharts}
+                  delay={120}
+                />
               </section>
 
+              {/* Audience details */}
               <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Audience details</h3><InfoIcon /></div>
-                <div className="flex gap-2 mb-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-[15px] font-semibold">Audience details</h3>
+                  <InfoIcon />
+                </div>
+
+                {/* Pills */}
+                <div className="flex gap-2 mb-6">
                   {(["Age", "Country", "Gender"] as const).map(tab => (
-                    <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
+                    <button
+                      key={tab}
+                      onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")}
+                      className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`}
+                      style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}
+                    >
+                      {tab}
+                    </button>
                   ))}
                 </div>
 
+                {/* Age */}
                 {audienceTab === "Age" && (
-                  <div className="space-y-3">
+                  <div>
                     {insightsData.ageData.map((age, index) => (
-                      <AudienceBarRow
+                      <AudienceRow
                         key={age.name}
-                        label={age.name}
+                        labelNode={<span className="text-[13px] text-white">{age.name}</span>}
                         percentage={age.percentage}
-                        color="magenta"
+                        gradientId={`grad-age-${index}`}
                         animateCharts={animateCharts}
                         delay={index * 60}
                       />
@@ -720,15 +744,12 @@ export default function ReelInsights() {
                   </div>
                 )}
 
+                {/* Country */}
                 {audienceTab === "Country" && (
-                  <div className="space-y-3">
+                  <div>
                     {insightsData.countryData.map((country, index) => (
-                      <AudienceBarRow
+                      <AudienceRow
                         key={index}
-                        percentage={country.percentage}
-                        color="magenta"
-                        animateCharts={animateCharts}
-                        delay={index * 80}
                         labelNode={
                           <CountryNameEditor
                             locked={locked}
@@ -741,31 +762,44 @@ export default function ReelInsights() {
                             }}
                           />
                         }
+                        percentage={country.percentage}
+                        gradientId={`grad-country-${index}`}
+                        animateCharts={animateCharts}
+                        delay={index * 80}
                       />
                     ))}
                   </div>
                 )}
 
+                {/* Gender */}
                 {audienceTab === "Gender" && (
-                  <div className="space-y-3">
-                    <AudienceBarRow
-                      percentage={insightsData.genderData.men}
-                      color="magenta"
-                      animateCharts={animateCharts}
-                      delay={0}
+                  <div>
+                    <AudienceRow
                       labelNode={
                         <div className="flex items-center gap-2">
-                          <span className="text-[12px] text-white">Men</span>
-                          <GenderEditor locked={locked} menValue={insightsData.genderData.men} onSave={newMen => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }} />
+                          <span className="text-[13px] text-white">Men</span>
+                          <GenderEditor
+                            locked={locked}
+                            menValue={insightsData.genderData.men}
+                            onSave={newMen => {
+                              const nw = parseFloat((100 - newMen).toFixed(1))
+                              try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
+                              saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
+                            }}
+                          />
                         </div>
                       }
-                    />
-                    <AudienceBarRow
-                      label="Women"
-                      percentage={insightsData.genderData.women}
-                      color="violet"
+                      percentage={insightsData.genderData.men}
+                      gradientId="grad-men"
                       animateCharts={animateCharts}
-                      delay={100}
+                      delay={0}
+                    />
+                    <AudienceRow
+                      labelNode={<span className="text-[13px] text-white">Women</span>}
+                      percentage={insightsData.genderData.women}
+                      gradientId="grad-women"
+                      animateCharts={animateCharts}
+                      delay={120}
                     />
                   </div>
                 )}
