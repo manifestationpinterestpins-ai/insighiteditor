@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence, useMotionValue, useTransform, animate, LayoutGroup } from "framer-motion" 
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
-import { InsightsData } from "@/lib/insights-state"
+import { InsightsData } from "@/lib/insights-state" 
 
 const shimmerStyle = {
   background: "linear-gradient(110deg, transparent 30%, #3A3A3C 50%, transparent 70%)",
