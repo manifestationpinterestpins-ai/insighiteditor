@@ -60,7 +60,7 @@ const OdometerSingleDigit = ({ target, delay }: { target: number; delay: number 
         className="inline-flex flex-col items-center"
         style={{
           transform: `translateY(${translateY}px)`,
-          transition: `transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`,
+           transition: `transform 2.2s cubic-bezier(0.25, 1, 0.5, 1) ${delay}s`,
           willChange: "transform",
         }}
       >
@@ -105,7 +105,7 @@ const AnimatedNumber = ({ value, className, triggerKey }: { value: number; class
           const currentDigitIndex = digitIndex
           digitIndex++
           // Stagger: rightmost digit fastest, leftmost slowest
-          const staggerDelay = (totalDigits - 1 - currentDigitIndex) * 0.05
+          const staggerDelay = (totalDigits - 1 - currentDigitIndex) * 0.12
 
           if (!rolling) {
             // Show 0 at start position (no transform)
