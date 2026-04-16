@@ -42,24 +42,22 @@ const tabContent = {
   },
 }
 
-// ===== ANIMATED NUMBER (ODOMETER) =====
-const AnimatedNumber = ({ value, className, play }: { value: number; className?: string; play: boolean }) => {
+// ===== ANIMATED NUMBER (ODOMETER — Views section only) =====
+const AnimatedNumber = ({ value, className }: { value: number; className?: string }) => {
   const [display, setDisplay] = useState(0)
   useEffect(() => {
-    if (!play) { setDisplay(0); return }
-    let start = 0
     const end = value
-    const duration = 600
+    const duration = 900
     const startTime = performance.now()
     const step = (now: number) => {
       const elapsed = now - startTime
       const progress = Math.min(elapsed / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplay(Math.round(start + (end - start) * eased))
+      setDisplay(Math.round(end * eased))
       if (progress < 1) requestAnimationFrame(step)
     }
     requestAnimationFrame(step)
-  }, [value, play])
+  }, [value])
   return <span className={className}>{display.toLocaleString("en-IN")}</span>
 }
 
@@ -640,7 +638,7 @@ export default function ReelInsights() {
               {mainTab === "Overview" && (
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
-                                    <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
+                                                      <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
                       <button onClick={() => { setSummaryLoading(true); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
@@ -652,18 +650,22 @@ export default function ReelInsights() {
                         { label: "Average watch time", value: insightsData.avgWatchTime },
                         { label: "Follows", value: profileActivity },
                       ].map((card, i) => (
-                        <div key={card.label} className="rounded-xl p-3.5 relative overflow-hidden" style={{ backgroundColor: CARD_BG }}>
+                        <div
+                          key={card.label}
+                          className="rounded-xl p-3.5 relative overflow-hidden"
+                          style={{ backgroundColor: CARD_BG, transform: "none" }}
+                        >
                           {summaryLoading ? (
                             <div className="absolute inset-0" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
                           ) : (
-                            <div style={{ animation: "fadeIn 0.22s ease-out" }}>
+                            <div style={{ animation: "fadeIn 0.2s ease-out" }}>
                               <span className="text-[11px] text-gray-400">{card.label}</span>
                               {card.label === "Average watch time" ? (
                                 <p className="text-[17px] font-bold text-white mt-0.5">{card.value}</p>
                               ) : card.label === "Follows" ? (
                                 <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
                               ) : (
-                                <AnimatedNumber value={card.value as number} className="text-[17px] font-bold text-white mt-0.5 block" play={!summaryLoading} />
+                                <p className="text-[17px] font-bold text-white mt-0.5">{(card.value as number).toLocaleString("en-IN")}</p>
                               )}
                             </div>
                           )}
@@ -675,7 +677,7 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                      <span className="text-[15px] font-semibold">{insightsData.views.toLocaleString("en-IN")}</span>
+                                            <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" />
                     </div>
                     <div className="flex gap-2 mb-6">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
