@@ -2,6 +2,7 @@
 
 import React from "react"
 import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence, useMotionValue, useTransform, animate, LayoutGroup } from "framer-motion"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
 import { InsightsData } from "@/lib/insights-state"
@@ -11,6 +12,52 @@ const PINK = "#d939cf"
 const PURPLE = "#7738fb"
 const CARD_BG = "#25282d"
 const BAR_BG = "#2a2d31"
+
+// ===== ANIMATION VARIANTS =====
+const pageVariants = {
+  initial: { y: "100%", opacity: 0 },
+  animate: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 30, duration: 0.5 } },
+}
+
+const fadeSlideUp = {
+  initial: { opacity: 0, y: 15, scale: 0.95 },
+  animate: (i: number) => ({
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.3, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] },
+  }),
+}
+
+const tabContent = {
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.15, ease: "easeIn" } },
+}
+
+// ===== ANIMATED NUMBER =====
+const AnimatedNumber = ({ value, className }: { value: number; className?: string }) => {
+  const count = useMotionValue(0)
+  const rounded = useTransform(count, (v) => Math.round(v).toLocaleString("en-IN"))
+  const [display, setDisplay] = useState("0")
+
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 0.9, ease: "easeOut" })
+    const unsub = rounded.on("change", (v) => setDisplay(v))
+    return () => { controls.stop(); unsub() }
+  }, [value])
+
+  return (
+    <div className="overflow-hidden">
+      <motion.span
+        className={className}
+        initial={{ y: 14, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {display}
+      </motion.span>
+    </div>
+  )
+}
 
 // ===== ICONS =====
 const ChevronLeftIcon = () => (
@@ -96,8 +143,7 @@ const SkipRateIcon = () => (
 )
 const ShareRateIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 2L11 13"/>
-    <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+    <path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/>
   </svg>
 )
 const LikeRateIcon = () => (
@@ -112,10 +158,8 @@ const SaveRateIcon = () => (
 )
 const RepostRateIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 1l4 4-4 4"/>
-    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-    <path d="M7 23l-4-4 4-4"/>
-    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
   </svg>
 )
 const CommentRateIcon = () => (
@@ -124,38 +168,40 @@ const CommentRateIcon = () => (
   </svg>
 )
 
-// ===== AUDIENCE ROW — rectangular bars =====
-const AudienceRow = ({
-  labelNode, percentage, barColor, animateCharts, delay = 0,
-}: {
-  labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts: boolean; delay?: number
-}) => {
+// ===== AUDIENCE ROW =====
+const AudienceRow = ({ labelNode, percentage, barColor, animateCharts, delay = 0 }: { labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts: boolean; delay?: number }) => {
   const [width, setWidth] = useState(0)
-  useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
-  }, [animateCharts, percentage, delay])
+  useEffect(() => { if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) } }, [animateCharts, percentage, delay])
   return (
-    <div className="mb-3.5">
+    <motion.div className="mb-3.5" variants={fadeSlideUp} initial="initial" animate="animate" custom={delay / 80}>
       <div className="mb-1 text-[13px] text-white">{labelNode}</div>
       <div className="flex items-center gap-3">
-                <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
-          <div className="absolute left-0 top-0 h-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: barColor, borderRadius: 6 }} />
+        <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
+          <motion.div
+            className="absolute left-0 top-0 h-full"
+            style={{ backgroundColor: barColor, borderRadius: 6 }}
+            initial={{ width: 0 }}
+            animate={{ width: animateCharts ? `${percentage}%` : 0 }}
+            transition={{ duration: 0.7, delay: delay / 1000, ease: "easeOut" }}
+          />
         </div>
         <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-// ===== ANIMATED BAR — rectangular (gender) =====
+// ===== ANIMATED BAR =====
 const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
-  }, [animateCharts, percentage, delay])
-    return (
+  return (
     <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
-      <div className="absolute left-0 top-0 h-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color, borderRadius: 6 }} />
+      <motion.div
+        className="absolute left-0 top-0 h-full"
+        style={{ backgroundColor: color, borderRadius: 6 }}
+        initial={{ width: 0 }}
+        animate={{ width: animateCharts ? `${percentage}%` : 0 }}
+        transition={{ duration: 0.7, delay: delay / 1000, ease: "easeOut" }}
+      />
     </div>
   )
 }
@@ -168,14 +214,8 @@ const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave:
   useEffect(() => { setVal(value.toFixed(1)) }, [value])
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { const p = parseFloat(val); if (!isNaN(p) && p >= 0 && p <= 100) onSave(p); setEditing(false) }
-  if (editing) return (
-    <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-1 py-0.5 text-[13px] text-white text-center outline-none" style={{ caretColor: PINK, width: 60 }} />
-  )
-  return (
-    <span className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) setEditing(true) }}>
-      {value.toFixed(1)}%
-    </span>
-  )
+  if (editing) return <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-1 py-0.5 text-[13px] text-white text-center outline-none" style={{ caretColor: PINK, width: 60 }} />
+  return <span className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) setEditing(true) }}>{value.toFixed(1)}%</span>
 }
 
 // ===== BOTTOM SHEET =====
@@ -188,24 +228,28 @@ const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) 
     return () => { clearTimeout(t); document.removeEventListener("mousedown", h); document.removeEventListener("touchstart", h as any) }
   }, [open, onClose])
   return (
-    <>
-      <div className="fixed inset-0 z-[60] transition-opacity duration-300" style={{ backgroundColor: open ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0)", pointerEvents: open ? "auto" : "none" }} onClick={onClose} />
-      <div ref={sheetRef} className="fixed left-0 right-0 bottom-0 z-[70] transition-transform duration-300 ease-out" style={{ transform: open ? "translateY(0)" : "translateY(100%)" }}>
-        <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl"><div className="w-10 h-1 bg-zinc-600 rounded-full" /></div>
-        <div className="bg-[#1c1c1e] px-4 pb-8">
-          <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-            <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><BoostIcon /></div><span className="text-[14px] text-white">Boost this reel</span></div>
-            <ChevronRightIcon />
-          </button>
-          <div className="h-px bg-zinc-800" />
-          <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-            <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><span className="text-[14px] text-white">View on Edits</span></div>
-            <ChevronRightIcon />
-          </button>
-        </div>
-        <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
-      </div>
-    </>
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div className="fixed inset-0 z-[60]" style={{ backgroundColor: "rgba(0,0,0,0.45)" }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.div ref={sheetRef} className="fixed left-0 right-0 bottom-0 z-[70]" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+            <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl"><div className="w-10 h-1 bg-zinc-600 rounded-full" /></div>
+            <div className="bg-[#1c1c1e] px-4 pb-8">
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
+                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><BoostIcon /></div><span className="text-[14px] text-white">Boost this reel</span></div>
+                <ChevronRightIcon />
+              </button>
+              <div className="h-px bg-zinc-800" />
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
+                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><span className="text-[14px] text-white">View on Edits</span></div>
+                <ChevronRightIcon />
+              </button>
+            </div>
+            <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -215,31 +259,29 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boo
   const menuRef = useRef<HTMLDivElement>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLongPress = useRef(false)
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false) }
-    if (open) document.addEventListener("mousedown", h)
-    return () => document.removeEventListener("mousedown", h)
-  }, [open])
+  useEffect(() => { const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false) }; if (open) document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h) }, [open])
   const handlePressStart = () => { isLongPress.current = false; longPressTimer.current = setTimeout(() => { isLongPress.current = true; onLongPress() }, 500) }
   const handlePressEnd = () => { if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null } }
   const handleClick = () => { if (isLongPress.current) { isLongPress.current = false; return }; setOpen(p => !p) }
   return (
     <div className="relative" ref={menuRef}>
       <button className="p-1 -mr-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}><MoreVerticalIcon /></button>
-      {open && (
-        <div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-[12px] text-white hover:bg-zinc-800 transition-colors text-left" onClick={() => { setOpen(false); onOpenEditor() }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Edit insights
-          </button>
-          <div className="h-px bg-zinc-800 mx-3" />
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-[12px] text-white hover:bg-zinc-800 transition-colors text-left" onClick={() => { onToggle(); setOpen(false) }}>
-            {locked
-              ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>Unlock editing</>
-              : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Lock editing</>}
-          </button>
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.18, ease: "easeOut" }}>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-[12px] text-white hover:bg-zinc-800 transition-colors text-left" onClick={() => { setOpen(false); onOpenEditor() }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit insights
+            </button>
+            <div className="h-px bg-zinc-800 mx-3" />
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-[12px] text-white hover:bg-zinc-800 transition-colors text-left" onClick={() => { onToggle(); setOpen(false) }}>
+              {locked
+                ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>Unlock editing</>
+                : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Lock editing</>}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -265,6 +307,28 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
   const commit = () => { if (value.trim()) onSave(value.trim()); else setValue(name); setEditing(false) }
   if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white outline-none w-full" style={{ caretColor: PINK }} />
   return <span className={`text-[13px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
+}
+
+// ===== ANIMATED GRAPH LINE =====
+const AnimatedGraphPath = ({ d, stroke, strokeWidth, strokeDasharray, strokeLinejoin }: { d: string; stroke: string; strokeWidth: number; strokeDasharray?: string; strokeLinejoin?: "round" | "miter" | "bevel" }) => {
+  const pathRef = useRef<SVGPathElement>(null)
+  const [length, setLength] = useState(0)
+  useEffect(() => { if (pathRef.current) setLength(pathRef.current.getTotalLength()) }, [d])
+  return (
+    <motion.path
+      ref={pathRef}
+      d={d}
+      fill="none"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin={strokeLinejoin}
+      strokeDasharray={strokeDasharray || `${length} ${length}`}
+      initial={{ strokeDashoffset: length }}
+      animate={{ strokeDashoffset: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    />
+  )
 }
 
 // ===== DRAGGABLE VIEWS GRAPH =====
@@ -301,6 +365,7 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const handlePointerUp = () => setDragging(null)
   const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW]
   const commitEdit = () => { if (editingX !== null) { const u = [...xLabels]; u[editingX] = editValue; saveXLabels(u); setEditingX(null) }; if (editingY !== null) { const u = [...yLabels]; u[editingY] = editValue; saveYLabels(u); setEditingY(null) }; setEditValue("") }
+  const pathD = buildPath(allThisReel)
 
   return (
     <div className="relative -mx-1">
@@ -308,7 +373,7 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
         {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
-        <path d={buildPath(allThisReel)} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
+        <AnimatedGraphPath d={pathD} stroke={PINK} strokeWidth={5} />
         {data.map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -326,8 +391,7 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 160
-  const chartW = width - padding.left - padding.right
-  const chartH = height - padding.top - padding.bottom
+  const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(100, Math.round(((padding.top + chartH - svgY) / chartH) * 100))) }
@@ -350,31 +414,25 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx]?.time || defaultRightLabel); setEditingRightX(true) }}>{data[lastIdx]?.time || defaultRightLabel}</text>
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+        <AnimatedGraphPath d={pathD} stroke={PINK} strokeWidth={5} strokeLinejoin="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
   )
 }
 
-// ===== DRAGGABLE RETENTION GRAPH — dynamic duration from prop =====
+// ===== DRAGGABLE RETENTION GRAPH =====
 type RetentionPoint = { time: string; retention: number }
-const DraggableRetentionGraph = ({
-  data, onChange, locked, videoDuration,
-}: {
-  data: RetentionPoint[]; onChange: (d: RetentionPoint[]) => void; locked: boolean; videoDuration: string
-}) => {
+const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { data: RetentionPoint[]; onChange: (d: RetentionPoint[]) => void; locked: boolean; videoDuration: string }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<number | null>(null)
   const [editingRightX, setEditingRightX] = useState(false)
   const [rightXValue, setRightXValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 150
-  const chartW = width - padding.left - padding.right
-  const chartH = height - padding.top - padding.bottom
+  const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(100, Math.round(((padding.top + chartH - svgY) / chartH) * 100))) }
@@ -386,11 +444,8 @@ const DraggableRetentionGraph = ({
   const handlePointerUp = () => setDragging(null)
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
-
-  // Dynamic duration label from prop — updates when duration changes
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
-  const durMin = Math.floor(totalSec / 60)
-  const durSec = totalSec % 60
+  const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60
   const dynamicDurLabel = `${durMin}:${durSec.toString().padStart(2, "0")}`
 
   return (
@@ -398,22 +453,9 @@ const DraggableRetentionGraph = ({
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-        {/* Left x label */}
         {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
-        {/* Right x label — dynamic from videoDuration, shifted slightly left */}
-        <text
-          x={getX(lastIdx) - 6}
-          y={height - 7}
-          textAnchor="middle"
-          fill={editingRightX ? PINK : "#d1d5db"}
-          fontSize="13"
-          fontFamily="sans-serif"
-          className={locked ? "cursor-default" : "cursor-pointer"}
-          onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}
-        >
-          {dynamicDurLabel}
-        </text>
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
+        <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
+        <AnimatedGraphPath d={pathD} stroke={PINK} strokeWidth={5} />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -422,16 +464,20 @@ const DraggableRetentionGraph = ({
 
 // ===== SIMPLE PROGRESS BAR =====
 const SimpleBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
-  }, [animateCharts, percentage, delay])
   return (
     <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-      <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
+      <motion.div
+        className="absolute left-0 top-0 h-full rounded-full"
+        style={{ backgroundColor: color }}
+        initial={{ width: 0 }}
+        animate={{ width: animateCharts ? `${percentage}%` : 0 }}
+        transition={{ duration: 0.7, delay: delay / 1000, ease: "easeOut" }}
+      />
     </div>
   )
 }
+
+const TABS = ["Overview", "Engagement", "Audience"] as const
 
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
@@ -461,12 +507,9 @@ export default function ReelInsights() {
     const data: EngagementPoint[] = []
     for (let i = 0; i < numPoints; i++) {
       const p = i / (numPoints - 1); let v = 0
-      if (p < 0.1) v = 60 + Math.random() * 30
-      else if (p < 0.2) v = 40 + Math.random() * 35
-      else if (p < 0.4) v = 20 + Math.random() * 40
-      else if (p < 0.5) v = 50 + Math.random() * 40
-      else if (p < 0.7) v = 15 + Math.random() * 30
-      else v = 5 + Math.random() * 20
+      if (p < 0.1) v = 60 + Math.random() * 30; else if (p < 0.2) v = 40 + Math.random() * 35
+      else if (p < 0.4) v = 20 + Math.random() * 40; else if (p < 0.5) v = 50 + Math.random() * 40
+      else if (p < 0.7) v = 15 + Math.random() * 30; else v = 5 + Math.random() * 20
       const timeSec = Math.round(p * totalSec); const tMin = Math.floor(timeSec / 60); const tSec = timeSec % 60
       data.push({ time: `${tMin}:${tSec.toString().padStart(2, "0")}`, value: Math.min(100, Math.max(0, v)) })
     }
@@ -484,34 +527,18 @@ export default function ReelInsights() {
     } catch {}
   }, [])
 
-    useEffect(() => {
-    const updateOffset = () => {
-      if (tabsPlaceholderRef.current) {
-        tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY
-      }
-    }
+  useEffect(() => {
+    const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
     updateOffset()
     window.addEventListener("resize", updateOffset)
-
-    const handleScroll = () => {
-      updateOffset()
-      if (window.scrollY >= tabsOffsetTop.current) {
-        setTabsSticky(true)
-      } else {
-        setTabsSticky(false)
-      }
-    }
-
+    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY >= tabsOffsetTop.current) }
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", updateOffset)
-    }
+    return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
   }, [])
 
-    const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
+  const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
-  
+
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80, typical: 60 }, { date: "28 Jan", thisReel: 200, typical: 80 },
     { date: "28 Jan", thisReel: 170, typical: 90 }, { date: "29 Jan", thisReel: 320, typical: 75 },
@@ -524,47 +551,15 @@ export default function ReelInsights() {
 
   useEffect(() => {
     const fp = parseFloat((Math.random() * 8 + 2).toFixed(1))
-    const reels = parseFloat((Math.random() * 10 + 75).toFixed(1))
-    const explore = parseFloat((Math.random() * 5 + 10).toFixed(1))
-    const rem = parseFloat((100 - reels - explore).toFixed(1))
-    const stories = parseFloat((rem * 0.55).toFixed(1))
-    const profile = parseFloat((rem * 0.28).toFixed(1))
-    const feed = parseFloat((rem - stories - profile).toFixed(1))
-    const sT = parseFloat((Math.random() * 10 + 10).toFixed(1))
-    const sTy = parseFloat((Math.random() * 10 + 20).toFixed(1))
-    const us = parseFloat((Math.random() * 10 + 35).toFixed(1))
-    const uk = parseFloat((Math.random() * 8 + 20).toFixed(1))
-    const ca = parseFloat((Math.random() * 6 + 12).toFixed(1))
-    const au = parseFloat((Math.random() * 5 + 8).toFixed(1))
-    const de = parseFloat((Math.random() * 3 + 4).toFixed(1))
-    const ot = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
-    const a18 = parseFloat((Math.random() * 13 + 35).toFixed(1))
-    const a25 = parseFloat((Math.random() * 12 + 30).toFixed(1))
-    const a35 = parseFloat((Math.random() * 5 + 5).toFixed(1))
-    const a45 = parseFloat((Math.random() * 3 + 1).toFixed(1))
-    const a55 = parseFloat((Math.random() * 1.2 + 0.3).toFixed(1))
-    const a65 = parseFloat((Math.random() * 0.8 + 0.2).toFixed(1))
-    const a13 = parseFloat((100 - a18 - a25 - a35 - a45 - a55 - a65).toFixed(1))
+    const reels = parseFloat((Math.random() * 10 + 75).toFixed(1)); const explore = parseFloat((Math.random() * 5 + 10).toFixed(1)); const rem = parseFloat((100 - reels - explore).toFixed(1)); const stories = parseFloat((rem * 0.55).toFixed(1)); const profile = parseFloat((rem * 0.28).toFixed(1)); const feed = parseFloat((rem - stories - profile).toFixed(1))
+    const sT = parseFloat((Math.random() * 10 + 10).toFixed(1)); const sTy = parseFloat((Math.random() * 10 + 20).toFixed(1))
+    const us = parseFloat((Math.random() * 10 + 35).toFixed(1)); const uk = parseFloat((Math.random() * 8 + 20).toFixed(1)); const ca = parseFloat((Math.random() * 6 + 12).toFixed(1)); const au = parseFloat((Math.random() * 5 + 8).toFixed(1)); const de = parseFloat((Math.random() * 3 + 4).toFixed(1)); const ot = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
+    const a18 = parseFloat((Math.random() * 13 + 35).toFixed(1)); const a25 = parseFloat((Math.random() * 12 + 30).toFixed(1)); const a35 = parseFloat((Math.random() * 5 + 5).toFixed(1)); const a45 = parseFloat((Math.random() * 3 + 1).toFixed(1)); const a55 = parseFloat((Math.random() * 1.2 + 0.3).toFixed(1)); const a65 = parseFloat((Math.random() * 0.8 + 0.2).toFixed(1)); const a13 = parseFloat((100 - a18 - a25 - a35 - a45 - a55 - a65).toFixed(1))
     saveData({
       ...insightsData, followerPercentage: fp, skipRateThis: sT, skipRateTypical: sTy,
-      countryData: [
-        { name: insightsData.countryData[0]?.name ?? "United States", percentage: us },
-        { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk },
-        { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca },
-        { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au },
-        { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de },
-        { name: insightsData.countryData[5]?.name ?? "Others", percentage: Math.max(0, ot) },
-      ],
-      ageData: [
-        { name: "13-17", percentage: Math.max(0, a13) }, { name: "18-24", percentage: a18 },
-        { name: "25-34", percentage: a25 }, { name: "35-44", percentage: a35 },
-        { name: "45-54", percentage: a45 }, { name: "55-64", percentage: a55 }, { name: "65+", percentage: a65 },
-      ],
-      sourcesData: [
-        { name: "Reels tab", percentage: reels }, { name: "Explore", percentage: explore },
-        { name: "Stories", percentage: stories }, { name: "Profile", percentage: profile },
-        { name: "Feed", percentage: Math.max(0, feed) },
-      ],
+      countryData: [{ name: insightsData.countryData[0]?.name ?? "United States", percentage: us }, { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk }, { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca }, { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au }, { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de }, { name: insightsData.countryData[5]?.name ?? "Others", percentage: Math.max(0, ot) }],
+      ageData: [{ name: "13-17", percentage: Math.max(0, a13) }, { name: "18-24", percentage: a18 }, { name: "25-34", percentage: a25 }, { name: "35-44", percentage: a35 }, { name: "45-54", percentage: a45 }, { name: "55-64", percentage: a55 }, { name: "65+", percentage: a65 }],
+      sourcesData: [{ name: "Reels tab", percentage: reels }, { name: "Explore", percentage: explore }, { name: "Stories", percentage: stories }, { name: "Profile", percentage: profile }, { name: "Feed", percentage: Math.max(0, feed) }],
     })
   }, [])
 
@@ -585,12 +580,7 @@ export default function ReelInsights() {
   const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
-
-  const saveGender = (newMen: number) => {
-    const nw = parseFloat((100 - newMen).toFixed(1))
-    try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
-    saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
-  }
+  const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }
 
   const totalViews = insightsData.views || 1
   const affectsData = [
@@ -603,278 +593,268 @@ export default function ReelInsights() {
   ]
 
   return (
-    <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center" style={{ backgroundColor: BG }}>
-      <div className="w-full max-w-[420px]">
+    <>
+      {/* Dark overlay behind page */}
+      <motion.div className="fixed inset-0 z-0 bg-black" initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ duration: 0.4 }} />
 
-        {/* Header */}
-        <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
-          <div className="flex items-center justify-between px-4 h-[48px]">
-            <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
-            <h1 className="text-[16px] font-semibold flex-1 ml-4">Reel insights</h1>
-            {/* Boost icon left of 3-dot menu */}
-            <div className="flex items-center gap-2">
-              <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}>
-                <HeaderBoostIcon />
-              </button>
-              <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+      {/* Main page — slide up */}
+      <motion.div
+        className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center relative z-10"
+        style={{ backgroundColor: BG }}
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+      >
+        <div className="w-full max-w-[420px]">
+
+          {/* Header */}
+          <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
+            <div className="flex items-center justify-between px-4 h-[48px]">
+              <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
+              <h1 className="text-[16px] font-semibold flex-1 ml-4">Reel insights</h1>
+              <div className="flex items-center gap-2">
+                <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
+                <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Thumbnail */}
-        <section className="flex flex-col items-center pt-4 pb-4 px-5">
-          <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
-            {thumbnailImage ? (
-              <><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>
-            )}
-            <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
-          </div>
-          <div className="flex items-center justify-between w-full max-w-[300px] mt-4 px-1">
-            <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] text-white">{insightsData.likes}</span></div>
-            <div className="flex flex-col items-center gap-1"><CommentIcon /><span className="text-[10px] text-white">{insightsData.comments}</span></div>
-            <div className="flex flex-col items-center gap-1"><SendIcon /><span className="text-[10px] text-white">{insightsData.shares}</span></div>
-            <div className="flex flex-col items-center gap-1"><RepostIcon /><span className="text-[10px] text-white">{insightsData.reposts}</span></div>
-            <div className="flex flex-col items-center gap-1"><BookmarkIcon /><span className="text-[10px] text-white">{insightsData.bookmarks}</span></div>
-          </div>
-        </section>
+          {/* Thumbnail */}
+          <motion.section className="flex flex-col items-center pt-4 pb-4 px-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}>
+            <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
+              {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
+              <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
+            </div>
+            <div className="flex items-center justify-between w-full max-w-[300px] mt-4 px-1">
+              {[{ icon: <HeartIcon />, val: insightsData.likes }, { icon: <CommentIcon />, val: insightsData.comments }, { icon: <SendIcon />, val: insightsData.shares }, { icon: <RepostIcon />, val: insightsData.reposts }, { icon: <BookmarkIcon />, val: insightsData.bookmarks }].map((item, i) => (
+                <motion.div key={i} className="flex flex-col items-center gap-1" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
+                  {item.icon}
+                  <span className="text-[10px] text-white">{item.val}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
 
-                        {/* Tabs placeholder — keeps layout when tabs go fixed */}
-        <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
+          {/* Tabs placeholder */}
+          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
 
-        {/* Tabs — scroll-based sticky */}
-        <div
-          ref={tabsRef}
-          className="flex border-b border-zinc-800/40 z-50"
-          style={{
-            position: tabsSticky ? "fixed" : "relative",
-            top: tabsSticky ? 0 : undefined,
-            left: tabsSticky ? 0 : undefined,
-            right: tabsSticky ? 0 : undefined,
-            width: tabsSticky ? "100%" : undefined,
-            maxWidth: tabsSticky ? 420 : undefined,
-            margin: tabsSticky ? "0 auto" : undefined,
-            backgroundColor: BG,
-          }}
-        >
-          {(["Overview", "Engagement", "Audience"] as const).map(tab => (
-            <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
-              {tab}
-              {mainTab === tab && <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full" />}
-            </button>
-          ))}
-        </div>
-
-        <main className="pb-12">
-
-          {/* ===== OVERVIEW ===== */}
-          {mainTab === "Overview" && (
-            <>
-              <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-[15px] font-semibold">Summary</h3>
-                  <button onClick={replayOverviewAnimation} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
-                </div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
-                    <span className="text-[11px] text-gray-400">Views</span>
-                    <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.views.toLocaleString("en-IN")}</p>
-                  </div>
-                  <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
-                    <span className="text-[11px] text-gray-400">Accounts reached</span>
-                    <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.accountsReached.toLocaleString("en-IN")}</p>
-                  </div>
-                  <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
-                    <span className="text-[11px] text-gray-400">Average watch time</span>
-                    <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.avgWatchTime}</p>
-                  </div>
-                  <div className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }}>
-                    <span className="text-[11px] text-gray-400">Follows</span>
-                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
-                  </div>
-                </div>
-              </section>
-
-              <section className="px-4 py-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                  <span className="text-[15px] font-semibold">{insightsData.views.toLocaleString("en-IN")}</span>
-                </div>
-                <div className="flex gap-2 mb-6">
-                  {(["All", "Followers", "Non-followers"] as const).map(filter => (
-                    <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
-                  ))}
-                </div>
-                <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
-              </section>
-
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
-                <div className="space-y-4">
-                  {affectsData.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-5">
-                        <div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
-                        <span className="text-[14px] text-white font-medium">{item.label}</span>
-                      </div>
-                      <span className="text-[14px] text-white font-semibold">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">How long people watched your reel</h3><InfoIcon /></div>
-                <div className="flex justify-center mb-5">
-                  <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
-                    {retentionThumbnail ? (
-                      <><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
-                    <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
-                  </div>
-                </div>
-                {/* Pass videoDuration so right label updates dynamically */}
-                <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} locked={locked} videoDuration={insightsData.videoDuration} />
-              </section>
-
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h4 className="text-[15px] font-semibold">Top sources of views</h4><InfoIcon /></div>
-                <div className="space-y-4">
-                  {insightsData.sourcesData.map((source, index) => (
-                    <div key={source.name}>
-                      <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">{source.name}</span><span className="text-[13px] text-white font-medium">{source.percentage.toFixed(1)}%</span></div>
-                      <SimpleBar percentage={source.percentage} color={PINK} animateCharts={animateCharts} delay={index * 100} />
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="px-4 py-5">
-                <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
-                <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
-                  <div className="flex items-center gap-3"><BoostIcon /><span className="text-[13px] text-white font-medium">Boost this Reel</span></div>
-                  <ChevronRightIcon />
+          {/* Tabs — sticky with layout animation for underline */}
+          <LayoutGroup>
+            <div
+              ref={tabsRef}
+              className="flex border-b border-zinc-800/40 z-50"
+              style={{
+                position: tabsSticky ? "fixed" : "relative",
+                top: tabsSticky ? 0 : undefined,
+                left: tabsSticky ? 0 : undefined,
+                right: tabsSticky ? 0 : undefined,
+                width: tabsSticky ? "100%" : undefined,
+                maxWidth: tabsSticky ? 420 : undefined,
+                margin: tabsSticky ? "0 auto" : undefined,
+                backgroundColor: BG,
+              }}
+            >
+              {TABS.map(tab => (
+                <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
+                  {tab}
+                  {mainTab === tab && (
+                    <motion.div
+                      layoutId="activeTabUnderline"
+                      className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full"
+                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    />
+                  )}
                 </button>
-              </section>
-            </>
-          )}
+              ))}
+            </div>
+          </LayoutGroup>
 
-          {/* ===== ENGAGEMENT ===== */}
-          {mainTab === "Engagement" && (
-            <>
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-5"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
-                {engagementData.length > 0 && (
-                  <DraggableEngagementGraph data={engagementData} onChange={handleEngagementChange} locked={locked} videoDuration={insightsData.videoDuration} />
-                )}
-              </section>
+          <main className="pb-12">
+            <AnimatePresence mode="wait">
 
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Actions after viewing</h3><InfoIcon /></div>
-                <div className="space-y-3.5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[13px] text-white">Follows</span>
-                    <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[13px] text-white">Profile visits</span>
-                    <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} />
-                  </div>
-                </div>
-              </section>
+              {/* ===== OVERVIEW ===== */}
+              {mainTab === "Overview" && (
+                <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Interactions</h3><InfoIcon /></div>
-                <div className="space-y-3.5">
-                  {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val]) => (
-                    <div key={label as string} className="flex justify-between items-center">
-                      <span className="text-[13px] text-white">{label}</span>
-                      <span className="text-[13px] text-white font-semibold">{val}</span>
+                  <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <h3 className="text-[15px] font-semibold">Summary</h3>
+                      <button onClick={replayOverviewAnimation} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
                     </div>
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { label: "Views", content: <AnimatedNumber value={insightsData.views} className="text-[17px] font-bold text-white mt-0.5 block" /> },
+                        { label: "Accounts reached", content: <AnimatedNumber value={insightsData.accountsReached} className="text-[17px] font-bold text-white mt-0.5 block" /> },
+                        { label: "Average watch time", content: <p className="text-[17px] font-bold text-white mt-0.5">{insightsData.avgWatchTime}</p> },
+                        { label: "Follows", content: <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} /> },
+                      ].map((card, i) => (
+                        <motion.div key={card.label} className="rounded-xl p-3.5" style={{ backgroundColor: CARD_BG }} variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
+                          <span className="text-[11px] text-gray-400">{card.label}</span>
+                          {card.content}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
 
-          {/* ===== AUDIENCE ===== */}
-          {mainTab === "Audience" && (
-            <>
-              <section className="px-4 pt-5 pb-3">
-                <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-[15px] font-semibold">Who viewed your reel</h3>
-                  <InfoIcon />
-                </div>
-                <AudienceRow labelNode={<span>Followers</span>} percentage={insightsData.followerPercentage} barColor={PINK} animateCharts={animateCharts} delay={0} />
-                <AudienceRow labelNode={<span>Non-followers</span>} percentage={100 - insightsData.followerPercentage} barColor={PURPLE} animateCharts={animateCharts} delay={120} />
-              </section>
+                  <section className="px-4 py-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
+                      <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" />
+                    </div>
+                    <div className="flex gap-2 mb-6">
+                      {(["All", "Followers", "Non-followers"] as const).map(filter => (
+                        <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
+                      ))}
+                    </div>
+                    <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
+                  </section>
 
-              <section className="px-4 pt-3 pb-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="text-[15px] font-semibold">Audience details</h3>
-                  <InfoIcon />
-                </div>
-                <div className="flex gap-2 mb-5">
-                  {(["Age", "Country", "Gender"] as const).map(tab => (
-                    <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
-                  ))}
-                </div>
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
+                    <div className="space-y-4">
+                      {affectsData.map((item, i) => (
+                        <motion.div key={i} className="flex items-center justify-between" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
+                          <div className="flex items-center gap-5">
+                            <motion.div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }} initial={{ scale: 0.9 }} animate={{ scale: 1 }} transition={{ delay: i * 0.05 + 0.1, duration: 0.25 }}>
+                              {item.icon}
+                            </motion.div>
+                            <span className="text-[14px] text-white font-medium">{item.label}</span>
+                          </div>
+                          <span className="text-[14px] text-white font-semibold">{item.value}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
 
-                {audienceTab === "Age" && (
-                  <div>
-                    {insightsData.ageData.map((age, index) => (
-                      <AudienceRow key={age.name} labelNode={<span>{age.name}</span>} percentage={age.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 60} />
-                    ))}
-                  </div>
-                )}
-
-                {audienceTab === "Country" && (
-                  <div>
-                    {insightsData.countryData.map((country, index) => (
-                      <AudienceRow
-                        key={index}
-                        labelNode={<CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />}
-                        percentage={country.percentage}
-                        barColor={PINK}
-                        animateCharts={animateCharts}
-                        delay={index * 80}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {audienceTab === "Gender" && (
-                  <div>
-                    <div className="mb-3.5">
-                      <div className="mb-1 text-[13px] text-white">Men</div>
-                      <div className="flex items-center gap-3">
-                        <AnimatedBar percentage={insightsData.genderData.men} color={PINK} animateCharts={animateCharts} delay={0} />
-                        <GenderPercentEditor value={insightsData.genderData.men} locked={locked} onSave={saveGender} />
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">How long people watched your reel</h3><InfoIcon /></div>
+                    <div className="flex justify-center mb-5">
+                      <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
+                        {retentionThumbnail ? (<><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>)}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
+                        <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                       </div>
                     </div>
-                    <div className="mb-3.5">
-                      <div className="mb-1 text-[13px] text-white">Women</div>
-                      <div className="flex items-center gap-3">
-                        <AnimatedBar percentage={insightsData.genderData.women} color={PURPLE} animateCharts={animateCharts} delay={120} />
-                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.women.toFixed(1)}%</span>
-                      </div>
+                    <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} locked={locked} videoDuration={insightsData.videoDuration} />
+                  </section>
+
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4"><h4 className="text-[15px] font-semibold">Top sources of views</h4><InfoIcon /></div>
+                    <div className="space-y-4">
+                      {insightsData.sourcesData.map((source, index) => (
+                        <motion.div key={source.name} variants={fadeSlideUp} initial="initial" animate="animate" custom={index}>
+                          <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">{source.name}</span><span className="text-[13px] text-white font-medium">{source.percentage.toFixed(1)}%</span></div>
+                          <SimpleBar percentage={source.percentage} color={PINK} animateCharts={animateCharts} delay={index * 100} />
+                        </motion.div>
+                      ))}
                     </div>
-                  </div>
-                )}
-              </section>
-            </>
-          )}
+                  </section>
 
-        </main>
+                  <section className="px-4 py-5">
+                    <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
+                    <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
+                      <div className="flex items-center gap-3"><BoostIcon /><span className="text-[13px] text-white font-medium">Boost this Reel</span></div>
+                      <ChevronRightIcon />
+                    </button>
+                  </section>
+                </motion.div>
+              )}
 
-        <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-        <BottomSheet open={bottomSheetOpen} onClose={() => setBottomSheetOpen(false)} />
+              {/* ===== ENGAGEMENT ===== */}
+              {mainTab === "Engagement" && (
+                <motion.div key="engagement" variants={tabContent} initial="initial" animate="animate" exit="exit">
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-5"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
+                    {engagementData.length > 0 && <DraggableEngagementGraph data={engagementData} onChange={handleEngagementChange} locked={locked} videoDuration={insightsData.videoDuration} />}
+                  </section>
 
-      </div>
-    </div>
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Actions after viewing</h3><InfoIcon /></div>
+                    <div className="space-y-3.5">
+                      {[{ label: "Follows", node: <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} /> }, { label: "Profile visits", node: <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} /> }].map((item, i) => (
+                        <motion.div key={item.label} className="flex justify-between items-center" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
+                          <span className="text-[13px] text-white">{item.label}</span>
+                          {item.node}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Interactions</h3><InfoIcon /></div>
+                    <div className="space-y-3.5">
+                      {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val], i) => (
+                        <motion.div key={label as string} className="flex justify-between items-center" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
+                          <span className="text-[13px] text-white">{label}</span>
+                          <span className="text-[13px] text-white font-semibold">{val}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+
+              {/* ===== AUDIENCE ===== */}
+              {mainTab === "Audience" && (
+                <motion.div key="audience" variants={tabContent} initial="initial" animate="animate" exit="exit">
+                  <section className="px-4 pt-5 pb-3">
+                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Who viewed your reel</h3><InfoIcon /></div>
+                    <AudienceRow labelNode={<span>Followers</span>} percentage={insightsData.followerPercentage} barColor={PINK} animateCharts={animateCharts} delay={0} />
+                    <AudienceRow labelNode={<span>Non-followers</span>} percentage={100 - insightsData.followerPercentage} barColor={PURPLE} animateCharts={animateCharts} delay={120} />
+                  </section>
+
+                  <section className="px-4 pt-3 pb-5">
+                    <div className="flex items-center gap-2 mb-3"><h3 className="text-[15px] font-semibold">Audience details</h3><InfoIcon /></div>
+                    <div className="flex gap-2 mb-5">
+                      {(["Age", "Country", "Gender"] as const).map(tab => (
+                        <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
+                      ))}
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                      {audienceTab === "Age" && (
+                        <motion.div key="age" variants={tabContent} initial="initial" animate="animate" exit="exit">
+                          {insightsData.ageData.map((age, index) => <AudienceRow key={age.name} labelNode={<span>{age.name}</span>} percentage={age.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 60} />)}
+                        </motion.div>
+                      )}
+                      {audienceTab === "Country" && (
+                        <motion.div key="country" variants={tabContent} initial="initial" animate="animate" exit="exit">
+                          {insightsData.countryData.map((country, index) => (
+                            <AudienceRow key={index} labelNode={<CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />} percentage={country.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 80} />
+                          ))}
+                        </motion.div>
+                      )}
+                      {audienceTab === "Gender" && (
+                        <motion.div key="gender" variants={tabContent} initial="initial" animate="animate" exit="exit">
+                          <div className="mb-3.5">
+                            <div className="mb-1 text-[13px] text-white">Men</div>
+                            <div className="flex items-center gap-3">
+                              <AnimatedBar percentage={insightsData.genderData.men} color={PINK} animateCharts={animateCharts} delay={0} />
+                              <GenderPercentEditor value={insightsData.genderData.men} locked={locked} onSave={saveGender} />
+                            </div>
+                          </div>
+                          <div className="mb-3.5">
+                            <div className="mb-1 text-[13px] text-white">Women</div>
+                            <div className="flex items-center gap-3">
+                              <AnimatedBar percentage={insightsData.genderData.women} color={PURPLE} animateCharts={animateCharts} delay={120} />
+                              <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.women.toFixed(1)}%</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </section>
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </main>
+
+          <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
+          <BottomSheet open={bottomSheetOpen} onClose={() => setBottomSheetOpen(false)} />
+
+        </div>
+      </motion.div>
+    </>
   )
 }
