@@ -120,7 +120,7 @@ const AnimatedNumber = ({ value, className, triggerKey }: { value: number; class
 }
 // ===== ICONS =====
 const ChevronLeftIcon = () => (
-  <svg width="48" height="24" viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="40" height="24" viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path
     d="M36 12H10M10 12L18 4M10 12L18 20"
     stroke="white"
