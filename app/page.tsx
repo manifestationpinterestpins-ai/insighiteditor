@@ -621,7 +621,7 @@ export default function ReelInsights() {
           <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
             <div className="flex items-center justify-between px-4 h-[48px]">
               <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
-              <h1 className="text-[16px] font-semibold flex-1 ml-4">Reel insights</h1>
+              <h1 className="text-[18px] font-semibold flex-1 ml-4">Reel insights</h1>
               <div className="flex items-center gap-2">
                 <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
                 <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
