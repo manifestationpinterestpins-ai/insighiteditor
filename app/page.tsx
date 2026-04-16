@@ -17,6 +17,10 @@ const shimmerKeyframes = `
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }`
 
 const BG = "#0c0f14"
@@ -36,6 +40,27 @@ const tabContent = {
     opacity: 0,
     transition: { duration: 0.12 },
   },
+}
+
+// ===== ANIMATED NUMBER (ODOMETER) =====
+const AnimatedNumber = ({ value, className, play }: { value: number; className?: string; play: boolean }) => {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    if (!play) { setDisplay(0); return }
+    let start = 0
+    const end = value
+    const duration = 600
+    const startTime = performance.now()
+    const step = (now: number) => {
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(start + (end - start) * eased))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [value, play])
+  return <span className={className}>{display.toLocaleString("en-IN")}</span>
 }
 
 // ===== ICONS =====
@@ -615,10 +640,10 @@ export default function ReelInsights() {
               {mainTab === "Overview" && (
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
-                  <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
+                                    <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
-                      <button onClick={replayOverviewAnimation} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
+                      <button onClick={() => { setSummaryLoading(true); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
                       {[
@@ -631,16 +656,16 @@ export default function ReelInsights() {
                           {summaryLoading ? (
                             <div className="absolute inset-0" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
                           ) : (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+                            <div style={{ animation: "fadeIn 0.22s ease-out" }}>
                               <span className="text-[11px] text-gray-400">{card.label}</span>
                               {card.label === "Average watch time" ? (
                                 <p className="text-[17px] font-bold text-white mt-0.5">{card.value}</p>
                               ) : card.label === "Follows" ? (
                                 <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
                               ) : (
-                                <p className="text-[17px] font-bold text-white mt-0.5">{(card.value as number).toLocaleString("en-IN")}</p>
+                                <AnimatedNumber value={card.value as number} className="text-[17px] font-bold text-white mt-0.5 block" play={!summaryLoading} />
                               )}
-                            </motion.div>
+                            </div>
                           )}
                         </div>
                       ))}
