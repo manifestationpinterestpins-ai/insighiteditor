@@ -21,7 +21,18 @@ const shimmerKeyframes = `
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}`
+}
+@keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
+@keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
+@keyframes rollDigit2 { 0% { transform: translateY(0); } 100% { transform: translateY(-20%); } }
+@keyframes rollDigit3 { 0% { transform: translateY(0); } 100% { transform: translateY(-30%); } }
+@keyframes rollDigit4 { 0% { transform: translateY(0); } 100% { transform: translateY(-40%); } }
+@keyframes rollDigit5 { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+@keyframes rollDigit6 { 0% { transform: translateY(0); } 100% { transform: translateY(-60%); } }
+@keyframes rollDigit7 { 0% { transform: translateY(0); } 100% { transform: translateY(-70%); } }
+@keyframes rollDigit8 { 0% { transform: translateY(0); } 100% { transform: translateY(-80%); } }
+@keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
+`
 
 const BG = "#0c0f14"
 const PINK = "#d939cf"
@@ -42,40 +53,71 @@ const tabContent = {
   },
 }
 
-const Odometer = ({ value }: { value: number }) => {
-  const digits = value.toString().split("")
+// ===== ODOMETER STYLES =====
+const odometerKeyframes = `
+@keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
+@keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
+@keyframes rollDigit2 { 0% { transform: translateY(0); } 100% { transform: translateY(-20%); } }
+@keyframes rollDigit3 { 0% { transform: translateY(0); } 100% { transform: translateY(-30%); } }
+@keyframes rollDigit4 { 0% { transform: translateY(0); } 100% { transform: translateY(-40%); } }
+@keyframes rollDigit5 { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+@keyframes rollDigit6 { 0% { transform: translateY(0); } 100% { transform: translateY(-60%); } }
+@keyframes rollDigit7 { 0% { transform: translateY(0); } 100% { transform: translateY(-70%); } }
+@keyframes rollDigit8 { 0% { transform: translateY(0); } 100% { transform: translateY(-80%); } }
+@keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
+`
 
+// ===== SINGLE ROLLING DIGIT =====
+const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
   return (
-    <div className="flex">
-      {digits.map((d, i) => {
-        if (d === ",") return <span key={i}>,</span>
-
-        const digit = parseInt(d)
-
-        return (
-          <div key={i} className="relative h-[1.2em] overflow-hidden w-[0.7em]">
-            <motion.div
-              initial={{ y: 0 }}
-              animate={{ y: `-${digit * 100}%` }}
-              transition={{
-                duration: 0.9,
-                delay: (digits.length - i) * 0.05,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-            >
-              {[...Array(20).keys()].map(n => (
-                <div key={n} className="h-[1.2em] flex items-center justify-center">
-                  {n % 10}
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        )
-      })}
-    </div>
+    <span
+      className="inline-block overflow-hidden"
+      style={{
+        height: "1em",
+        lineHeight: "1em",
+        verticalAlign: "top",
+        width: "0.62em",
+      }}
+    >
+      <span
+        className="flex flex-col"
+        style={{
+          animation: `rollDigit${target} 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) ${delay}s both`,
+        }}
+      >
+        {[0,1,2,3,4,5,6,7,8,9].map(n => (
+          <span key={n} className="block text-center" style={{ height: "1em", lineHeight: "1em" }}>
+            {n}
+          </span>
+        ))}
+      </span>
+    </span>
   )
 }
 
+// ===== ANIMATED NUMBER (Odometer — digit rolling) =====
+const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
+  const formatted = value.toLocaleString("en-IN")
+  const chars = formatted.split("")
+  const digitChars = chars.filter(c => /\d/.test(c))
+  const totalDigits = digitChars.length
+
+  let digitIndex = 0
+
+  return (
+    <span className={className} key={triggerKey} style={{ display: "inline-flex", alignItems: "baseline" }}>
+      {chars.map((char, i) => {
+        if (/\d/.test(char)) {
+          const currentIdx = digitIndex
+          digitIndex++
+          const staggerDelay = (totalDigits - 1 - currentIdx) * 0.15
+          return <RollingDigit key={`${triggerKey}-${i}`} target={parseInt(char)} delay={staggerDelay} />
+        }
+        return <span key={`sep-${i}`} style={{ width: "0.3em", textAlign: "center" }}>{char}</span>
+      })}
+    </span>
+  )
+}
 // ===== ICONS =====
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -699,7 +741,7 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                           <Odometer key={viewsAnimKey} value={insightsData.views} />
+                           <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
                     <div className="flex gap-2 mb-6">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
