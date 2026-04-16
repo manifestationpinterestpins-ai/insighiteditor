@@ -12,6 +12,7 @@ const PURPLE = "#7738fb"
 const CARD_BG = "#25282d"
 const BAR_BG = "#2a2d31"
 
+// ===== ICONS =====
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
@@ -23,38 +24,34 @@ const MoreVerticalIcon = () => (
   </svg>
 )
 const HeartIcon = () => (
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="white" stroke="none">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 21s-7-4.35-9-8.5C1.5 8 4 5 7.5 5c2 0 3.5 1 4.5 2.5C13 6 14.5 5 16.5 5 20 5 22.5 8 21 12.5 19 16.65 12 21 12 21z"/>
   </svg>
 )
-
 const CommentIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" strokeLinejoin="round" strokeWidth="2">
-    <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
   </svg>
 )
-
 const SendIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <path fill="white" stroke="#0c0f14" strokeLinejoin="round" strokeWidth="2"
-      d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/>
-    <path fill="none" stroke="#0c0f14" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-      d="m7.488 12.208 8.027-4.567"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 2L11 13"/>
+    <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
   </svg>
 )
-
 const RepostIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 1l4 4-4 4"/>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <path d="M7 23l-4-4 4-4"/>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
   </svg>
 )
-
 const BookmarkIcon = () => (
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
-    <path fill="white" d="m20 21-8-7.56L4 21V3h16z"/>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
   </svg>
 )
-
 const InfoIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white">
     <circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
@@ -95,61 +92,81 @@ const ShareIcon = () => (
   </svg>
 )
 const LikeIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 21s-7-4.35-9-8.5C1.5 8 4 5 7.5 5c2 0 3.5 1 4.5 2.5C13 6 14.5 5 16.5 5 20 5 22.5 8 21 12.5 19 16.65 12 21 12 21z"/>
   </svg>
 )
 const SaveIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
   </svg>
 )
 const RepostSmallIcon = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-    <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    <path d="M17 1l4 4-4 4"/>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <path d="M7 23l-4-4 4-4"/>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
   </svg>
 )
 const CommentSmallIcon = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
   </svg>
 )
 
-// ===== AUDIENCE STAT ROW =====
-// Label above bar, percentage to the right of bar
+// ===== AUDIENCE ROW =====
 const AudienceRow = ({
   labelNode,
   percentage,
-  gradientId,
+  barColor,
   animateCharts,
   delay = 0,
 }: {
   labelNode: React.ReactNode
   percentage: number
-  gradientId: string
+  barColor: string
   animateCharts: boolean
   delay?: number
 }) => {
   const [width, setWidth] = useState(0)
   useEffect(() => {
-    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
+    if (animateCharts) {
+      const t = setTimeout(() => setWidth(percentage), delay)
+      return () => clearTimeout(t)
+    }
   }, [animateCharts, percentage, delay])
 
   return (
-    <div className="mb-4">
-      {/* Label above bar */}
+    <div className="mb-5">
       <div className="mb-1.5 text-[13px] text-white">{labelNode}</div>
-      {/* Bar + percentage on same line */}
       <div className="flex items-center gap-3">
         <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
           <div
             className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
-            style={{ width: `${width}%`, background: `linear-gradient(90deg, ${PURPLE}, ${PINK})` }}
+            style={{ width: `${width}%`, backgroundColor: barColor }}
           />
         </div>
-        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
+        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">
+          {percentage.toFixed(1)}%
+        </span>
       </div>
+    </div>
+  )
+}
+
+// ===== GENDER BARS =====
+const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    if (animateCharts) {
+      const t = setTimeout(() => setWidth(percentage), delay)
+      return () => clearTimeout(t)
+    }
+  }, [animateCharts, percentage, delay])
+  return (
+    <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+      <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
     </div>
   )
 }
@@ -191,7 +208,11 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boo
   const menuRef = useRef<HTMLDivElement>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLongPress = useRef(false)
-  useEffect(() => { const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false) }; if (open) document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h) }, [open])
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false) }
+    if (open) document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [open])
   const handlePressStart = () => { isLongPress.current = false; longPressTimer.current = setTimeout(() => { isLongPress.current = true; onLongPress() }, 500) }
   const handlePressEnd = () => { if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null } }
   const handleClick = () => { if (isLongPress.current) { isLongPress.current = false; return }; setOpen(p => !p) }
@@ -233,10 +254,17 @@ const GenderEditor = ({ menValue, onSave, locked }: { menValue: number; onSave: 
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(menValue.toFixed(1))
   const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => { setValue(menValue.toFixed(1)) }, [menValue])
   useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
   const commit = () => { const p = parseFloat(value); if (!isNaN(p) && p >= 0 && p <= 100) onSave(p); setEditing(false) }
-  if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[12px] text-white text-center w-[65px] outline-none" style={{ caretColor: PINK }} />
-  return <span className={`text-[13px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>{menValue.toFixed(1)}%</span>
+  if (editing) return (
+    <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[12px] text-white text-center w-[65px] outline-none" style={{ caretColor: PINK }} />
+  )
+  return (
+    <span className={`text-[13px] text-white font-semibold ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>
+      {menValue.toFixed(1)}%
+    </span>
+  )
 }
 
 // ===== COUNTRY NAME EDITOR =====
@@ -307,7 +335,6 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const [rightXValue, setRightXValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 160
   const chartW = width - padding.left - padding.right
@@ -380,6 +407,19 @@ const DraggableRetentionGraph = ({ data, onChange, locked }: { data: RetentionPo
   )
 }
 
+// ===== SIMPLE PROGRESS BAR =====
+const SimpleBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
+  }, [animateCharts, percentage, delay])
+  return (
+    <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+      <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
+    </div>
+  )
+}
+
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
@@ -404,9 +444,12 @@ export default function ReelInsights() {
     const data: EngagementPoint[] = []
     for (let i = 0; i < numPoints; i++) {
       const p = i / (numPoints - 1); let v = 0
-      if (p < 0.1) v = 60 + Math.random() * 30; else if (p < 0.2) v = 40 + Math.random() * 35
-      else if (p < 0.4) v = 20 + Math.random() * 40; else if (p < 0.5) v = 50 + Math.random() * 40
-      else if (p < 0.7) v = 15 + Math.random() * 30; else v = 5 + Math.random() * 20
+      if (p < 0.1) v = 60 + Math.random() * 30
+      else if (p < 0.2) v = 40 + Math.random() * 35
+      else if (p < 0.4) v = 20 + Math.random() * 40
+      else if (p < 0.5) v = 50 + Math.random() * 40
+      else if (p < 0.7) v = 15 + Math.random() * 30
+      else v = 5 + Math.random() * 20
       const timeSec = Math.round(p * totalSec); const tMin = Math.floor(timeSec / 60); const tSec = timeSec % 60
       data.push({ time: `${tMin}:${tSec.toString().padStart(2, "0")}`, value: Math.min(100, Math.max(0, v)) })
     }
@@ -439,10 +482,27 @@ export default function ReelInsights() {
 
   useEffect(() => {
     const fp = parseFloat((Math.random() * 8 + 2).toFixed(1))
-    const reels = parseFloat((Math.random() * 10 + 75).toFixed(1)); const explore = parseFloat((Math.random() * 5 + 10).toFixed(1)); const rem = parseFloat((100 - reels - explore).toFixed(1)); const stories = parseFloat((rem * 0.55).toFixed(1)); const profile = parseFloat((rem * 0.28).toFixed(1)); const feed = parseFloat((rem - stories - profile).toFixed(1))
-    const sT = parseFloat((Math.random() * 10 + 10).toFixed(1)); const sTy = parseFloat((Math.random() * 10 + 20).toFixed(1))
-    const us = parseFloat((Math.random() * 10 + 35).toFixed(1)); const uk = parseFloat((Math.random() * 8 + 20).toFixed(1)); const ca = parseFloat((Math.random() * 6 + 12).toFixed(1)); const au = parseFloat((Math.random() * 5 + 8).toFixed(1)); const de = parseFloat((Math.random() * 3 + 4).toFixed(1)); const ot = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
-    const a18 = parseFloat((Math.random() * 13 + 35).toFixed(1)); const a25 = parseFloat((Math.random() * 12 + 30).toFixed(1)); const a35 = parseFloat((Math.random() * 5 + 5).toFixed(1)); const a45 = parseFloat((Math.random() * 3 + 1).toFixed(1)); const a55 = parseFloat((Math.random() * 1.2 + 0.3).toFixed(1)); const a65 = parseFloat((Math.random() * 0.8 + 0.2).toFixed(1)); const a13 = parseFloat((100 - a18 - a25 - a35 - a45 - a55 - a65).toFixed(1))
+    const reels = parseFloat((Math.random() * 10 + 75).toFixed(1))
+    const explore = parseFloat((Math.random() * 5 + 10).toFixed(1))
+    const rem = parseFloat((100 - reels - explore).toFixed(1))
+    const stories = parseFloat((rem * 0.55).toFixed(1))
+    const profile = parseFloat((rem * 0.28).toFixed(1))
+    const feed = parseFloat((rem - stories - profile).toFixed(1))
+    const sT = parseFloat((Math.random() * 10 + 10).toFixed(1))
+    const sTy = parseFloat((Math.random() * 10 + 20).toFixed(1))
+    const us = parseFloat((Math.random() * 10 + 35).toFixed(1))
+    const uk = parseFloat((Math.random() * 8 + 20).toFixed(1))
+    const ca = parseFloat((Math.random() * 6 + 12).toFixed(1))
+    const au = parseFloat((Math.random() * 5 + 8).toFixed(1))
+    const de = parseFloat((Math.random() * 3 + 4).toFixed(1))
+    const ot = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
+    const a18 = parseFloat((Math.random() * 13 + 35).toFixed(1))
+    const a25 = parseFloat((Math.random() * 12 + 30).toFixed(1))
+    const a35 = parseFloat((Math.random() * 5 + 5).toFixed(1))
+    const a45 = parseFloat((Math.random() * 3 + 1).toFixed(1))
+    const a55 = parseFloat((Math.random() * 1.2 + 0.3).toFixed(1))
+    const a65 = parseFloat((Math.random() * 0.8 + 0.2).toFixed(1))
+    const a13 = parseFloat((100 - a18 - a25 - a35 - a45 - a55 - a65).toFixed(1))
     saveData({
       ...insightsData, followerPercentage: fp, skipRateThis: sT, skipRateTypical: sTy,
       countryData: [
@@ -483,16 +543,6 @@ export default function ReelInsights() {
   const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
-
-  const ProgressBar = ({ percentage, delay = 0 }: { percentage: number; delay?: number }) => {
-    const [width, setWidth] = useState(0)
-    useEffect(() => { if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) } }, [animateCharts, percentage, delay])
-    return (
-      <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: PINK }} />
-      </div>
-    )
-  }
 
   const totalViews = insightsData.views || 1
   const affectsData = [
@@ -626,7 +676,7 @@ export default function ReelInsights() {
                   {insightsData.sourcesData.map((source, index) => (
                     <div key={source.name}>
                       <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">{source.name}</span><span className="text-[13px] text-white font-medium">{source.percentage.toFixed(1)}%</span></div>
-                      <ProgressBar percentage={source.percentage} delay={index * 100} />
+                      <SimpleBar percentage={source.percentage} color={PINK} animateCharts={animateCharts} delay={index * 100} />
                     </div>
                   ))}
                 </div>
@@ -646,9 +696,7 @@ export default function ReelInsights() {
           {mainTab === "Engagement" && (
             <>
               <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-5">
-                  <h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon />
-                </div>
+                <div className="flex items-center gap-2 mb-5"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
                 {engagementData.length > 0 && (
                   <DraggableEngagementGraph data={engagementData} onChange={handleEngagementChange} locked={locked} videoDuration={insightsData.videoDuration} />
                 )}
@@ -692,16 +740,16 @@ export default function ReelInsights() {
                   <InfoIcon />
                 </div>
                 <AudienceRow
-                  labelNode={<span className="text-[13px] text-white">Followers</span>}
+                  labelNode={<span>Followers</span>}
                   percentage={insightsData.followerPercentage}
-                  gradientId="grad-followers"
+                  barColor={PINK}
                   animateCharts={animateCharts}
                   delay={0}
                 />
                 <AudienceRow
-                  labelNode={<span className="text-[13px] text-white">Non-followers</span>}
+                  labelNode={<span>Non-followers</span>}
                   percentage={100 - insightsData.followerPercentage}
-                  gradientId="grad-nonfollowers"
+                  barColor={PURPLE}
                   animateCharts={animateCharts}
                   delay={120}
                 />
@@ -734,9 +782,9 @@ export default function ReelInsights() {
                     {insightsData.ageData.map((age, index) => (
                       <AudienceRow
                         key={age.name}
-                        labelNode={<span className="text-[13px] text-white">{age.name}</span>}
+                        labelNode={<span>{age.name}</span>}
                         percentage={age.percentage}
-                        gradientId={`grad-age-${index}`}
+                        barColor={PINK}
                         animateCharts={animateCharts}
                         delay={index * 60}
                       />
@@ -763,7 +811,7 @@ export default function ReelInsights() {
                           />
                         }
                         percentage={country.percentage}
-                        gradientId={`grad-country-${index}`}
+                        barColor={PINK}
                         animateCharts={animateCharts}
                         delay={index * 80}
                       />
@@ -774,33 +822,36 @@ export default function ReelInsights() {
                 {/* Gender */}
                 {audienceTab === "Gender" && (
                   <div>
-                    <AudienceRow
-                      labelNode={
-                        <div className="flex items-center gap-2">
-                          <span className="text-[13px] text-white">Men</span>
-                          <GenderEditor
-                            locked={locked}
-                            menValue={insightsData.genderData.men}
-                            onSave={newMen => {
-                              const nw = parseFloat((100 - newMen).toFixed(1))
-                              try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
-                              saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
-                            }}
-                          />
-                        </div>
-                      }
-                      percentage={insightsData.genderData.men}
-                      gradientId="grad-men"
-                      animateCharts={animateCharts}
-                      delay={0}
-                    />
-                    <AudienceRow
-                      labelNode={<span className="text-[13px] text-white">Women</span>}
-                      percentage={insightsData.genderData.women}
-                      gradientId="grad-women"
-                      animateCharts={animateCharts}
-                      delay={120}
-                    />
+                    {/* Men row */}
+                    <div className="mb-5">
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <span className="text-[13px] text-white">Men</span>
+                        <GenderEditor
+                          locked={locked}
+                          menValue={insightsData.genderData.men}
+                          onSave={newMen => {
+                            const nw = parseFloat((100 - newMen).toFixed(1))
+                            try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
+                            saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <AnimatedBar percentage={insightsData.genderData.men} color={PINK} animateCharts={animateCharts} delay={0} />
+                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.men.toFixed(1)}%</span>
+                      </div>
+                    </div>
+
+                    {/* Women row */}
+                    <div className="mb-5">
+                      <div className="mb-1.5">
+                        <span className="text-[13px] text-white">Women</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <AnimatedBar percentage={insightsData.genderData.women} color={PURPLE} animateCharts={animateCharts} delay={120} />
+                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.women.toFixed(1)}%</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </section>
