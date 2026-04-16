@@ -42,48 +42,40 @@ const tabContent = {
   },
 }
 
-// ===== ANIMATED NUMBER (Smooth count-up with visible speed) =====
-const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
-  const [display, setDisplay] = useState("0")
-  const rafRef = useRef<number>(0)
-  const startTimeRef = useRef<number>(0)
+const Odometer = ({ value }: { value: number }) => {
+  const digits = value.toString().split("")
 
-  useEffect(() => {
-    setDisplay("0")
+  return (
+    <div className="flex">
+      {digits.map((d, i) => {
+        if (d === ",") return <span key={i}>,</span>
 
-    // Small delay so the "0" is visible first
-    const startDelay = setTimeout(() => {
-      startTimeRef.current = performance.now()
+        const digit = parseInt(d)
 
-      const duration = 1800 // 1.8 seconds
-      const step = (now: number) => {
-        const elapsed = now - startTimeRef.current
-        const progress = Math.min(elapsed / duration, 1)
-
-        // Custom easing: fast start, slow end (feels like spinning down)
-        const eased = progress < 0.5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2
-
-        const current = Math.round(value * eased)
-        setDisplay(current.toLocaleString("en-IN"))
-
-        if (progress < 1) {
-          rafRef.current = requestAnimationFrame(step)
-        }
-      }
-
-      rafRef.current = requestAnimationFrame(step)
-    }, 100)
-
-    return () => {
-      clearTimeout(startDelay)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [value, triggerKey])
-
-  return <span className={className}>{display}</span>
+        return (
+          <div key={i} className="relative h-[1.2em] overflow-hidden w-[0.7em]">
+            <motion.div
+              initial={{ y: 0 }}
+              animate={{ y: `-${digit * 100}%` }}
+              transition={{
+                duration: 0.9,
+                delay: (digits.length - i) * 0.05,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              {[...Array(20).keys()].map(n => (
+                <div key={n} className="h-[1.2em] flex items-center justify-center">
+                  {n % 10}
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
+
 // ===== ICONS =====
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -707,7 +699,7 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                           <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
+                           <Odometer key={viewsAnimKey} value={insightsData.views} />
                     </div>
                     <div className="flex gap-2 mb-6">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
