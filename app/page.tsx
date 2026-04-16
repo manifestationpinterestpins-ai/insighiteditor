@@ -42,112 +42,48 @@ const tabContent = {
   },
 }
 
-// ===== SINGLE ODOMETER DIGIT =====
-const DIGIT_HEIGHT = 22
-const DIGITS_STACK = [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9]
-
-const OdometerSingleDigit = ({ target, delay }: { target: number; delay: number }) => {
-  // Target position: roll through 2 full cycles + land on target in 3rd cycle
-  const finalIndex = 50 + target // 3rd cycle start (index 20) + target digit
-  const translateY = -(finalIndex * DIGIT_HEIGHT)
-
-  return (
-    <span
-      className="inline-block overflow-hidden relative"
-      style={{ height: DIGIT_HEIGHT, width: "0.6em", verticalAlign: "top" }}
-    >
-      <span
-        className="inline-flex flex-col items-center"
-        style={{
-          transform: `translateY(${translateY}px)`,
-           transition: `transform 2.2s cubic-bezier(0.25, 1, 0.5, 1) ${delay}s`,
-          willChange: "transform",
-        }}
-      >
-        {DIGITS_STACK.map((d, i) => (
-          <span
-            key={i}
-            className="block text-center"
-            style={{ height: DIGIT_HEIGHT, lineHeight: `${DIGIT_HEIGHT}px` }}
-          >
-            {d}
-          </span>
-        ))}
-      </span>
-    </span>
-  )
-}
-
-// ===== ANIMATED NUMBER (Real mechanical odometer) =====
+// ===== ANIMATED NUMBER (Smooth count-up with visible speed) =====
 const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
-  const formatted = value.toLocaleString("en-IN")
-  const chars = formatted.split("")
-  const totalDigits = chars.filter(c => /\d/.test(c)).length
-  const [rolling, setRolling] = useState(false)
+  const [display, setDisplay] = useState("0")
+  const rafRef = useRef<number>(0)
+  const startTimeRef = useRef<number>(0)
 
   useEffect(() => {
-    // Reset to top then trigger roll
-    setRolling(false)
-    const t = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setRolling(true)
-      })
-    })
-    return () => cancelAnimationFrame(t)
+    setDisplay("0")
+
+    // Small delay so the "0" is visible first
+    const startDelay = setTimeout(() => {
+      startTimeRef.current = performance.now()
+
+      const duration = 1800 // 1.8 seconds
+      const step = (now: number) => {
+        const elapsed = now - startTimeRef.current
+        const progress = Math.min(elapsed / duration, 1)
+
+        // Custom easing: fast start, slow end (feels like spinning down)
+        const eased = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2
+
+        const current = Math.round(value * eased)
+        setDisplay(current.toLocaleString("en-IN"))
+
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(step)
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(step)
+    }, 100)
+
+    return () => {
+      clearTimeout(startDelay)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
   }, [value, triggerKey])
 
-  let digitIndex = 0
-
-  return (
-    <span className={className} style={{ display: "inline-flex", alignItems: "baseline" }}>
-      {chars.map((char, i) => {
-        if (/\d/.test(char)) {
-          const currentDigitIndex = digitIndex
-          digitIndex++
-          // Stagger: rightmost digit fastest, leftmost slowest
-          const staggerDelay = (totalDigits - 1 - currentDigitIndex) * 0.12
-
-          if (!rolling) {
-            // Show 0 at start position (no transform)
-            return (
-              <span
-                key={`${triggerKey}-${i}`}
-                className="inline-block overflow-hidden relative"
-                style={{ height: DIGIT_HEIGHT, width: "0.6em", verticalAlign: "top" }}
-              >
-                <span
-                  className="inline-flex flex-col items-center"
-                  style={{ transform: "translateY(0px)" }}
-                >
-                  {DIGITS_STACK.map((d, j) => (
-                    <span
-                      key={j}
-                      className="block text-center"
-                      style={{ height: DIGIT_HEIGHT, lineHeight: `${DIGIT_HEIGHT}px` }}
-                    >
-                      {d}
-                    </span>
-                  ))}
-                </span>
-              </span>
-            )
-          }
-
-          return (
-            <OdometerSingleDigit
-              key={`${triggerKey}-${i}`}
-              target={parseInt(char)}
-              delay={staggerDelay}
-            />
-          )
-        }
-        // Comma or separator
-        return <span key={`sep-${i}`}>{char}</span>
-      })}
-    </span>
-  )
+  return <span className={className}>{display}</span>
 }
-
 // ===== ICONS =====
 const ChevronLeftIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
