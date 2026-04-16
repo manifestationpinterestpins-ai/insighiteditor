@@ -80,37 +80,42 @@ const BoostIcon = () => (
     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
   </svg>
 )
-const SkipIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+
+// "What affects your views" icons — updated
+const SkipRateIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
+    <circle cx="24" cy="24" r="18" stroke="white" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 6"/>
+    <path d="M24 6 A18 18 0 0 1 42 24" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="24" y1="24" x2="24" y2="14" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="24" y1="24" x2="32" y2="24" stroke="white" strokeWidth="3" strokeLinecap="round"/>
   </svg>
 )
-const ShareIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-    <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+const ShareRateIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 2L11 13"/>
+    <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
   </svg>
 )
-const LikeIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const LikeRateIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 21s-7-4.35-9-8.5C1.5 8 4 5 7.5 5c2 0 3.5 1 4.5 2.5C13 6 14.5 5 16.5 5 20 5 22.5 8 21 12.5 19 16.65 12 21 12 21z"/>
   </svg>
 )
-const SaveIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+const SaveRateIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21l-8-7.56L4 21V3h16z"/>
   </svg>
 )
-const RepostSmallIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const RepostRateIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 1l4 4-4 4"/>
     <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
     <path d="M7 23l-4-4 4-4"/>
     <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
   </svg>
 )
-const CommentSmallIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const CommentRateIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
   </svg>
 )
@@ -138,8 +143,8 @@ const AudienceRow = ({
   }, [animateCharts, percentage, delay])
 
   return (
-    <div className="mb-5">
-      <div className="mb-1.5 text-[13px] text-white">{labelNode}</div>
+    <div className="mb-3.5">
+      <div className="mb-1 text-[13px] text-white">{labelNode}</div>
       <div className="flex items-center gap-3">
         <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
           <div
@@ -155,7 +160,7 @@ const AudienceRow = ({
   )
 }
 
-// ===== GENDER BARS =====
+// ===== ANIMATED BAR (for gender) =====
 const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
   const [width, setWidth] = useState(0)
   useEffect(() => {
@@ -168,6 +173,39 @@ const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percenta
     <div className="flex-1 relative h-[9px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
       <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${width}%`, backgroundColor: color }} />
     </div>
+  )
+}
+
+// ===== GENDER PERCENTAGE EDITOR (right side only) =====
+const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave: (n: number) => void; locked: boolean }) => {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(value.toFixed(1))
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => { setVal(value.toFixed(1)) }, [value])
+  useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
+  const commit = () => {
+    const p = parseFloat(val)
+    if (!isNaN(p) && p >= 0 && p <= 100) onSave(p)
+    setEditing(false)
+  }
+  if (editing) return (
+    <input
+      ref={inputRef}
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === "Enter") commit() }}
+      className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-1 py-0.5 text-[13px] text-white text-center outline-none"
+      style={{ caretColor: PINK, width: 60 }}
+    />
+  )
+  return (
+    <span
+      className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`}
+      onClick={() => { if (!locked) setEditing(true) }}
+    >
+      {value.toFixed(1)}%
+    </span>
   )
 }
 
@@ -247,24 +285,6 @@ const InlineEditor = ({ value, onSave, isNumber = false, className = "", locked 
   const commit = () => { if (isNumber) { const p = parseFloat(val); if (!isNaN(p)) onSave(p) } else { if (val.trim()) onSave(val.trim()) }; setEditing(false) }
   if (editing) return <input ref={inputRef} value={val} type={isNumber ? "number" : "text"} onChange={e => setVal(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className={`bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-white outline-none ${className}`} style={{ caretColor: PINK, minWidth: 60 }} />
   return <span className={`${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity ${className}`} onClick={() => { if (!locked) { setVal(String(value)); setEditing(true) } }}>{value}</span>
-}
-
-// ===== GENDER EDITOR =====
-const GenderEditor = ({ menValue, onSave, locked }: { menValue: number; onSave: (n: number) => void; locked: boolean }) => {
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState(menValue.toFixed(1))
-  const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => { setValue(menValue.toFixed(1)) }, [menValue])
-  useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editing])
-  const commit = () => { const p = parseFloat(value); if (!isNaN(p) && p >= 0 && p <= 100) onSave(p); setEditing(false) }
-  if (editing) return (
-    <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[12px] text-white text-center w-[65px] outline-none" style={{ caretColor: PINK }} />
-  )
-  return (
-    <span className={`text-[13px] text-white font-semibold ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(menValue.toFixed(1)); setEditing(true) } }}>
-      {menValue.toFixed(1)}%
-    </span>
-  )
 }
 
 // ===== COUNTRY NAME EDITOR =====
@@ -546,13 +566,20 @@ export default function ReelInsights() {
 
   const totalViews = insightsData.views || 1
   const affectsData = [
-    { icon: <SkipIcon />, label: "Skip rate", value: `${insightsData.skipRateThis.toFixed(1)}%` },
-    { icon: <ShareIcon />, label: "Share rate", value: `${((insightsData.shares / totalViews) * 100).toFixed(1)}%` },
-    { icon: <LikeIcon />, label: "Like rate", value: `${((insightsData.likes / totalViews) * 100).toFixed(1)}%` },
-    { icon: <SaveIcon />, label: "Save rate", value: `${((insightsData.bookmarks / totalViews) * 100).toFixed(1)}%` },
-    { icon: <RepostSmallIcon />, label: "Repost rate", value: `${((insightsData.reposts / totalViews) * 100).toFixed(1)}%` },
-    { icon: <CommentSmallIcon />, label: "Comment rate", value: `${((insightsData.comments / totalViews) * 100).toFixed(1)}%` },
+    { icon: <SkipRateIcon />, label: "Skip rate", value: `${insightsData.skipRateThis.toFixed(1)}%` },
+    { icon: <ShareRateIcon />, label: "Share rate", value: `${((insightsData.shares / totalViews) * 100).toFixed(1)}%` },
+    { icon: <LikeRateIcon />, label: "Like rate", value: `${((insightsData.likes / totalViews) * 100).toFixed(1)}%` },
+    { icon: <SaveRateIcon />, label: "Save rate", value: `${((insightsData.bookmarks / totalViews) * 100).toFixed(1)}%` },
+    { icon: <RepostRateIcon />, label: "Repost rate", value: `${((insightsData.reposts / totalViews) * 100).toFixed(1)}%` },
+    { icon: <CommentRateIcon />, label: "Comment rate", value: `${((insightsData.comments / totalViews) * 100).toFixed(1)}%` },
   ]
+
+  // Gender save helper
+  const saveGender = (newMen: number) => {
+    const nw = parseFloat((100 - newMen).toFixed(1))
+    try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
+    saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
+  }
 
   return (
     <div className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center" style={{ backgroundColor: BG }}>
@@ -734,8 +761,8 @@ export default function ReelInsights() {
           {mainTab === "Audience" && (
             <>
               {/* Who viewed your reel */}
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-5">
+              <section className="px-4 pt-5 pb-3">
+                <div className="flex items-center gap-2 mb-4">
                   <h3 className="text-[15px] font-semibold">Who viewed your reel</h3>
                   <InfoIcon />
                 </div>
@@ -756,14 +783,14 @@ export default function ReelInsights() {
               </section>
 
               {/* Audience details */}
-              <section className="px-4 py-5">
-                <div className="flex items-center gap-2 mb-4">
+              <section className="px-4 pt-3 pb-5">
+                <div className="flex items-center gap-2 mb-3">
                   <h3 className="text-[15px] font-semibold">Audience details</h3>
                   <InfoIcon />
                 </div>
 
                 {/* Pills */}
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-2 mb-5">
                   {(["Age", "Country", "Gender"] as const).map(tab => (
                     <button
                       key={tab}
@@ -819,37 +846,30 @@ export default function ReelInsights() {
                   </div>
                 )}
 
-                {/* Gender */}
+                {/* Gender — label is plain text, percentage on right is editable */}
                 {audienceTab === "Gender" && (
                   <div>
-                    {/* Men row */}
-                    <div className="mb-5">
-                      <div className="mb-1.5 flex items-center gap-2">
-                        <span className="text-[13px] text-white">Men</span>
-                        <GenderEditor
-                          locked={locked}
-                          menValue={insightsData.genderData.men}
-                          onSave={newMen => {
-                            const nw = parseFloat((100 - newMen).toFixed(1))
-                            try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
-                            saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
-                          }}
-                        />
-                      </div>
+                    {/* Men */}
+                    <div className="mb-3.5">
+                      <div className="mb-1 text-[13px] text-white">Men</div>
                       <div className="flex items-center gap-3">
                         <AnimatedBar percentage={insightsData.genderData.men} color={PINK} animateCharts={animateCharts} delay={0} />
-                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.men.toFixed(1)}%</span>
+                        <GenderPercentEditor
+                          value={insightsData.genderData.men}
+                          locked={locked}
+                          onSave={saveGender}
+                        />
                       </div>
                     </div>
 
-                    {/* Women row */}
-                    <div className="mb-5">
-                      <div className="mb-1.5">
-                        <span className="text-[13px] text-white">Women</span>
-                      </div>
+                    {/* Women */}
+                    <div className="mb-3.5">
+                      <div className="mb-1 text-[13px] text-white">Women</div>
                       <div className="flex items-center gap-3">
                         <AnimatedBar percentage={insightsData.genderData.women} color={PURPLE} animateCharts={animateCharts} delay={120} />
-                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{insightsData.genderData.women.toFixed(1)}%</span>
+                        <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">
+                          {insightsData.genderData.women.toFixed(1)}%
+                        </span>
                       </div>
                     </div>
                   </div>
