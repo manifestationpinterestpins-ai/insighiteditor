@@ -745,7 +745,7 @@ export default function ReelInsights() {
                                         <div className="space-y-5">
                       {affectsData.map((item, i) => (
                         <div key={i} className="flex items-center justify-between">
-                          <div className="flex items-center gap-5">
+                                                    <div className="flex items-center gap-4">
                             <div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
                             <span className="text-[14px] text-white font-medium">{item.label}</span>
                           </div>
