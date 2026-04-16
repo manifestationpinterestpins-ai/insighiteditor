@@ -738,110 +738,269 @@ export default function ReelInsights() {
           </>
         )}
 
-        {/* ==================== ENGAGEMENT TAB ==================== */}
+                {/* ==================== ENGAGEMENT TAB ==================== */}
         {mainTab === "Engagement" && (
           <>
-            {/* Interactions Donut */}
+            {/* When people liked your reel */}
             <section className="px-4 py-5">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-[18px] font-semibold">Interactions</h3>
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-[17px] font-semibold">When people liked your reel</h3>
                 <InfoIcon />
               </div>
               {(() => {
-                const total = insightsData.likes + insightsData.comments + insightsData.shares + insightsData.reposts + insightsData.bookmarks
-                const radius = 110; const strokeWidth = 16; const circumference = 2 * Math.PI * radius; const gap = 15.5
-                const followerFull = (insightsData.followerPercentage / 100) * circumference
-                const nonFollowerFull = ((100 - insightsData.followerPercentage) / 100) * circumference
-                const halfGap = gap / 2
+                const svgW = 340
+                const svgH = 160
+                const pad = { top: 15, right: 15, bottom: 30, left: 40 }
+                const cW = svgW - pad.left - pad.right
+                const cH = svgH - pad.top - pad.bottom
+
+                // Generate spike data based on reel duration
+                const totalSec = (() => {
+                  const parts = insightsData.videoDuration.split(":").map(Number)
+                  return parts.length === 2 ? parts[0] * 60 + parts[1] : 31
+                })()
+                const numPoints = Math.min(totalSec + 1, 32)
+                const spikeData: number[] = []
+                for (let i = 0; i < numPoints; i++) {
+                  const progress = i / (numPoints - 1)
+                  // Create spike pattern - high early, spike in middle, taper off
+                  let val = 0
+                  if (progress < 0.1) val = 60 + Math.random() * 30
+                  else if (progress < 0.2) val = 40 + Math.random() * 35
+                  else if (progress < 0.4) val = 20 + Math.random() * 40
+                  else if (progress < 0.5) val = 50 + Math.random() * 40 // spike
+                  else if (progress < 0.7) val = 15 + Math.random() * 30
+                  else val = 5 + Math.random() * 20
+                  spikeData.push(Math.min(100, Math.max(0, val)))
+                }
+
+                const getX = (i: number) => pad.left + (i / (numPoints - 1)) * cW
+                const getY = (v: number) => pad.top + cH - (v / 100) * cH
+
+                let pathD = `M ${getX(0)} ${getY(spikeData[0])}`
+                for (let i = 1; i < numPoints; i++) pathD += ` L ${getX(i)} ${getY(spikeData[i])}`
+
+                const yTicks = [0, 50, 100]
+                const durMin = Math.floor(totalSec / 60)
+                const durSec = totalSec % 60
+                const durStr = `${durMin}:${durSec.toString().padStart(2, "0")}`
+
                 return (
-                  <div className="relative flex items-center justify-center py-6">
-                    <svg width="260" height="260" className="transform -rotate-90">
-                      <circle cx="130" cy="130" r={radius} fill="none" stroke="#1a1a1a" strokeWidth={strokeWidth} />
-                      <circle cx="130" cy="130" r={radius} fill="none" stroke="#7639f6" strokeWidth={strokeWidth} strokeDasharray={`${Math.max(0, nonFollowerFull - gap)} ${circumference}`} strokeDashoffset={-halfGap} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-                      <circle cx="130" cy="130" r={radius} fill="none" stroke="#d63bcd" strokeWidth={strokeWidth} strokeDasharray={`${Math.max(0, followerFull - gap)} ${circumference}`} strokeDashoffset={-(nonFollowerFull + halfGap)} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-                    </svg>
-                    <div className="absolute flex flex-col items-center justify-center">
-                      <span className="text-xs text-zinc-500">Interactions</span>
-                      <span className="text-[38px] font-semibold text-white">{total.toLocaleString("en-IN")}</span>
-                    </div>
-                  </div>
+                  <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full">
+                    {yTicks.map(t => (
+                      <g key={t}>
+                        <line x1={pad.left} y1={getY(t)} x2={svgW - pad.right} y2={getY(t)} stroke="#1a1a1a" strokeWidth={1} />
+                        <text x={pad.left - 6} y={getY(t) + 4} textAnchor="end" fill="#525252" fontSize="10" fontFamily="sans-serif">{t}%</text>
+                      </g>
+                    ))}
+                    <text x={pad.left} y={svgH - 6} textAnchor="middle" fill="#525252" fontSize="10" fontFamily="sans-serif">0:00</text>
+                    <text x={svgW - pad.right} y={svgH - 6} textAnchor="middle" fill="#525252" fontSize="10" fontFamily="sans-serif">{durStr}</text>
+                    <path d={pathD} fill="none" stroke="#d63bcd" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 )
               })()}
-              <div className="space-y-3 mt-2">
-                <div className="flex justify-between items-center"><div className="flex items-center gap-2"><div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#d63bcd" }} /><span className="text-[13px] text-zinc-400">Followers</span></div><span className="text-[13px] text-white">{insightsData.followerPercentage.toFixed(1)}%</span></div>
-                <div className="flex justify-between items-center"><div className="flex items-center gap-2"><div className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: "#7639f6" }} /><span className="text-[13px] text-zinc-400">Non-followers</span></div><span className="text-[13px] text-white">{(100 - insightsData.followerPercentage).toFixed(1)}%</span></div>
+            </section>
+
+            <div className="h-[6px] bg-[#0a0a0a]" />
+
+            {/* Actions after viewing */}
+            <section className="px-4 py-5">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-[17px] font-semibold">Actions after viewing</h3>
+                <InfoIcon />
               </div>
-              <div className="h-px bg-zinc-800 my-5" />
               <div className="space-y-4">
-                <div className="flex justify-between"><span className="text-[13px] text-zinc-400">Likes</span><span className="text-[13px] text-white">{insightsData.likes}</span></div>
-                <div className="flex justify-between"><span className="text-[13px] text-zinc-400">Saves</span><span className="text-[13px] text-white">{insightsData.bookmarks}</span></div>
-                <div className="flex justify-between"><span className="text-[13px] text-zinc-400">Shares</span><span className="text-[13px] text-white">{insightsData.shares}</span></div>
-                <div className="flex justify-between"><span className="text-[13px] text-zinc-400">Reposts</span><span className="text-[13px] text-white">{insightsData.reposts}</span></div>
-                <div className="flex justify-between"><span className="text-[13px] text-zinc-400">Comments</span><span className="text-[13px] text-white">{insightsData.comments}</span></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Follows</span>
+                  <InlineEditor
+                    value={profileActivity}
+                    isNumber
+                    locked={locked}
+                    className="text-[14px] text-white font-semibold"
+                    onSave={(val) => {
+                      const n = Math.round(val)
+                      setProfileActivity(n)
+                      try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Profile visits</span>
+                  <span className="text-[14px] text-white font-semibold">{Math.round(insightsData.views * 0.04)}</span>
+                </div>
               </div>
             </section>
 
             <div className="h-[6px] bg-[#0a0a0a]" />
 
-            {/* Profile Activity */}
+            {/* Interactions */}
             <section className="px-4 py-5">
-              <div className="flex items-center justify-between mb-4"><div className="flex items-center gap-2"><h3 className="text-[17px] font-semibold">Profile activity</h3><InfoIcon /></div><span className="text-[17px] font-semibold">{profileActivity}</span></div>
-              <div className="flex justify-between"><span className="text-[13px] text-zinc-400">Follows</span><span className="text-[13px] text-white">{profileActivity}</span></div>
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-[17px] font-semibold">Interactions</h3>
+                <InfoIcon />
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Likes</span>
+                  <span className="text-[14px] text-white font-semibold">{insightsData.likes}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Comments</span>
+                  <span className="text-[14px] text-white font-semibold">{insightsData.comments}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Reposts</span>
+                  <span className="text-[14px] text-white font-semibold">{insightsData.reposts}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Shares</span>
+                  <span className="text-[14px] text-white font-semibold">{insightsData.shares}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-zinc-400">Saves</span>
+                  <span className="text-[14px] text-white font-semibold">{insightsData.bookmarks}</span>
+                </div>
+              </div>
             </section>
 
             <div className="h-[6px] bg-[#0a0a0a]" />
 
             {/* Monetisation */}
             <section className="px-4 py-5">
-              <div className="flex items-center gap-2 mb-5"><h3 className="text-[17px] font-semibold">Monetisation</h3><InfoIcon /></div>
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-[17px] font-semibold">Monetisation</h3>
+                <InfoIcon />
+              </div>
               <h4 className="text-[15px] font-semibold mb-4">Gifts</h4>
-              <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-[7px] h-[7px] rounded-full bg-red-500 shrink-0" /><span className="text-[13px] text-zinc-500">Not monetising</span></div><button className="text-[13px] text-blue-500 font-medium active:opacity-60 transition-opacity">Add payment details</button></div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-[7px] h-[7px] rounded-full bg-red-500 shrink-0" />
+                  <span className="text-[13px] text-zinc-500">Not monetising</span>
+                </div>
+                <button className="text-[13px] text-blue-500 font-medium active:opacity-60 transition-opacity">Add payment details</button>
+              </div>
             </section>
           </>
         )}
 
-        {/* ==================== AUDIENCE TAB ==================== */}
+                {/* ==================== AUDIENCE TAB ==================== */}
         {mainTab === "Audience" && (
-          <section className="px-4 py-5">
-            <div className="flex items-center gap-2 mb-5"><h3 className="text-[18px] font-semibold">Audience</h3><InfoIcon /></div>
-            <div className="flex gap-2 mb-5">
-              {(["Gender", "Country", "Age"] as const).map(tab => (
-                <button key={tab} onClick={() => setAudienceTab(tab)} className={`px-4 py-[9px] rounded-full text-[11px] font-medium transition-all duration-200 ${audienceTab === tab ? "bg-white text-black" : "bg-transparent text-white border border-zinc-700"}`}>{tab}</button>
-              ))}
-            </div>
-
-            {audienceTab === "Gender" && (
-              <div className="space-y-5">
-                <div><div className="flex justify-between mb-2"><span className="text-[13px] text-zinc-400">Men</span><GenderEditor locked={locked} menValue={insightsData.genderData.men} onSave={newMen => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }} /></div><ProgressBar percentage={insightsData.genderData.men} delay={0} /></div>
-                <div><div className="flex justify-between mb-2"><span className="text-[13px] text-zinc-400">Women</span><span className="text-[13px] text-white">{insightsData.genderData.women.toFixed(1)}%</span></div><ProgressBar percentage={insightsData.genderData.women} color="violet" delay={100} /></div>
+          <>
+            {/* Who viewed your reel */}
+            <section className="px-4 py-5">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-[17px] font-semibold">Who viewed your reel</h3>
+                <InfoIcon />
               </div>
-            )}
-
-            {audienceTab === "Country" && (
               <div className="space-y-5">
-                {insightsData.countryData.map((country, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between mb-2">
-                      <CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />
-                      <span className="text-[13px] text-white">{country.percentage.toFixed(1)}%</span>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-[14px] text-zinc-400">Followers</span>
+                    <span className="text-[14px] text-white font-semibold">{insightsData.followerPercentage.toFixed(1)}%</span>
+                  </div>
+                  <ProgressBar percentage={insightsData.followerPercentage} delay={0} />
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-[14px] text-zinc-400">Non-followers</span>
+                    <span className="text-[14px] text-white font-semibold">{(100 - insightsData.followerPercentage).toFixed(1)}%</span>
+                  </div>
+                  <ProgressBar percentage={100 - insightsData.followerPercentage} color="violet" delay={100} />
+                </div>
+              </div>
+            </section>
+
+            <div className="h-[6px] bg-[#0a0a0a]" />
+
+            {/* Audience details */}
+            <section className="px-4 py-5">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-[17px] font-semibold">Audience details</h3>
+                <InfoIcon />
+              </div>
+              <div className="flex gap-2 mb-6">
+                {(["Age", "Country", "Gender"] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")}
+                    className={`px-4 py-[9px] rounded-full text-[12px] font-medium transition-all duration-200 ${
+                      audienceTab === tab ? "bg-white text-black" : "bg-transparent text-white border border-zinc-700"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              {audienceTab === "Age" && (
+                <div className="space-y-4">
+                  {insightsData.ageData.map((age, index) => (
+                    <div key={age.name} className="flex items-center gap-3">
+                      <span className="text-[13px] text-zinc-400 w-[45px] shrink-0">{age.name}</span>
+                      <div className="flex-1">
+                        <ProgressBar percentage={age.percentage} delay={index * 60} />
+                      </div>
+                      <span className="text-[13px] text-white font-medium w-[45px] text-right">{age.percentage.toFixed(1)}%</span>
                     </div>
-                    <ProgressBar percentage={country.percentage} delay={index * 80} />
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {audienceTab === "Age" && (
-              <div className="space-y-5">
-                {insightsData.ageData.map((age, index) => (
-                  <div key={age.name}>
-                    <div className="flex justify-between mb-2"><span className="text-[13px] text-zinc-400">{age.name}</span><span className="text-[13px] text-white">{age.percentage.toFixed(1)}%</span></div>
-                    <ProgressBar percentage={age.percentage} delay={index * 60} />
+              {audienceTab === "Country" && (
+                <div className="space-y-4">
+                  {insightsData.countryData.map((country, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-[100px] shrink-0">
+                        <CountryNameEditor
+                          locked={locked}
+                          name={country.name}
+                          onSave={(newName) => {
+                            const uc = [...insightsData.countryData]
+                            uc[index] = { ...uc[index], name: newName }
+                            try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}
+                            saveData({ ...insightsData, countryData: uc })
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <ProgressBar percentage={country.percentage} delay={index * 80} />
+                      </div>
+                      <span className="text-[13px] text-white font-medium w-[45px] text-right">{country.percentage.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {audienceTab === "Gender" && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[13px] text-zinc-400 w-[60px] shrink-0">Men</span>
+                    <div className="flex-1">
+                      <ProgressBar percentage={insightsData.genderData.men} delay={0} />
+                    </div>
+                    <div className="w-[55px] text-right">
+                      <GenderEditor
+                        locked={locked}
+                        menValue={insightsData.genderData.men}
+                        onSave={(newMen) => {
+                          const nw = parseFloat((100 - newMen).toFixed(1))
+                          try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}
+                          saveData({ ...insightsData, genderData: { men: newMen, women: nw } })
+                        }}
+                      />
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[13px] text-zinc-400 w-[60px] shrink-0">Women</span>
+                    <div className="flex-1">
+                      <ProgressBar percentage={insightsData.genderData.women} color="violet" delay={100} />
+                    </div>
+                    <span className="text-[13px] text-white font-medium w-[55px] text-right">{insightsData.genderData.women.toFixed(1)}%</span>
+                  </div>
+                </div>
+              )}
+            </section>
+          </>
         )}
 
       </main>
