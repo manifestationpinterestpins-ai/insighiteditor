@@ -742,7 +742,7 @@ export default function ReelInsights() {
 
                   <section className="px-4 py-5">
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
-                    <div className="space-y-4">
+                                        <div className="space-y-5">
                       {affectsData.map((item, i) => (
                         <div key={i} className="flex items-center justify-between">
                           <div className="flex items-center gap-5">
