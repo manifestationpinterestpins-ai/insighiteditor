@@ -2,10 +2,10 @@
 
 import React from "react"
 import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence, useMotionValue, useTransform, animate, LayoutGroup } from "framer-motion" 
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
-import { InsightsData } from "@/lib/insights-state" 
+import { InsightsData } from "@/lib/insights-state"
 
 const shimmerStyle = {
   background: "linear-gradient(110deg, transparent 30%, #3A3A3C 50%, transparent 70%)",
@@ -25,65 +25,17 @@ const PURPLE = "#7738fb"
 const CARD_BG = "#25282d"
 const BAR_BG = "#2a2d31"
 
-// ===== ANIMATION VARIANTS =====
-const pageVariants = {
-  initial: { y: "100%", opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 30, duration: 0.5 } },
-}
-
-const fadeSlideUp = {
-  initial: { opacity: 0, y: 12 },
-  animate: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.25,
-      delay: i * 0.04,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  }),
-}
-
 const tabContent = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 8 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.25,
-      ease: [0.16, 1, 0.3, 1],
-    },
+    transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.15 },
+    transition: { duration: 0.12 },
   },
-}
-
-// ===== ANIMATED NUMBER =====
-const AnimatedNumber = ({ value, className }: { value: number; className?: string }) => {
-  const count = useMotionValue(0)
-  const rounded = useTransform(count, (v) => Math.round(v).toLocaleString("en-IN"))
-  const [display, setDisplay] = useState("0")
-
-  useEffect(() => {
-    const controls = animate(count, value, { duration: 0.75, ease: [0.16, 1, 0.3, 1] })
-    const unsub = rounded.on("change", (v) => setDisplay(v))
-    return () => { controls.stop(); unsub() }
-  }, [value])
-
-  return (
-    <div className="overflow-hidden">
-      <motion.span
-        className={className}
-        initial={{ y: 10, opacity: 0 }}
-animate={{ y: 0, opacity: 1 }}
-transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {display}
-      </motion.span>
-    </div>
-  )
 }
 
 // ===== ICONS =====
@@ -198,36 +150,52 @@ const CommentRateIcon = () => (
 // ===== AUDIENCE ROW =====
 const AudienceRow = ({ labelNode, percentage, barColor, animateCharts, delay = 0 }: { labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts: boolean; delay?: number }) => {
   const [width, setWidth] = useState(0)
-  useEffect(() => { if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) } }, [animateCharts, percentage, delay])
+  useEffect(() => {
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
+  }, [animateCharts, percentage, delay])
   return (
-    <motion.div className="mb-3.5" variants={fadeSlideUp} initial="initial" animate="animate" custom={delay / 80}>
+    <div className="mb-3.5">
       <div className="mb-1 text-[13px] text-white">{labelNode}</div>
       <div className="flex items-center gap-3">
         <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
-          <motion.div
-            className="absolute left-0 top-0 h-full"
-            style={{ backgroundColor: barColor, borderRadius: 6 }}
-            initial={{ width: 0 }}
-            animate={{ width: animateCharts ? `${percentage}%` : 0 }}
-            transition={{ duration: 0.7, delay: delay / 1000, ease: "easeOut" }}
+          <div
+            className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
+            style={{ width: `${width}%`, backgroundColor: barColor, borderRadius: 6 }}
           />
         </div>
         <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{percentage.toFixed(1)}%</span>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
 // ===== ANIMATED BAR =====
 const AnimatedBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
+  }, [animateCharts, percentage, delay])
   return (
     <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
-      <motion.div
-        className="absolute left-0 top-0 h-full"
-        style={{ backgroundColor: color, borderRadius: 6 }}
-        initial={{ width: 0 }}
-        animate={{ width: animateCharts ? `${percentage}%` : 0 }}
-        transition={{ duration: 0.7, delay: delay / 1000, ease: "easeOut" }}
+      <div
+        className="absolute left-0 top-0 h-full transition-all duration-700 ease-out"
+        style={{ width: `${width}%`, backgroundColor: color, borderRadius: 6 }}
+      />
+    </div>
+  )
+}
+
+// ===== SIMPLE PROGRESS BAR =====
+const SimpleBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    if (animateCharts) { const t = setTimeout(() => setWidth(percentage), delay); return () => clearTimeout(t) }
+  }, [animateCharts, percentage, delay])
+  return (
+    <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
+      <div
+        className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
+        style={{ width: `${width}%`, backgroundColor: color }}
       />
     </div>
   )
@@ -295,7 +263,7 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boo
       <button className="p-1 -mr-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}><MoreVerticalIcon /></button>
       <AnimatePresence>
         {open && (
-          <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.18, ease: "easeOut" }}>
+          <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.15, ease: "easeOut" }}>
             <button className="w-full flex items-center gap-3 px-4 py-3 text-[12px] text-white hover:bg-zinc-800 transition-colors text-left" onClick={() => { setOpen(false); onOpenEditor() }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Edit insights
@@ -334,28 +302,6 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
   const commit = () => { if (value.trim()) onSave(value.trim()); else setValue(name); setEditing(false) }
   if (editing) return <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-2 py-0.5 text-[13px] text-white outline-none w-full" style={{ caretColor: PINK }} />
   return <span className={`text-[13px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
-}
-
-// ===== ANIMATED GRAPH LINE =====
-const AnimatedGraphPath = ({ d, stroke, strokeWidth, strokeDasharray, strokeLinejoin }: { d: string; stroke: string; strokeWidth: number; strokeDasharray?: string; strokeLinejoin?: "round" | "miter" | "bevel" }) => {
-  const pathRef = useRef<SVGPathElement>(null)
-  const [length, setLength] = useState(0)
-  useEffect(() => { if (pathRef.current) setLength(pathRef.current.getTotalLength()) }, [d])
-  return (
-    <motion.path
-      ref={pathRef}
-      d={d}
-      fill="none"
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin={strokeLinejoin}
-      strokeDasharray={strokeDasharray || `${length} ${length}`}
-      initial={{ strokeDashoffset: length }}
-      animate={{ strokeDashoffset: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-    />
-  )
 }
 
 // ===== DRAGGABLE VIEWS GRAPH =====
@@ -400,7 +346,7 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
         {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
-        <AnimatedGraphPath d={pathD} stroke={PINK} strokeWidth={5} />
+        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -441,7 +387,7 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx]?.time || defaultRightLabel); setEditingRightX(true) }}>{data[lastIdx]?.time || defaultRightLabel}</text>
-        <AnimatedGraphPath d={pathD} stroke={PINK} strokeWidth={5} strokeLinejoin="round" />
+        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -482,24 +428,9 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
         <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
-        <AnimatedGraphPath d={pathD} stroke={PINK} strokeWidth={5} />
+        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
-    </div>
-  )
-}
-
-// ===== SIMPLE PROGRESS BAR =====
-const SimpleBar = ({ percentage, color, animateCharts, delay = 0 }: { percentage: number; color: string; animateCharts: boolean; delay?: number }) => {
-  return (
-    <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
-      <motion.div
-        className="absolute left-0 top-0 h-full rounded-full"
-        style={{ backgroundColor: color }}
-        initial={{ width: 0 }}
-        animate={{ width: animateCharts ? `${percentage}%` : 0 }}
-        transition={{ duration: 0.7, delay: delay / 1000, ease: "easeOut" }}
-      />
     </div>
   )
 }
@@ -604,15 +535,14 @@ export default function ReelInsights() {
   const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd); try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {} }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd); try { localStorage.setItem("retention-data", JSON.stringify(nd)) } catch {} }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
+
   useEffect(() => {
-  setSummaryLoading(true)
-  const t1 = setTimeout(() => setSummaryLoading(false), 900)
-  const t2 = setTimeout(() => setAnimateCharts(true), 300)
-  return () => {
-    clearTimeout(t1)
-    clearTimeout(t2)
-  }
-}, [insightsData])
+    setSummaryLoading(true)
+    const t1 = setTimeout(() => setSummaryLoading(false), 900)
+    const t2 = setTimeout(() => setAnimateCharts(true), 300)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [insightsData])
+
   const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
@@ -629,13 +559,13 @@ export default function ReelInsights() {
   ]
 
   return (
-  <>
-    <style>{shimmerKeyframes}</style>
+    <>
+      <style>{shimmerKeyframes}</style>
 
-    <div
-      className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
-      style={{ backgroundColor: BG }}
-    >
+      <div
+        className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
+        style={{ backgroundColor: BG }}
+      >
         <div className="w-full max-w-[420px]">
 
           {/* Header */}
@@ -651,25 +581,24 @@ export default function ReelInsights() {
           </header>
 
           {/* Thumbnail */}
-          <motion.section className="flex flex-col items-center pt-4 pb-4 px-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}>
+          <section className="flex flex-col items-center pt-4 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
             <div className="flex items-center justify-between w-full max-w-[300px] mt-4 px-1">
-              {[{ icon: <HeartIcon />, val: insightsData.likes }, { icon: <CommentIcon />, val: insightsData.comments }, { icon: <SendIcon />, val: insightsData.shares }, { icon: <RepostIcon />, val: insightsData.reposts }, { icon: <BookmarkIcon />, val: insightsData.bookmarks }].map((item, i) => (
-                <motion.div key={i} className="flex flex-col items-center gap-1" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
-                  {item.icon}
-                  <span className="text-[10px] text-white">{item.val}</span>
-                </motion.div>
-              ))}
+              <div className="flex flex-col items-center gap-1"><HeartIcon /><span className="text-[10px] text-white">{insightsData.likes}</span></div>
+              <div className="flex flex-col items-center gap-1"><CommentIcon /><span className="text-[10px] text-white">{insightsData.comments}</span></div>
+              <div className="flex flex-col items-center gap-1"><SendIcon /><span className="text-[10px] text-white">{insightsData.shares}</span></div>
+              <div className="flex flex-col items-center gap-1"><RepostIcon /><span className="text-[10px] text-white">{insightsData.reposts}</span></div>
+              <div className="flex flex-col items-center gap-1"><BookmarkIcon /><span className="text-[10px] text-white">{insightsData.bookmarks}</span></div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Tabs placeholder */}
           <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
 
-          {/* Tabs — sticky with layout animation for underline */}
+          {/* Tabs */}
           <LayoutGroup>
             <div
               ref={tabsRef}
@@ -713,62 +642,58 @@ export default function ReelInsights() {
                       <button onClick={replayOverviewAnimation} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
-  {[
-    { label: "Views", value: insightsData.views },
-    { label: "Accounts reached", value: insightsData.accountsReached },
-    { label: "Average watch time", value: insightsData.avgWatchTime },
-    { label: "Follows", value: profileActivity },
-  ].map((card, i) => (
-    <motion.div
-      key={card.label}
-      className="rounded-xl p-3.5 relative overflow-hidden"
-      style={{ backgroundColor: CARD_BG }}
-    >
-      {summaryLoading ? (
-        <div
-          className="absolute inset-0"
-          style={{
-            ...shimmerStyle,
-            animationDelay: `${i * 0.08}s`,
-          }}
-        />
-      ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className="text-[11px] text-gray-400">{card.label}</span>
+                      {[
+                        { label: "Views", value: insightsData.views },
+                        { label: "Accounts reached", value: insightsData.accountsReached },
+                        { label: "Average watch time", value: insightsData.avgWatchTime },
+                        { label: "Follows", value: profileActivity },
+                      ].map((card, i) => (
+                        <div key={card.label} className="rounded-xl p-3.5 relative overflow-hidden" style={{ backgroundColor: CARD_BG }}>
+                          {summaryLoading ? (
+                            <div className="absolute inset-0" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
+                          ) : (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+                              <span className="text-[11px] text-gray-400">{card.label}</span>
+                              {card.label === "Average watch time" ? (
+                                <p className="text-[17px] font-bold text-white mt-0.5">{card.value}</p>
+                              ) : card.label === "Follows" ? (
+                                <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white mt-0.5 block" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                              ) : (
+                                <p className="text-[17px] font-bold text-white mt-0.5">{(card.value as number).toLocaleString("en-IN")}</p>
+                              )}
+                            </motion.div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
 
-          {card.label === "Average watch time" ? (
-            <p className="text-[17px] font-bold text-white mt-0.5">
-              {card.value}
-            </p>
-          ) : card.label === "Follows" ? (
-            <InlineEditor
-              value={profileActivity}
-              isNumber
-              locked={locked}
-              className="text-[17px] font-bold text-white mt-0.5 block"
-              onSave={(val) => {
-                const n = Math.round(val)
-                setProfileActivity(n)
-                try {
-                  localStorage.setItem("profile-activity", JSON.stringify(n))
-                } catch {}
-              }}
-            />
-          ) : (
-            <AnimatedNumber
-              value={card.value as number}
-              className="text-[17px] font-bold text-white mt-0.5 block"
-            />
-          )}
-        </motion.div>
-      )}
-    </motion.div>
-  ))}
-</div>
+                  <section className="px-4 py-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
+                      <span className="text-[15px] font-semibold">{insightsData.views.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex gap-2 mb-6">
+                      {(["All", "Followers", "Non-followers"] as const).map(filter => (
+                        <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
+                      ))}
+                    </div>
+                    <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
+                  </section>
+
+                  <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
+                    <div className="space-y-4">
+                      {affectsData.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center gap-5">
+                            <div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
+                            <span className="text-[14px] text-white font-medium">{item.label}</span>
+                          </div>
+                          <span className="text-[14px] text-white font-semibold">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </section>
 
                   <section className="px-4 py-5">
@@ -787,10 +712,10 @@ export default function ReelInsights() {
                     <div className="flex items-center gap-2 mb-4"><h4 className="text-[15px] font-semibold">Top sources of views</h4><InfoIcon /></div>
                     <div className="space-y-4">
                       {insightsData.sourcesData.map((source, index) => (
-                        <motion.div key={source.name} variants={fadeSlideUp} initial="initial" animate="animate" custom={index}>
+                        <div key={source.name}>
                           <div className="flex justify-between mb-1.5"><span className="text-[13px] text-white">{source.name}</span><span className="text-[13px] text-white font-medium">{source.percentage.toFixed(1)}%</span></div>
                           <SimpleBar percentage={source.percentage} color={PINK} animateCharts={animateCharts} delay={index * 100} />
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </section>
@@ -816,23 +741,25 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Actions after viewing</h3><InfoIcon /></div>
                     <div className="space-y-3.5">
-                      {[{ label: "Follows", node: <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} /> }, { label: "Profile visits", node: <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} /> }].map((item, i) => (
-                        <motion.div key={item.label} className="flex justify-between items-center" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
-                          <span className="text-[13px] text-white">{item.label}</span>
-                          {item.node}
-                        </motion.div>
-                      ))}
+                      <div className="flex justify-between items-center">
+                        <span className="text-[13px] text-white">Follows</span>
+                        <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[13px] text-white">Profile visits</span>
+                        <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} />
+                      </div>
                     </div>
                   </section>
 
                   <section className="px-4 py-5">
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Interactions</h3><InfoIcon /></div>
                     <div className="space-y-3.5">
-                      {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val], i) => (
-                        <motion.div key={label as string} className="flex justify-between items-center" variants={fadeSlideUp} initial="initial" animate="animate" custom={i}>
+                      {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val]) => (
+                        <div key={label as string} className="flex justify-between items-center">
                           <span className="text-[13px] text-white">{label}</span>
                           <span className="text-[13px] text-white font-semibold">{val}</span>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </section>
@@ -895,11 +822,11 @@ export default function ReelInsights() {
             </AnimatePresence>
           </main>
 
-                    <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
+          <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
           <BottomSheet open={bottomSheetOpen} onClose={() => setBottomSheetOpen(false)} />
 
         </div>
       </div>
-  </>
+    </>
   )
 }
