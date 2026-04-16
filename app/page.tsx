@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence, useMotionValue, useTransform, animate, LayoutGroup } from "framer-motion"
+import { motion, AnimatePresence, useMotionValue, useTransform, animate, LayoutGroup } from "framer-motion" 
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
 import { InsightsData } from "@/lib/insights-state"
