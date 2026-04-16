@@ -629,7 +629,7 @@ export default function ReelInsights() {
   ]
 
   return (
-  
+  <>
     <style>{shimmerKeyframes}</style>
 
     <div
@@ -900,5 +900,6 @@ export default function ReelInsights() {
 
         </div>
       </div>
+    <>
   )
 }
