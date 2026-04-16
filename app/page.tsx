@@ -900,6 +900,6 @@ export default function ReelInsights() {
 
         </div>
       </div>
-    <>
+  </>
   )
 }
