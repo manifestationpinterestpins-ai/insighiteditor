@@ -15,12 +15,17 @@ const shimmerStyle = {
 
 const shimmerKeyframes = `
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+@keyframes digitRoll {
+  0% { transform: translateY(100%); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
 }`
 
 const BG = "#0c0f14"
@@ -42,23 +47,38 @@ const tabContent = {
   },
 }
 
-// ===== ANIMATED NUMBER (ODOMETER — Views section only) =====
-const AnimatedNumber = ({ value, className }: { value: number; className?: string }) => {
-  const [display, setDisplay] = useState(0)
-  useEffect(() => {
-    const end = value
-    const duration = 900
-    const startTime = performance.now()
-    const step = (now: number) => {
-      const elapsed = now - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setDisplay(Math.round(end * eased))
-      if (progress < 1) requestAnimationFrame(step)
-    }
-    requestAnimationFrame(step)
-  }, [value])
-  return <span className={className}>{display.toLocaleString("en-IN")}</span>
+// ===== ODOMETER DIGIT =====
+const OdometerDigit = ({ digit, delay }: { digit: string; delay: number }) => {
+  const isNum = /\d/.test(digit)
+  if (!isNum) return <span>{digit}</span>
+
+  return (
+    <span className="inline-block overflow-hidden" style={{ height: "1.2em", verticalAlign: "top" }}>
+      <span
+        className="inline-block"
+        style={{
+          animation: `digitRoll 0.9s ${delay}s ease-out both`,
+          display: "block",
+        }}
+      >
+        {digit}
+      </span>
+    </span>
+  )
+}
+
+// ===== ANIMATED NUMBER (ODOMETER — digit-by-digit rolling) =====
+const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
+  const formatted = value.toLocaleString("en-IN")
+  const digits = formatted.split("")
+
+  return (
+    <span className={className} key={triggerKey}>
+      {digits.map((d, i) => (
+        <OdometerDigit key={`${triggerKey}-${i}-${d}`} digit={d} delay={i * 0.04} />
+      ))}
+    </span>
+  )
 }
 
 // ===== ICONS =====
@@ -455,7 +475,8 @@ export default function ReelInsights() {
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
-  const [animationKey, setAnimationKey] = useState(0)
+    const [animationKey, setAnimationKey] = useState(0)
+  const [viewsAnimKey, setViewsAnimKey] = useState(0)
   const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
@@ -641,7 +662,7 @@ export default function ReelInsights() {
                                                                         <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
-                      <button onClick={() => { setSummaryLoading(true); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
+                      <button onClick={() => { setSummaryLoading(true); setViewsAnimKey(k => k + 1); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
                       {[
@@ -683,7 +704,7 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                                            <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" />
+                           <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
                     <div className="flex gap-2 mb-6">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
