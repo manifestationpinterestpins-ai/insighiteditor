@@ -21,11 +21,6 @@ const shimmerKeyframes = `
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-@keyframes digitRoll {
-  0% { transform: translateY(100%); opacity: 0; }
-  30% { opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
 }`
 
 const BG = "#0c0f14"
@@ -47,38 +42,31 @@ const tabContent = {
   },
 }
 
-// ===== ODOMETER DIGIT =====
-const OdometerDigit = ({ digit, delay }: { digit: string; delay: number }) => {
-  const isNum = /\d/.test(digit)
-  if (!isNum) return <span>{digit}</span>
-
-  return (
-    <span className="inline-block overflow-hidden" style={{ height: "1.2em", verticalAlign: "top" }}>
-      <span
-        className="inline-block"
-        style={{
-          animation: `digitRoll 0.9s ${delay}s ease-out both`,
-          display: "block",
-        }}
-      >
-        {digit}
-      </span>
-    </span>
-  )
-}
-
-// ===== ANIMATED NUMBER (ODOMETER — digit-by-digit rolling) =====
+// ===== ANIMATED NUMBER (YouTube-style smooth count) =====
 const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
-  const formatted = value.toLocaleString("en-IN")
-  const digits = formatted.split("")
+  const [display, setDisplay] = useState(0)
+  const rafRef = useRef<number>(0)
 
-  return (
-    <span className={className} key={triggerKey}>
-      {digits.map((d, i) => (
-        <OdometerDigit key={`${triggerKey}-${i}-${d}`} digit={d} delay={i * 0.04} />
-      ))}
-    </span>
-  )
+  useEffect(() => {
+    setDisplay(0)
+    const duration = 1000
+    const startTime = performance.now()
+
+    const step = (now: number) => {
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(value * eased))
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(step)
+      }
+    }
+
+    rafRef.current = requestAnimationFrame(step)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  }, [value, triggerKey])
+
+  return <span className={className}>{display.toLocaleString("en-IN")}</span>
 }
 
 // ===== ICONS =====
