@@ -611,8 +611,8 @@ export default function ReelInsights() {
           </div>
         </section>
 
-        {/* Tabs */}
-        <div className="flex border-b border-zinc-800/40">
+                {/* Tabs — sticky */}
+        <div className="flex border-b border-zinc-800/40 sticky top-0 z-40" style={{ backgroundColor: BG }}>
           {(["Overview", "Engagement", "Audience"] as const).map(tab => (
             <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
               {tab}
