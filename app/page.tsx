@@ -843,10 +843,10 @@ export default function ReelInsights() {
             </AnimatePresence>
           </main>
 
-          <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
+                    <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
           <BottomSheet open={bottomSheetOpen} onClose={() => setBottomSheetOpen(false)} />
 
         </div>
-      
+      </div>
   )
 }
