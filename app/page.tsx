@@ -119,28 +119,6 @@ const AnimatedNumber = ({ value, className, triggerKey }: { value: number; class
   )
 }
 // ===== ICONS =====
-const ChevronLeftIcon = () => (
-  <svg width="40" height="24" viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path
-    d="M36 12H10M10 12L18 4M10 12L18 20"
-    stroke="white"
-    stroke-width="3"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>
-)
-const MoreVerticalIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
-  </svg>
-)
-const HeaderBoostIcon = () => (
-  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-    <polyline points="17 6 23 6 23 12"/>
-  </svg>
-)
 const HeartIcon = () => (
   <svg
     width="26"
@@ -382,7 +360,19 @@ const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) 
 }
 
 // ===== LOCK MENU =====
-const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boolean; onToggle: () => void; onOpenEditor: () => void; onLongPress: () => void }) => {
+const LockMenu = ({
+  locked,
+  onToggle,
+  onOpenEditor,
+  onLongPress,
+  trigger,
+}: {
+  locked: boolean
+  onToggle: () => void
+  onOpenEditor: () => void
+  onLongPress: () => void
+  trigger: React.ReactNode
+}) => {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -393,7 +383,9 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boo
   const handleClick = () => { if (isLongPress.current) { isLongPress.current = false; return }; setOpen(p => !p) }
   return (
     <div className="relative" ref={menuRef}>
-      <button className="p-1 -mr-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}><MoreVerticalIcon /></button>
+            <button className="p-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}>
+        {trigger}
+      </button>
       <AnimatePresence>
         {open && (
           <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.15, ease: "easeOut" }}>
@@ -700,17 +692,7 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-          {/* Header */}
-          <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
-            <div className="flex items-center justify-between px-4 h-[48px]">
-              <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
-              <h1 className="text-[18px] font-semibold flex-1 ml-4">Reel insights</h1>
-              <div className="flex items-center gap-2">
-                <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
-                <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
-              </div>
-            </div>
-          </header>
+          undefined
 
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
@@ -844,7 +826,16 @@ export default function ReelInsights() {
 
                   <section className="px-4 py-5">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
+                      <div className="flex items-center gap-2">
+  <h3 className="text-[15px] font-semibold">Views</h3>
+  <LockMenu
+    locked={locked}
+    onToggle={toggleLock}
+    onOpenEditor={() => setEditorOpen(true)}
+    onLongPress={() => setBottomSheetOpen(true)}
+    trigger={<InfoIcon />}
+  />
+</div>
                            <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
                     <div className="flex gap-2 mb-6">
