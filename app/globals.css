@@ -5,6 +5,7 @@
 
 :root {
   color-scheme: dark;
+  color-scheme: dark;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -120,8 +121,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+    html,
   body {
-    @apply bg-background text-foreground;
+    background-color: #0c0f14;
+    color: white;
     font-family: Arial, sans-serif;
   }
 }
