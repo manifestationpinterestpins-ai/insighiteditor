@@ -826,13 +826,7 @@ export default function ReelInsights() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
   <h3 className="text-[15px] font-semibold">Views</h3>
-  <LockMenu
-    locked={locked}
-    onToggle={toggleLock}
-    onOpenEditor={() => setEditorOpen(true)}
-    onLongPress={() => setBottomSheetOpen(true)}
-    trigger={<InfoIcon />}
-  />
+  <InfoIcon />
 </div>
                            <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
@@ -884,12 +878,22 @@ export default function ReelInsights() {
                   </section>
 
                   <section className="px-4 py-5">
-                    <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
-                    <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
-                      <div className="flex items-center gap-3"><BoostIcon /><span className="text-[13px] text-white font-medium">Boost this Reel</span></div>
-                      <ChevronRightIcon />
-                    </button>
-                  </section>
+  <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
+  <div className="w-full flex items-center justify-between py-2">
+    <div className="flex items-center gap-3">
+      <BoostIcon />
+      <span className="text-[13px] text-white font-medium">Boost this Reel</span>
+    </div>
+
+    <LockMenu
+      locked={locked}
+      onToggle={toggleLock}
+      onOpenEditor={() => setEditorOpen(true)}
+      onLongPress={() => setBottomSheetOpen(true)}
+      trigger={<ChevronRightIcon />}
+    />
+  </div>
+</section>
                 </motion.div>
               )}
 
