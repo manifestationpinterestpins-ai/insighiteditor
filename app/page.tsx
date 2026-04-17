@@ -691,7 +691,10 @@ export default function ReelInsights() {
         style={{ backgroundColor: BG }}
       >
         <div className="w-full max-w-[420px]">
-
+          {/* Header */}
+          <div className="flex items-center justify-center py-3">
+            <h1 className="text-[16px] font-semibold text-white">Insight editor</h1>
+          </div>
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
