@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React from "react" 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
