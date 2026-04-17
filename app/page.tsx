@@ -635,12 +635,27 @@ export default function ReelInsights() {
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
-                                                            <div className="flex items-center justify-center gap-9 w-full mt-4 px-2 overflow-visible">
-              <div className="flex flex-col items-center gap-1.5 overflow-visible"><HeartIcon /><span className="text-[10px] text-white">{insightsData.likes}</span></div>
-              <div className="flex flex-col items-center gap-1.5 overflow-visible"><CommentIcon /><span className="text-[10px] text-white">{insightsData.comments}</span></div>
-              <div className="flex flex-col items-center gap-1.5 overflow-visible"><RepostIcon /><span className="text-[10px] text-white">{insightsData.reposts}</span></div>
-              <div className="flex flex-col items-center gap-1.5 overflow-visible"><SendIcon /><span className="text-[10px] text-white">{insightsData.shares}</span></div>
-              <div className="flex flex-col items-center gap-1.5 overflow-visible"><BookmarkIcon /><span className="text-[10px] text-white">{insightsData.bookmarks}</span></div>
+                            <div className="flex items-center justify-center gap-6 w-full mt-6 px-2 overflow-visible">
+              <div className="flex flex-col items-center gap-2 overflow-visible w-[50px]">
+                <div className="flex items-center justify-center h-[30px] w-[30px] overflow-visible"><HeartIcon /></div>
+                <span className="text-[11px] text-white font-medium">{insightsData.likes}</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 overflow-visible w-[50px]">
+                <div className="flex items-center justify-center h-[30px] w-[30px] overflow-visible"><CommentIcon /></div>
+                <span className="text-[11px] text-white font-medium">{insightsData.comments}</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 overflow-visible w-[50px]">
+                <div className="flex items-center justify-center h-[30px] w-[30px] overflow-visible"><RepostIcon /></div>
+                <span className="text-[11px] text-white font-medium">{insightsData.reposts}</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 overflow-visible w-[50px]">
+                <div className="flex items-center justify-center h-[30px] w-[30px] overflow-visible"><SendIcon /></div>
+                <span className="text-[11px] text-white font-medium">{insightsData.shares}</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 overflow-visible w-[50px]">
+                <div className="flex items-center justify-center h-[30px] w-[30px] overflow-visible"><BookmarkIcon /></div>
+                <span className="text-[11px] text-white font-medium">{insightsData.bookmarks}</span>
+              </div>
             </div>
           </section>
 
