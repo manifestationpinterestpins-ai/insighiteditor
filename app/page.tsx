@@ -718,7 +718,23 @@ export default function ReelInsights() {
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
-                                          <div className="flex items-center justify-center gap-7 w-full mt-4 px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
+        <div
+  className={`flex items-center justify-center gap-7 w-full px-3 overflow-hidden transition-all duration-200 ${tabsSticky ? "mt-0" : "mt-4"}`}
+  style={{
+    position: tabsSticky ? "fixed" : "relative",
+    top: tabsSticky ? 0 : undefined,
+    left: tabsSticky ? "50%" : undefined,
+    transform: tabsSticky ? "translateX(-50%)" : undefined,
+    width: tabsSticky ? "100%" : "100%",
+    maxWidth: tabsSticky ? 420 : undefined,
+    backgroundColor: tabsSticky ? BG : "transparent",
+    zIndex: tabsSticky ? 50 : undefined,
+    height: tabsSticky ? "42px" : "auto", // Reduced height when sticky
+    paddingTop: tabsSticky ? "0px" : "0px",
+    display: "flex",
+    alignItems: tabsSticky ? "flex-end" : "center", // Pushes icons to bottom of box
+  }}
+>
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
     <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
@@ -747,24 +763,22 @@ export default function ReelInsights() {
           </section>
 
                                         {/* Tabs placeholder */}
-          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
-
-          {/* Tabs */}
-          <LayoutGroup>
-            <div
-              ref={tabsRef}
-              className="flex border-b border-zinc-800/40 z-50"
-              style={{
-                position: tabsSticky ? "fixed" : "relative",
-                top: tabsSticky ? 0 : undefined,
-                left: tabsSticky ? 0 : undefined,
-                right: tabsSticky ? 0 : undefined,
-                width: tabsSticky ? "100%" : undefined,
-                maxWidth: tabsSticky ? 420 : undefined,
-                margin: tabsSticky ? "0 auto" : undefined,
-                backgroundColor: BG,
-              }}
-            >
+          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 86 : 0 }} />
+<LayoutGroup>
+  <div
+    ref={tabsRef}
+    className="flex border-b border-zinc-800/40 z-50"
+    style={{
+      position: tabsSticky ? "fixed" : "relative",
+      top: tabsSticky ? 42 : undefined, // Sticks exactly below the icons
+      left: tabsSticky ? 0 : undefined,
+      right: tabsSticky ? 0 : undefined,
+      width: tabsSticky ? "100%" : undefined,
+      maxWidth: tabsSticky ? 420 : undefined,
+      margin: tabsSticky ? "0 auto" : undefined,
+      backgroundColor: BG,
+    }}
+  >
               {TABS.map(tab => (
                 <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
                   {tab}
