@@ -706,7 +706,21 @@ export default function ReelInsights() {
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
-        <div className="flex items-center justify-center gap-7 w-full mt-4 px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
+        <div
+  ref={tabsPlaceholderRef}
+  className={`flex items-center justify-center gap-7 w-full px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible ${tabsSticky ? "mt-0 py-2" : "mt-4"}`}
+  style={{
+    position: tabsSticky ? "fixed" : "relative",
+    top: tabsSticky ? 0 : undefined,
+    left: tabsSticky ? 0 : undefined,
+    right: tabsSticky ? 0 : undefined,
+    width: tabsSticky ? "100%" : undefined,
+    maxWidth: tabsSticky ? 420 : undefined,
+    margin: tabsSticky ? "0 auto" : undefined,
+    backgroundColor: tabsSticky ? BG : "transparent",
+    zIndex: tabsSticky ? 45 : undefined,
+  }}
+>
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
     <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
@@ -734,15 +748,17 @@ export default function ReelInsights() {
 </div>
           </section>
 
-                                        {/* Tabs placeholder */}
-          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
+                                       {/* Tabs placeholder */}
+<div style={{ height: tabsSticky ? 94 : 0 }} />
+
+{/* Tabs */}
 <LayoutGroup>
   <div
     ref={tabsRef}
     className="flex border-b border-zinc-800/40 z-50"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 0 : undefined,
+      top: tabsSticky ? 49 : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
