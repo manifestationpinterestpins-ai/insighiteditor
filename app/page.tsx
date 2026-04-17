@@ -763,11 +763,11 @@ export default function ReelInsights() {
           </section>
 
                                         {/* Tabs placeholder */}
-          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 86 : 0 }} />
+          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 86 : 0, transition: "height 0s" }} />
 <LayoutGroup>
   <div
     ref={tabsRef}
-    className="flex border-b border-zinc-800/40 z-50"
+    className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
     style={{
       position: tabsSticky ? "fixed" : "relative",
       top: tabsSticky ? 42 : undefined, // Sticks exactly below the icons
