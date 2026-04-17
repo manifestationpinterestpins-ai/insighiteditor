@@ -382,7 +382,7 @@ const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) 
 }
 
 // ===== LOCK MENU =====
-const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boolean; onToggle: () => void; onOpenEditor: () => void; onLongPress: () => void }) => {
+const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress, trigger }: { locked: boolean; onToggle: () => void; onOpenEditor: () => void; onLongPress: () => void; trigger?: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -393,7 +393,7 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boo
   const handleClick = () => { if (isLongPress.current) { isLongPress.current = false; return }; setOpen(p => !p) }
   return (
     <div className="relative" ref={menuRef}>
-      <button className="p-1 -mr-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}><MoreVerticalIcon /></button>
+            <button className="p-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}>{trigger || <MoreVerticalIcon />}</button>
       <AnimatePresence>
         {open && (
           <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.15, ease: "easeOut" }}>
@@ -867,12 +867,21 @@ export default function ReelInsights() {
                     </div>
                   </section>
 
-                  <section className="px-4 py-5">
+                                    <section className="px-4 py-5">
                     <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
-                    <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
-                      <div className="flex items-center gap-3"><BoostIcon /><span className="text-[13px] text-white font-medium">Boost this Reel</span></div>
-                      <ChevronRightIcon />
-                    </button>
+                    <div className="w-full flex items-center justify-between py-2">
+                      <div className="flex items-center gap-3">
+                        <BoostIcon />
+                        <span className="text-[13px] text-white font-medium">Boost this Reel</span>
+                      </div>
+                      <LockMenu
+                        locked={locked}
+                        onToggle={toggleLock}
+                        onOpenEditor={() => setEditorOpen(true)}
+                        onLongPress={() => setBottomSheetOpen(true)}
+                        trigger={<ChevronRightIcon />}
+                      />
+                    </div>
                   </section>
                 </motion.div>
               )}
