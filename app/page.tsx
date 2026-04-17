@@ -142,21 +142,33 @@ const HeaderBoostIcon = () => (
   </svg>
 )
 const HeartIcon = () => (
-  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="21" height="21" viewBox="-1 -1 26 26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 21s-7-4.35-9-8.5C1.5 8 4 5 7.5 5c2 0 3.5 1 4.5 2.5C13 6 14.5 5 16.5 5 20 5 22.5 8 21 12.5 19 16.65 12 21 12 21z"/>
   </svg>
 )
 const CommentIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" aria-label="Comment" class="x1lliihq x1n2onr6 x5n08af"><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/></svg>
+  <svg width="21" height="21" viewBox="-1 -1 26 26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+  </svg>
 )
 const RepostIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" aria-label="Repost" class="x1lliihq x1n2onr6 xyb1xck"><path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/></svg>
+  <svg width="21" height="21" viewBox="-1 -1 26 26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 1l4 4-4 4"/>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <path d="M7 23l-4-4 4-4"/>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+  </svg>
 )
 const SendIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" aria-label="Share" class="x1lliihq x1n2onr6 xyb1xck"><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7.488 12.208 8.027-4.567"/></svg>
+  <svg width="21" height="21" viewBox="-1 -1 26 26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 2L11 13"/>
+    <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+  </svg>
 )
 const BookmarkIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" aria-label="Save" class="x1lliihq x1n2onr6 xyb1xck"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m20 21-8-7.56L4 21V3h16z"/></svg>
+  <svg width="21" height="21" viewBox="-1 -1 26 26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+  </svg>
 )
 const InfoIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white">
@@ -635,12 +647,12 @@ export default function ReelInsights() {
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
-                                                <div className="flex items-center justify-center gap-7 w-full mt-4 px-4">
-              <div className="flex flex-col items-center gap-1" style={{ overflow: "visible" }}><div style={{ width: 21, height: 21, overflow: "visible" }}><HeartIcon /></div><span className="text-[10px] text-white mt-0.5">{insightsData.likes}</span></div>
-              <div className="flex flex-col items-center gap-1" style={{ overflow: "visible" }}><div style={{ width: 21, height: 21, overflow: "visible" }}><CommentIcon /></div><span className="text-[10px] text-white mt-0.5">{insightsData.comments}</span></div>
-              <div className="flex flex-col items-center gap-1" style={{ overflow: "visible" }}><div style={{ width: 21, height: 21, overflow: "visible" }}><RepostIcon /></div><span className="text-[10px] text-white mt-0.5">{insightsData.reposts}</span></div>
-              <div className="flex flex-col items-center gap-1" style={{ overflow: "visible" }}><div style={{ width: 21, height: 21, overflow: "visible" }}><SendIcon /></div><span className="text-[10px] text-white mt-0.5">{insightsData.shares}</span></div>
-              <div className="flex flex-col items-center gap-1" style={{ overflow: "visible" }}><div style={{ width: 21, height: 21, overflow: "visible" }}><BookmarkIcon /></div><span className="text-[10px] text-white mt-0.5">{insightsData.bookmarks}</span></div>
+                                                            <div className="flex items-center justify-center gap-9 w-full mt-4 px-2 overflow-visible">
+              <div className="flex flex-col items-center gap-1.5 overflow-visible"><HeartIcon /><span className="text-[10px] text-white">{insightsData.likes}</span></div>
+              <div className="flex flex-col items-center gap-1.5 overflow-visible"><CommentIcon /><span className="text-[10px] text-white">{insightsData.comments}</span></div>
+              <div className="flex flex-col items-center gap-1.5 overflow-visible"><RepostIcon /><span className="text-[10px] text-white">{insightsData.reposts}</span></div>
+              <div className="flex flex-col items-center gap-1.5 overflow-visible"><SendIcon /><span className="text-[10px] text-white">{insightsData.shares}</span></div>
+              <div className="flex flex-col items-center gap-1.5 overflow-visible"><BookmarkIcon /><span className="text-[10px] text-white">{insightsData.bookmarks}</span></div>
             </div>
           </section>
 
