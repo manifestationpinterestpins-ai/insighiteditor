@@ -509,17 +509,15 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const handlePointerUp = () => setDragging(null)
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
-  const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
-  const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60
-  const defaultRightLabel = `${durMin}:${durSec.toString().padStart(2, "0")}`
+    // Right side label is always current video duration
+  const rightLabel = videoDuration;
 
   return (
     <div className="relative -mx-1">
-      {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
       <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full touch-none select-none" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
-        <text x={getX(lastIdx)} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(data[lastIdx]?.time || defaultRightLabel); setEditingRightX(true) }}>{data[lastIdx]?.time || defaultRightLabel}</text>
+        <text x={getX(lastIdx) - 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{rightLabel}</text>
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
