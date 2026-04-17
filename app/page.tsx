@@ -495,10 +495,11 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const [rightXValue, setRightXValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-      const padding = { top: 15, right: 10, bottom: 38, left: 44 }
+        const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 160
   const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom
-  const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  // Added +12 to left padding, and -12 to width to squeeze the start point to the right
+  const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12)
   const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12)
   const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(100, Math.round(((padding.top + chartH - svgY) / chartH) * 100))) }
