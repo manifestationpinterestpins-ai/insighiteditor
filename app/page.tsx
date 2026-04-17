@@ -723,27 +723,27 @@ export default function ReelInsights() {
                             <div className="flex items-center justify-center gap-7 w-full mt-4 px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
-    <span className="text-[12px] text-white leading-none font-semibold">{insightsData.likes}</span>
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <CommentIcon />
-    <span className="text-[12px] text-white leading-none font-semibold">{insightsData.comments}</span>
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.comments}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <RepostIcon />
-    <span className="text-[12px] text-white leading-none font-semibold">{insightsData.reposts}</span>
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.reposts}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <SendIcon />
-    <span className="text-[12px] text-white leading-none font-semibold">{insightsData.shares}</span>
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.shares}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <BookmarkIcon />
-    <span className="text-[12px] text-white leading-none font-semibold">{insightsData.bookmarks}</span>
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.bookmarks}</span>
   </div>
 </div>
           </section>
