@@ -750,7 +750,7 @@ export default function ReelInsights() {
           </section>
 
                                        {/* Tabs placeholder */}
-<div style={{ height: tabsSticky ? 164 : 0 }} />
+<div style={{ height: tabsSticky ? 114 : 0 }} />
 
 {/* Tabs */}
 <LayoutGroup>
