@@ -712,7 +712,7 @@ export default function ReelInsights() {
   className={`flex items-center justify-center gap-7 w-full px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible ${tabsSticky ? "mt-0 py-2" : "mt-4"}`}
   style={{
     position: tabsSticky ? "fixed" : "relative",
-    top: tabsSticky ? 60 : undefined,
+    top: tabsSticky ? 40 : undefined,
     left: tabsSticky ? 0 : undefined,
     right: tabsSticky ? 0 : undefined,
     width: tabsSticky ? "100%" : undefined,
@@ -750,7 +750,7 @@ export default function ReelInsights() {
           </section>
 
                                        {/* Tabs placeholder */}
-<div style={{ height: tabsSticky ? 154 : 0 }} />
+<div style={{ height: tabsSticky ? 164 : 0 }} />
 
 {/* Tabs */}
 <LayoutGroup>
@@ -759,7 +759,7 @@ export default function ReelInsights() {
     className="flex border-b border-zinc-800/40 z-50"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 59 : undefined,
+      top: tabsSticky ? 89 : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
