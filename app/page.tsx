@@ -671,7 +671,6 @@ export default function ReelInsights() {
     <span className="text-[10px] text-white leading-none">{insightsData.bookmarks}</span>
   </div>
 </div>
-            </div>
           </section>
 
           {/* Tabs placeholder */}
