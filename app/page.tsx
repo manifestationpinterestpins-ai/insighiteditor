@@ -143,8 +143,8 @@ const HeaderBoostIcon = () => (
 )
 const HeartIcon = () => (
   <svg
-    width="24"
-    height="24"
+    width="26"
+    height="26"
     viewBox="-1 -1 26 26"
     fill="none"
     stroke="white"
@@ -160,8 +160,8 @@ const HeartIcon = () => (
 const CommentIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="22"
-    height="22"
+    width="23"
+    height="23"
     viewBox="-1 -1 26 26"
     fill="currentColor"
     aria-label="Comment"
@@ -181,8 +181,8 @@ const CommentIcon = () => (
 const RepostIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="22"
-    height="22"
+    width="23"
+    height="23"
     viewBox="-1 -1 26 26"
     fill="currentColor"
     aria-label="Repost"
@@ -196,8 +196,8 @@ const RepostIcon = () => (
 const SendIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="22"
-    height="22"
+    width="23"
+    height="23"
     viewBox="-1 -1 26 26"
     fill="currentColor"
     aria-label="Share"
@@ -225,8 +225,8 @@ const SendIcon = () => (
 const BookmarkIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="22"
-    height="22"
+    width="23"
+    height="23"
     viewBox="-1 -1 26 26"
     fill="currentColor"
     aria-label="Save"
@@ -723,27 +723,27 @@ export default function ReelInsights() {
                             <div className="flex items-start justify-center gap-7 w-full mt-4 px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
-    <span className="text-[10px] text-white leading-none">{insightsData.likes}</span>
+    <span className="text-[10px] text-white leading-none font-semibold">{insightsData.likes}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <CommentIcon />
-    <span className="text-[10px] text-white leading-none">{insightsData.comments}</span>
+    <span className="text-[10px] text-white leading-none font-semibold">{insightsData.comments}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <RepostIcon />
-    <span className="text-[10px] text-white leading-none">{insightsData.reposts}</span>
+    <span className="text-[10px] text-white leading-none font-semibold">{insightsData.reposts}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <SendIcon />
-    <span className="text-[10px] text-white leading-none">{insightsData.shares}</span>
+    <span className="text-[10px] text-white leading-none font-semibold">{insightsData.shares}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <BookmarkIcon />
-    <span className="text-[10px] text-white leading-none">{insightsData.bookmarks}</span>
+    <span className="text-[10px] text-white leading-none font-semibold">{insightsData.bookmarks}</span>
   </div>
 </div>
           </section>
