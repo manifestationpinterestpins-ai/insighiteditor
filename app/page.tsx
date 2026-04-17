@@ -700,40 +700,13 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-          {/* Header */}
-          <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
-            <div className="flex items-center justify-between px-4 h-[48px]">
-              <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
-              <h1 className="text-[18px] font-semibold flex-1 ml-4">Reel insights</h1>
-              <div className="flex items-center gap-2">
-                <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
-                <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
-              </div>
-            </div>
-          </header>
-
-          {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-4 pb-4 px-5">
+                    {/* Thumbnail */}
+          <section className="flex flex-col items-center pt-6 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
-        <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 0 : 0 }} />
-<div
-  className={`flex items-center justify-center gap-7 w-full px-3 overflow-hidden ${tabsSticky ? "mt-0" : "mt-4"}`}
-  style={{
-    position: tabsSticky ? "fixed" : "relative",
-    top: tabsSticky ? 0 : undefined,
-    left: tabsSticky ? "50%" : undefined,
-    transform: tabsSticky ? "translateX(-50%)" : undefined,
-    width: "100%",
-    maxWidth: tabsSticky ? 420 : undefined,
-    backgroundColor: tabsSticky ? BG : "transparent",
-    zIndex: tabsSticky ? 50 : undefined,
-    height: tabsSticky ? "42px" : "auto",
-    alignItems: tabsSticky ? "flex-end" : "center",
-  }}
->
+        <div className="flex items-center justify-center gap-7 w-full mt-4 px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
     <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
@@ -762,14 +735,14 @@ export default function ReelInsights() {
           </section>
 
                                         {/* Tabs placeholder */}
-          <div style={{ height: tabsSticky ? 86 : 0 }} />
+          <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
 <LayoutGroup>
   <div
     ref={tabsRef}
-    className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
+    className="flex border-b border-zinc-800/40 z-50"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 42 : undefined, // Sticks exactly below the icons
+      top: tabsSticky ? 0 : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
