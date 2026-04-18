@@ -701,49 +701,56 @@ export default function ReelInsights() {
         <div className="w-full max-w-[420px]">
 
                     {/* Thumbnail */}
-          <section className="w-full h-[260px] relative overflow-hidden">
-  <img
-    src="/header.jpg"
-    alt="Header"
-    className="w-full h-full object-cover object-center"
-  />
-
-  <div className="absolute inset-0 bg-black/30" />
-
-  {/* ICON ROW */}
-  <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-7">
-
-    <div className="flex flex-col items-center gap-1 min-w-[38px]">
-      <HeartIcon />
-      <span className="text-[12px] font-bold">{insightsData.likes}</span>
-    </div>
-
-    <div className="flex flex-col items-center gap-1 min-w-[38px]">
-      <CommentIcon />
-      <span className="text-[12px] font-bold">{insightsData.comments}</span>
-    </div>
-
-    <div className="flex flex-col items-center gap-1 min-w-[38px]">
-      <RepostIcon />
-      <span className="text-[12px] font-bold">{insightsData.reposts}</span>
-    </div>
-
-    <div className="flex flex-col items-center gap-1 min-w-[38px]">
-      <SendIcon />
-      <span className="text-[12px] font-bold">{insightsData.shares}</span>
-    </div>
-
-    <div className="flex flex-col items-center gap-1 min-w-[38px]">
-      <BookmarkIcon />
-      <span className="text-[12px] font-bold">{insightsData.bookmarks}</span>
-    </div>
-
+          <section className="flex flex-col items-center pt-10 pb-4 px-5">
+            <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
+              {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
+              <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
+            </div>
+            <div ref={tabsPlaceholderRef} className="h-0" />
+        <div
+    
+  className={`flex items-center justify-center gap-7 w-full px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible ${tabsSticky ? "mt-0 py-2" : "mt-4"}`}
+  style={{
+    position: tabsSticky ? "fixed" : "relative",
+    top: tabsSticky ? 10 : undefined,
+    left: tabsSticky ? 0 : undefined,
+    right: tabsSticky ? 0 : undefined,
+    width: tabsSticky ? "100%" : undefined,
+    maxWidth: tabsSticky ? 420 : undefined,
+    margin: tabsSticky ? "0 auto" : undefined,
+    backgroundColor: tabsSticky ? BG : "transparent",
+    zIndex: tabsSticky ? 45 : undefined,
+  }}
+>
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <HeartIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
   </div>
-</section>
-          
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <CommentIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.comments}</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <RepostIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.reposts}</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <SendIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.shares}</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <BookmarkIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.bookmarks}</span>
+  </div>
+</div>
+          </section>
 
                                        {/* Tabs placeholder */}
-<div style={{ height: tabsSticky ? 60 : 0 }} />
+<div style={{ height: tabsSticky ? 104 : 0 }} />
 
 {/* Tabs */}
 <LayoutGroup>
