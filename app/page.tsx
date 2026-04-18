@@ -2,12 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
-const VALID_KEYS = [
-  "INSIGHT2025",
-  "REELMASTER",
-  "EDITPRO99",
-]
+import { supabase } from "@/lib/supabase"
 
 export default function LoginPage() {
   const [key, setKey] = useState("")
@@ -15,20 +10,47 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
 
-    setTimeout(() => {
-      if (VALID_KEYS.includes(key.trim().toUpperCase())) {
-        localStorage.setItem("access-granted", "true")
-        router.push("/editor")
-      } else {
+    try {
+      const trimmedKey = key.trim().toUpperCase()
+
+      // Check if key exists and is NOT used
+      const { data, error: fetchError } = await supabase
+        .from("keys")
+        .select("id, used")
+        .eq("key", trimmedKey)
+        .single()
+
+      if (fetchError || !data) {
         setError("Invalid key. Please try again.")
         setLoading(false)
+        return
       }
-    }, 500)
+
+      if (data.used) {
+        setError("This key has already been used.")
+        setLoading(false)
+        return
+      }
+
+      // Mark key as used
+      await supabase
+        .from("keys")
+        .update({ used: true, used_at: new Date().toISOString() })
+        .eq("id", data.id)
+
+      // Store session
+      localStorage.setItem("access-granted", "true")
+      router.push("/editor")
+
+    } catch (err) {
+      setError("Something went wrong. Try again.")
+      setLoading(false)
+    }
   }
 
   return (
@@ -37,13 +59,11 @@ export default function LoginPage() {
       style={{ backgroundColor: "#0c0f14" }}
     >
       <div className="w-full max-w-[340px]">
-        {/* Logo / Title */}
         <div className="text-center mb-8">
           <h1 className="text-[24px] font-bold text-white mb-2">Insight Editor</h1>
           <p className="text-[13px] text-gray-400">Enter your access key to continue</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <input
@@ -80,7 +100,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Footer */}
         <p className="text-[11px] text-gray-600 text-center mt-6">
           Contact admin for access key
         </p>
