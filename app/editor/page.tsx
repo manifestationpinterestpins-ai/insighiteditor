@@ -573,6 +573,7 @@ export default function ReelInsights() {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
     const [headerImage, setHeaderImage] = useState<string | null>(null)
   const headerImageInputRef = useRef<HTMLInputElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
@@ -625,7 +626,11 @@ export default function ReelInsights() {
     const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
     updateOffset()
     window.addEventListener("resize", updateOffset)
-    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY >= tabsOffsetTop.current) }
+    const handleScroll = () => {
+      updateOffset()
+      const hHeight = headerRef.current?.offsetHeight || 0
+      setTabsSticky(window.scrollY + hHeight >= tabsOffsetTop.current)
+    }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
   }, [])
@@ -715,8 +720,8 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-      {/* Header Image */}
-<div className="w-full relative">
+      {/* Header Image - STICKY */}
+<div ref={headerRef} className="w-full relative sticky top-0 z-[100]" style={{ backgroundColor: BG }}>
   <div
     className="w-full cursor-pointer"
     onClick={() => headerImageInputRef.current?.click()}
@@ -751,8 +756,8 @@ export default function ReelInsights() {
   />
 </div>
 
-                    {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-10 pb-4 px-5">
+                    {/* Thumbnail - decreased gap from pt-10 to pt-3 */}
+          <section className="flex flex-col items-center pt-3 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
@@ -788,14 +793,14 @@ export default function ReelInsights() {
                                        {/* Tabs placeholder */}
 <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
 
-{/* Tabs */}
+{/* Tabs - sticks below the header */}
 <LayoutGroup>
   <div
     ref={tabsRef}
-    className="flex border-b border-zinc-800/40 z-50"
+    className="flex border-b border-zinc-800/40 z-[90]"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 0 : undefined,
+      top: tabsSticky ? (headerRef.current?.offsetHeight || 0) : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
