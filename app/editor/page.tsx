@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react" 
+import React from "react"
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
@@ -124,9 +124,9 @@ const ChevronLeftIcon = () => (
   <path
     d="M36 12H10M10 12L18 4M10 12L18 20"
     stroke="white"
-    stroke-width="3"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   />
 </svg>
 )
@@ -295,10 +295,10 @@ const SaveRateIcon = () => (
   </svg>
 )
 const RepostRateIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Repost" class="x1lliihq x1n2onr6 xyb1xck"><path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Repost" className="x1lliihq x1n2onr6 xyb1xck"><path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/></svg>
 )
 const CommentRateIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Comment" class="x1lliihq x1n2onr6 x5n08af"><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Comment" className="x1lliihq x1n2onr6 x5n08af"><path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/></svg>
 )
 
 // ===== AUDIENCE ROW =====
@@ -593,6 +593,8 @@ export default function ReelInsights() {
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
   const [tabsSticky, setTabsSticky] = useState(false)
   const tabsOffsetTop = useRef(0)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -621,14 +623,26 @@ export default function ReelInsights() {
     } catch {}
   }, [])
 
+  // Measure header height for sticky tabs offset
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight)
+      }
+    }
+    updateHeaderHeight()
+    window.addEventListener("resize", updateHeaderHeight)
+    return () => window.removeEventListener("resize", updateHeaderHeight)
+  }, [headerImage])
+
   useEffect(() => {
     const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
     updateOffset()
     window.addEventListener("resize", updateOffset)
-    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY >= tabsOffsetTop.current) }
+    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY + headerHeight >= tabsOffsetTop.current) }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
-  }, [])
+  }, [headerHeight])
 
   const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
@@ -715,8 +729,16 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-      {/* Header Image */}
-<div className="w-full relative">
+      {/* Header Image - STICKY */}
+<div
+  ref={headerRef}
+  className="w-full relative"
+  style={{
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+  }}
+>
   <div
     className="w-full cursor-pointer"
     onClick={() => headerImageInputRef.current?.click()}
@@ -751,8 +773,8 @@ export default function ReelInsights() {
   />
 </div>
 
-                    {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-10 pb-4 px-5">
+                    {/* Thumbnail — reduced top padding from pt-10 to pt-3 */}
+          <section className="flex flex-col items-center pt-3 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
@@ -788,14 +810,14 @@ export default function ReelInsights() {
                                        {/* Tabs placeholder */}
 <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
 
-{/* Tabs */}
+{/* Tabs — sticky below the header */}
 <LayoutGroup>
   <div
     ref={tabsRef}
     className="flex border-b border-zinc-800/40 z-50"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 0 : undefined,
+      top: tabsSticky ? headerHeight : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
