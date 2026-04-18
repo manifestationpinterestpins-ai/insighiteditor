@@ -554,7 +554,7 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
 
   return (
     <div className="relative -mx-1">
-      {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
+      {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
@@ -573,7 +573,6 @@ export default function ReelInsights() {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
     const [headerImage, setHeaderImage] = useState<string | null>(null)
   const headerImageInputRef = useRef<HTMLInputElement>(null)
-  const headerRef = useRef<HTMLDivElement>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
@@ -594,6 +593,7 @@ export default function ReelInsights() {
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
   const [tabsSticky, setTabsSticky] = useState(false)
   const tabsOffsetTop = useRef(0)
+  const headerRef = useRef<HTMLDivElement>(null)
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -627,10 +627,10 @@ export default function ReelInsights() {
     updateOffset()
     window.addEventListener("resize", updateOffset)
     const handleScroll = () => {
-      updateOffset()
-      const hHeight = headerRef.current?.offsetHeight || 0
-      setTabsSticky(window.scrollY + hHeight >= tabsOffsetTop.current)
-    }
+      updateOffset();
+      const hHeight = headerRef.current?.offsetHeight || 0;
+      setTabsSticky(window.scrollY + hHeight >= tabsOffsetTop.current);
+    };
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
   }, [])
@@ -720,8 +720,8 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-      {/* Header Image - STICKY */}
-<div ref={headerRef} className="w-full relative sticky top-0 z-[100]" style={{ backgroundColor: BG }}>
+      {/* Header Image - STICKY FIXED */}
+<div ref={headerRef} className="w-full sticky top-0 z-[100] bg-[#0c0f14]">
   <div
     className="w-full cursor-pointer"
     onClick={() => headerImageInputRef.current?.click()}
@@ -756,7 +756,7 @@ export default function ReelInsights() {
   />
 </div>
 
-                    {/* Thumbnail - decreased gap from pt-10 to pt-3 */}
+                    {/* Thumbnail - Decreased Gap (pt-3) */}
           <section className="flex flex-col items-center pt-3 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
@@ -793,14 +793,14 @@ export default function ReelInsights() {
                                        {/* Tabs placeholder */}
 <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
 
-{/* Tabs - sticks below the header */}
+{/* Tabs - Positioned Exactly Under Sticky Header */}
 <LayoutGroup>
   <div
     ref={tabsRef}
     className="flex border-b border-zinc-800/40 z-[90]"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? (headerRef.current?.offsetHeight || 0) : undefined,
+      top: tabsSticky ? (headerRef.current?.offsetHeight || 0) - 1 : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
@@ -905,7 +905,7 @@ export default function ReelInsights() {
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">How long people watched your reel</h3><InfoIcon /></div>
                     <div className="flex justify-center mb-5">
                       <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
-                        {retentionThumbnail ? (<><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>)}
+                        {retentionThumbnail ? (<><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>)}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
                         <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                       </div>
