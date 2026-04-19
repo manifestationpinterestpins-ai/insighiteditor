@@ -571,7 +571,9 @@ const TABS = ["Overview", "Engagement", "Audience"] as const
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
-  const [headerImage, setHeaderImage] = useState<string | null>(null)
+  const [headerImage, setHeaderImage] = useState<string | null>(() => {
+  try { return localStorage.getItem("header-image") } catch { return null }
+})
 const headerInputRef = useRef<HTMLInputElement>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
@@ -727,15 +729,17 @@ const headerInputRef = useRef<HTMLInputElement>(null)
       accept="image/*"
       className="hidden"
       onChange={(e) => {
-        const file = e.target.files?.[0]
-        if (file) {
-          const reader = new FileReader()
-          reader.onload = (ev) => {
-            setHeaderImage(ev.target?.result as string)
-          }
-          reader.readAsDataURL(file)
-        }
-      }}
+  const file = e.target.files?.[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setHeaderImage(result)
+      try { localStorage.setItem("header-image", result) } catch {}
+    }
+    reader.readAsDataURL(file)
+  }
+}}
     />
   </div>
 </section>
