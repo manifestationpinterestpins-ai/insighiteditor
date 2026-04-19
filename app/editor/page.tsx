@@ -512,52 +512,276 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
 
 // ===== DRAGGABLE VIEWS GRAPH =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
-const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; locked: boolean }) => {
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+
+const seeded = (seed: number) => {
+  const x = Math.sin(seed * 999) * 10000
+  return x - Math.floor(x)
+}
+
+const parseTimeToSeconds = (time: string) => {
+  const parts = time.split(":").map(Number)
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  return 0
+}
+
+const formatSeconds = (seconds: number) => {
+  const min = Math.floor(seconds / 60)
+  const sec = seconds % 60
+  return `${min}:${sec.toString().padStart(2, "0")}`
+}
+
+const getViewsAxisTop = (views: number) => {
+  if (views <= 200) return 200
+  if (views <= 2000) return Math.ceil(views / 200) * 200
+  if (views <= 5000) return Math.ceil(views / 500) * 500
+  if (views <= 10000) return Math.ceil(views / 1000) * 1000
+  return Math.ceil(views / 2000) * 2000
+}
+
+const formatViewsAxisLabel = (value: number) => {
+  if (value >= 1000 && value % 1000 === 0) return `${value / 1000}k`
+  return value.toLocaleString("en-IN")
+}
+
+const getAutomatedActions = (views: number) => {
+  let followsMin = 0
+  let followsMax = 1
+  let visitsMin = 4
+  let visitsMax = 8
+
+  if (views <= 1000) {
+    followsMin = 0; followsMax = 1
+    visitsMin = 4; visitsMax = 8
+  } else if (views <= 2000) {
+    followsMin = 2; followsMax = 4
+    visitsMin = 5; visitsMax = 15
+  } else if (views <= 3000) {
+    followsMin = 3; followsMax = 6
+    visitsMin = 8; visitsMax = 20
+  } else if (views <= 5000) {
+    followsMin = 5; followsMax = 10
+    visitsMin = 12; visitsMax = 30
+  } else if (views <= 10000) {
+    followsMin = 8; followsMax = 16
+    visitsMin = 20; visitsMax = 60
+  } else {
+    followsMin = 12; followsMax = 24
+    visitsMin = 35; visitsMax = 90
+  }
+
+  const followSeed = Math.floor(views / 37) + 11
+  const visitSeed = Math.floor(views / 29) + 19
+
+  return {
+    follows: followsMin + Math.floor(seeded(followSeed) * (followsMax - followsMin + 1)),
+    profileVisits: visitsMin + Math.floor(seeded(visitSeed) * (visitsMax - visitsMin + 1)),
+  }
+}
+
+const generateViewsGraph = (views: number): GraphPoint[] => {
+  const total = Math.max(views, 120)
+  const dates = ["28 Jan", "28 Jan", "28 Jan", "29 Jan", "29 Jan", "29 Jan", "30 Jan", "30 Jan", "30 Jan"]
+  const progress = [0.08, 0.16, 0.28, 0.4, 0.36, 0.58, 0.74, 0.7, 1]
+  const data: GraphPoint[] = []
+
+  for (let i = 0; i < progress.length; i++) {
+    let current =
+      i === progress.length - 1
+        ? total
+        : Math.round(total * progress[i] + total * ((seeded(total + i * 13) - 0.5) * 0.05))
+
+    current = clamp(current, Math.round(total * 0.05), total)
+
+    const typical = clamp(
+      Math.round(total * (0.12 + i * 0.02 + seeded(total + i * 7) * 0.025)),
+      20,
+      Math.round(total * 0.35)
+    )
+
+    data.push({
+      date: dates[i],
+      thisReel: current,
+      typical,
+    })
+  }
+
+  data[data.length - 1].thisReel = total
+  return data
+}
+
+const generateRetentionGraph = (videoDuration: string, avgWatchTime: string): RetentionPoint[] => {
+  const totalSec = Math.max(parseTimeToSeconds(videoDuration), 6)
+  const avgSec = Math.max(parseTimeToSeconds(avgWatchTime), 1)
+  const quality = clamp(avgSec / totalSec, 0.12, 0.95)
+  const pointCount = clamp(totalSec <= 12 ? totalSec + 1 : 10, 7, 12)
+  const data: RetentionPoint[] = []
+
+  for (let i = 0; i < pointCount; i++) {
+    const progress = i / (pointCount - 1)
+    const timeSec = Math.round(progress * totalSec)
+
+    let value = Math.round(100 * Math.exp(-(2.15 - quality * 0.8) * progress))
+    value += Math.round((seeded(totalSec + i * 17) - 0.5) * 8)
+
+    if (i === 0) value = 100
+    if (i === Math.round(pointCount * 0.35)) value += 7
+    if (i === Math.round(pointCount * 0.65) && quality > 0.35) value += 4
+    if (i === pointCount - 1) value = clamp(Math.round(16 + quality * 38), 12, 55)
+
+    data.push({
+      time: formatSeconds(timeSec),
+      retention: clamp(value, 8, 100),
+    })
+  }
+
+  data[0].retention = 100
+  return data
+}
+
+const DraggableGraph = ({
+  data,
+  onChange,
+  locked,
+  yAxisTop,
+}: {
+  data: GraphPoint[]
+  onChange: (d: GraphPoint[]) => void
+  locked: boolean
+  yAxisTop: number
+}) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
   const [xLabels, setXLabels] = useState(["28 Jan", "29 Jan", "30 Jan"])
-  const [yLabels, setYLabels] = useState(["0", "250", "500"])
   const [editingX, setEditingX] = useState<number | null>(null)
-  const [editingY, setEditingY] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { try { const sx = localStorage.getItem("graph-xlabels"); const sy = localStorage.getItem("graph-ylabels"); if (sx) setXLabels(JSON.parse(sx)); if (sy) setYLabels(JSON.parse(sy)) } catch {} }, [])
-  useEffect(() => { if ((editingX !== null || editingY !== null) && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingX, editingY])
-  const saveXLabels = (l: string[]) => { setXLabels(l); try { localStorage.setItem("graph-xlabels", JSON.stringify(l)) } catch {} }
-  const saveYLabels = (l: string[]) => { setYLabels(l); try { localStorage.setItem("graph-ylabels", JSON.stringify(l)) } catch {} }
+  useEffect(() => {
+    if (editingX !== null && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingX])
 
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
-  const width = 380; const height = 170
+  const width = 380
+  const height = 170
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
+  const yLabels = ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
-  const maxVal = Math.max(...data.map(d => Math.max(d.thisReel, d.typical)))
-  const graphMax = Math.ceil(maxVal / 100) * 100 || 500
   const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
-  const getY = (val: number) => padding.top + chartH - (Math.min(val, graphMax) / graphMax) * chartH
-  const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(graphMax, Math.round(((padding.top + chartH - svgY) / chartH) * graphMax))) }
-  const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
+  const getValFromY = (clientY: number) => {
+    const svg = svgRef.current
+    if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * height
+    return Math.max(0, Math.min(yAxisTop, Math.round(((padding.top + chartH - svgY) / chartH) * yAxisTop)))
+  }
+  const buildPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`
+    return d
+  }
+
   const allThisReel = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
-  const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging({ index, line }) }
-  const handlePointerMove = (e: React.PointerEvent) => { if (!dragging || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }; onChange(nd) }
+  const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
+    if (locked) return
+    e.preventDefault()
+    e.stopPropagation()
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+    setDragging({ index, line })
+  }
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragging || locked) return
+    e.preventDefault()
+    const val = getValFromY(e.clientY)
+    const nd = [...data]
+    nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }
+    onChange(nd)
+  }
   const handlePointerUp = () => setDragging(null)
   const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW]
-  const commitEdit = () => { if (editingX !== null) { const u = [...xLabels]; u[editingX] = editValue; saveXLabels(u); setEditingX(null) }; if (editingY !== null) { const u = [...yLabels]; u[editingY] = editValue; saveYLabels(u); setEditingY(null) }; setEditValue("") }
+  const commitEdit = () => {
+    if (editingX !== null) {
+      const updated = [...xLabels]
+      updated[editingX] = editValue
+      setXLabels(updated)
+      setEditingX(null)
+    }
+    setEditValue("")
+  }
   const pathD = buildPath(allThisReel)
 
   return (
     <div className="relative -mx-1">
-      {(editingX !== null || editingY !== null) && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={editValue} onChange={e => setEditValue(e.target.value)} onBlur={commitEdit} onKeyDown={e => { if (e.key === "Enter") commitEdit() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
-            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-        {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
-        {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
+      {editingX !== null && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={inputRef}
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={e => { if (e.key === "Enter") commitEdit() }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: PINK }}
+          />
+        </div>
+      )}
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${width} ${height}`}
+        className={`w-full select-none ${locked ? "" : "touch-none"}`}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        {yLabels.map((label, i) => (
+          <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">
+            {label}
+          </text>
+        ))}
+        {xLabels.map((label, i) => (
+          <text
+            key={`xt-${i}`}
+            x={xPositions[i]}
+            y={height - 6}
+            textAnchor="middle"
+            fill={editingX === i ? PINK : "#d1d5db"}
+            fontSize="13"
+            fontFamily="sans-serif"
+            className={locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked) return
+              setEditingX(i)
+              setEditValue(label)
+            }}
+          >
+            {label}
+          </text>
+        ))}
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
-        {data.map((d, i) => <circle key={`tr-${i}`} cx={getX(i)} cy={getY(d.thisReel)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, "thisReel", e)} style={{ touchAction: "none" }} />)}
+        {data.map((d, i) => (
+          <circle
+            key={`tr-${i}`}
+            cx={getX(i)}
+            cy={getY(d.thisReel)}
+            r={18}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={e => handlePointerDown(i, "thisReel", e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
       </svg>
     </div>
   )
 }
+
 
 // ===== DRAGGABLE ENGAGEMENT GRAPH =====
 type EngagementPoint = { time: string; value: number }
@@ -685,14 +909,13 @@ export default function ReelInsights() {
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-    useEffect(() => {
+      useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
-      const sp = localStorage.getItem("profile-activity"); if (sp) setProfileActivity(JSON.parse(sp))
-      const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
     } catch {}
   }, [])
+
 
 
   useEffect(() => {
@@ -715,7 +938,10 @@ export default function ReelInsights() {
     { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
-  const [retentionData, setRetentionData] = useState<RetentionPoint[]>(insightsData.retentionData)
+    const [retentionData, setRetentionData] = useState<RetentionPoint[]>(
+    generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime)
+  )
+
 
   useEffect(() => {
     const fp = parseFloat((Math.random() * 8 + 2).toFixed(1))
@@ -731,19 +957,56 @@ export default function ReelInsights() {
     })
   }, [])
 
-  useEffect(() => {
+    useEffect(() => {
     try {
-      const s = localStorage.getItem("graph-data"); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) setGraphData(p) }
-      const sr = localStorage.getItem("retention-data"); if (sr) { const p = JSON.parse(sr); if (Array.isArray(p) && p.length > 0) setRetentionData(p) }
       const se = localStorage.getItem("engagement-graph-data")
-      if (se) { const p = JSON.parse(se); if (Array.isArray(p) && p.length > 0) { setEngagementData(p); return } }
+      if (se) {
+        const p = JSON.parse(se)
+        if (Array.isArray(p) && p.length > 0) {
+          setEngagementData(p)
+          return
+        }
+      }
       setEngagementData(buildEngagementData(insightsData.videoDuration))
-    } catch { setEngagementData(buildEngagementData(insightsData.videoDuration)) }
+    } catch {
+      setEngagementData(buildEngagementData(insightsData.videoDuration))
+    }
   }, [])
 
-  const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd); try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {} }
-  const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd); try { localStorage.setItem("retention-data", JSON.stringify(nd)) } catch {} }
+
+    const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd) }
+  const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
+
+
+    useEffect(() => {
+    const automated = getAutomatedActions(insightsData.views)
+    setProfileActivity(automated.follows)
+    setProfileVisits(automated.profileVisits)
+  }, [insightsData.views])
+
+  useEffect(() => {
+    setGraphData(generateViewsGraph(insightsData.views))
+  }, [insightsData.views])
+
+  useEffect(() => {
+    setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime))
+  }, [insightsData.videoDuration, insightsData.avgWatchTime])
+
+  useEffect(() => {
+    try { localStorage.setItem("saved-reel-views", JSON.stringify(insightsData.views)) } catch {}
+  }, [insightsData.views])
+
+  useEffect(() => {
+    try {
+      const savedViews = localStorage.getItem("saved-reel-views")
+      if (!savedViews) return
+      const parsedViews = JSON.parse(savedViews)
+      if (typeof parsedViews === "number" && parsedViews !== insightsData.views) {
+        saveData({ ...insightsData, views: parsedViews })
+      }
+    } catch {}
+  }, [])
 
   useEffect(() => {
     setSummaryLoading(true)
@@ -751,6 +1014,7 @@ export default function ReelInsights() {
     const t2 = setTimeout(() => setAnimateCharts(true), 300)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [insightsData])
+
 
     const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
   const handleHeaderUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -954,9 +1218,10 @@ export default function ReelInsights() {
                             <div className="h-[24px] flex items-center">
                               {card.label === "Average watch time" ? (
                                 <span className="text-[17px] font-bold text-white">{card.value}</span>
-                              ) : card.label === "Follows" ? (
-                                <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[17px] font-bold text-white" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                                                            ) : card.label === "Follows" ? (
+                                <span className="text-[17px] font-bold text-white">{profileActivity}</span>
                               ) : (
+
                                 <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
                               )}
                             </div>
@@ -976,7 +1241,13 @@ export default function ReelInsights() {
                         <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
                       ))}
                     </div>
-                    <DraggableGraph data={graphData} onChange={handleGraphChange} locked={locked} />
+                                        <DraggableGraph
+                      data={graphData}
+                      onChange={handleGraphChange}
+                      locked={locked}
+                      yAxisTop={getViewsAxisTop(insightsData.views)}
+                    />
+
                   </section>
 
                   <section className="px-4 py-5">
@@ -1046,14 +1317,15 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Actions after viewing</h3><InfoIcon /></div>
                     <div className="space-y-3.5">
-                      <div className="flex justify-between items-center">
+                                            <div className="flex justify-between items-center">
                         <span className="text-[13px] text-white">Follows</span>
-                        <InlineEditor value={profileActivity} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileActivity(n); try { localStorage.setItem("profile-activity", JSON.stringify(n)) } catch {} }} />
+                        <span className="text-[13px] text-white font-semibold">{profileActivity}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[13px] text-white">Profile visits</span>
-                        <InlineEditor value={profileVisits} isNumber locked={locked} className="text-[13px] text-white font-semibold" onSave={val => { const n = Math.round(val); setProfileVisits(n); try { localStorage.setItem("profile-visits", JSON.stringify(n)) } catch {} }} />
+                        <span className="text-[13px] text-white font-semibold">{profileVisits}</span>
                       </div>
+
                     </div>
                   </section>
 
