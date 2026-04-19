@@ -840,20 +840,15 @@ export default function ReelInsights() {
             </div>
         <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 0 : 0 }} />
 <div
-  className={`flex items-center justify-center gap-7 w-full px-3 overflow-hidden ${tabsSticky ? "mt-0" : "mt-4"}`}
+  className="flex items-center justify-center gap-7 w-full px-3 overflow-hidden mt-4"
   style={{
-    position: tabsSticky ? "fixed" : "relative",
-    top: tabsSticky ? 0 : undefined,
-    left: tabsSticky ? "50%" : undefined,
-    transform: tabsSticky ? "translateX(-50%)" : undefined,
+    position: "relative",
     width: "100%",
-    maxWidth: tabsSticky ? 420 : undefined,
-    backgroundColor: tabsSticky ? BG : "transparent",
-    zIndex: tabsSticky ? 50 : undefined,
-    height: tabsSticky ? "42px" : "auto",
-    alignItems: tabsSticky ? "flex-end" : "center",
+    backgroundColor: "transparent",
+    alignItems: "center",
   }}
 >
+
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
     <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
@@ -882,14 +877,14 @@ export default function ReelInsights() {
           </section>
 
                                         {/* Tabs placeholder */}
-          <div style={{ height: tabsSticky ? 86 : 0 }} />
+          <div style={{ height: tabsSticky ? 42 : 0 }} />
 <LayoutGroup>
   <div
     ref={tabsRef}
     className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 42 : undefined, // Sticks exactly below the icons
+            top: tabsSticky ? 48 : undefined, // Sticks below the header image
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
