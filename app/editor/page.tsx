@@ -858,36 +858,24 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
   const raw = generateOrganicViews(views, 60, reelType)
   const labels = ["28 Jan", "29 Jan", "30 Jan"]
 
-  const mapped = Array.from({ length: pointCount }, (_, i) => {
-    const rawIndex = Math.round((i / Math.max(pointCount - 1, 1)) * (raw.length - 1))
-    const progress = i / Math.max(pointCount - 1, 1)
-    const labelIndex = Math.min(2, Math.floor(progress * 3))
-    const typicalFactor =
-      reelType === "viral" ? 0.16 + Math.random() * 0.05 :
-      reelType === "dead" ? 0.2 + Math.random() * 0.05 :
-      0.18 + Math.random() * 0.05
+  const mapped: GraphPoint[] = [];
 
-    const prevTypical = i === 0
-  ? raw[rawIndex].value * 0.2
-  : (i > 0 ? mapped[i - 1].typical : 0);
+for (let i = 0; i < pointCount; i++) {
+  const rawIndex = Math.round((i / Math.max(pointCount - 1, 1)) * (raw.length - 1));
+  const progress = i / Math.max(pointCount - 1, 1);
+  const labelIndex = Math.min(2, Math.floor(progress * 3));
 
-const smoothTypical =
-  prevTypical + (raw[rawIndex].value - prevTypical) * 0.12;
+  const prevTypical =
+    i === 0 ? raw[rawIndex].value * 0.2 : mapped[i - 1].typical;
 
-return {
-  date: labels[labelIndex],
-  thisReel: raw[rawIndex].value,
-  typical: Math.max(10, Math.round(smoothTypical)),
-};
-  })
+  const smoothTypical =
+    prevTypical + (raw[rawIndex].value - prevTypical) * 0.12;
 
-  mapped[0].thisReel = Math.max(1, mapped[0].thisReel)
-  for (let i = 1; i < mapped.length; i++) {
-    mapped[i].thisReel = Math.max(mapped[i].thisReel, mapped[i - 1].thisReel + 1)
-  }
-  mapped[mapped.length - 1].thisReel = Math.max(views, mapped[mapped.length - 1].thisReel)
-
-  return mapped
+  mapped.push({
+    date: labels[labelIndex],
+    thisReel: raw[rawIndex].value,
+    typical: Math.max(10, Math.round(smoothTypical)),
+  });
 }
 
 const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
