@@ -591,7 +591,7 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     const [animationKey, setAnimationKey] = useState(0)
   const [viewsAnimKey, setViewsAnimKey] = useState(0)
         const overviewRef = useRef<HTMLDivElement>(null)
-  const tabsRef = useRef<HTMLDivElement>(null)
+  const tabsRef = useRef<HTMLDivElement>(null) 
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
