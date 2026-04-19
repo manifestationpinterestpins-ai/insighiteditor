@@ -871,11 +871,14 @@ for (let i = 0; i < pointCount; i++) {
   const smoothTypical =
     prevTypical + (raw[rawIndex].value - prevTypical) * 0.12;
 
-  mapped.push({
+    mapped.push({
     date: labels[labelIndex],
     thisReel: raw[rawIndex].value,
     typical: Math.max(10, Math.round(smoothTypical)),
   });
+}
+
+  return mapped
 }
 
 const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
