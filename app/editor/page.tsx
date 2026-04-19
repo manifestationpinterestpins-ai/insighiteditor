@@ -549,12 +549,9 @@ const getAutomatedActions = (views: number) => {
 }
 
 const getViewsAxisTop = (views: number) => {
-  if (views <= 200) return 200
-  if (views <= 2000) return Math.ceil(views / 200) * 200
-  if (views <= 5000) return Math.ceil(views / 500) * 500
-  if (views <= 10000) return Math.ceil(views / 1000) * 1000
-  return Math.ceil(views / 2000) * 2000
+  return Math.max(250, Math.ceil(views / 250) * 250)
 }
+
 
 const formatViewsAxisLabel = (value: number) => {
   if (value >= 1000) {
