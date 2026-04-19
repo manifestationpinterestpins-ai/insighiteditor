@@ -382,7 +382,7 @@ const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) 
 }
 
 // ===== LOCK MENU =====
-const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress, trigger }: { locked: boolean; onToggle: () => void; onOpenEditor: () => void; onLongPress: () => void; trigger?: React.ReactNode }) => {
+const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress }: { locked: boolean; onToggle: () => void; onOpenEditor: () => void; onLongPress: () => void }) => {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -393,7 +393,7 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress, trigger }: { lo
   const handleClick = () => { if (isLongPress.current) { isLongPress.current = false; return }; setOpen(p => !p) }
   return (
     <div className="relative" ref={menuRef}>
-            <button className="p-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}>{trigger || <MoreVerticalIcon />}</button>
+      <button className="p-1 -mr-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}><MoreVerticalIcon /></button>
       <AnimatePresence>
         {open && (
           <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.15, ease: "easeOut" }}>
@@ -571,8 +571,6 @@ const TABS = ["Overview", "Engagement", "Audience"] as const
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
-    const [headerImage, setHeaderImage] = useState<string | null>(null)
-  const headerImageInputRef = useRef<HTMLInputElement>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
@@ -614,7 +612,6 @@ export default function ReelInsights() {
 
   useEffect(() => {
     try {
-      const hi = localStorage.getItem("header-image"); if (hi) setHeaderImage(hi)
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
       const sp = localStorage.getItem("profile-activity"); if (sp) setProfileActivity(JSON.parse(sp))
       const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
@@ -679,18 +676,6 @@ export default function ReelInsights() {
   }, [insightsData])
 
   const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
-    const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (f) {
-      const r = new FileReader()
-      r.onload = ev => {
-        const result = ev.target?.result as string
-        setHeaderImage(result)
-        localStorage.setItem("header-image", result)
-      }
-      r.readAsDataURL(f)
-    }
-  }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
   const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }
@@ -715,49 +700,40 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-      {/* Header Image */}
-<div className="w-full relative">
-  <div
-    className="w-full cursor-pointer"
-    onClick={() => headerImageInputRef.current?.click()}
-  >
-    {headerImage ? (
-      <img
-        src={headerImage}
-        alt="Header"
-        className="w-full object-cover"
-        style={{ maxHeight: 180 }}
-      />
-    ) : (
-      <div
-        className="w-full flex flex-col items-center justify-center gap-2"
-        style={{ height: 120, backgroundColor: "#1a1d23" }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span className="text-[11px] text-zinc-500">Tap to add header image</span>
-      </div>
-    )}
-  </div>
-  <input
-    ref={headerImageInputRef}
-    type="file"
-    accept="image/*"
-    className="hidden"
-    onChange={handleHeaderImageUpload}
-  />
-</div>
+          {/* Header */}
+          <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
+            <div className="flex items-center justify-between px-4 h-[48px]">
+              <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
+              <h1 className="text-[18px] font-semibold flex-1 ml-4">Reel insights</h1>
+              <div className="flex items-center gap-2">
+                <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
+                <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+              </div>
+            </div>
+          </header>
 
-                    {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-10 pb-4 px-5">
+          {/* Thumbnail */}
+          <section className="flex flex-col items-center pt-4 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
-        <div className="flex items-center justify-center gap-7 w-full mt-4 px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
+        <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 0 : 0 }} />
+<div
+  className={`flex items-center justify-center gap-7 w-full px-3 overflow-hidden ${tabsSticky ? "mt-0" : "mt-4"}`}
+  style={{
+    position: tabsSticky ? "fixed" : "relative",
+    top: tabsSticky ? 0 : undefined,
+    left: tabsSticky ? "50%" : undefined,
+    transform: tabsSticky ? "translateX(-50%)" : undefined,
+    width: "100%",
+    maxWidth: tabsSticky ? 420 : undefined,
+    backgroundColor: tabsSticky ? BG : "transparent",
+    zIndex: tabsSticky ? 50 : undefined,
+    height: tabsSticky ? "42px" : "auto",
+    alignItems: tabsSticky ? "flex-end" : "center",
+  }}
+>
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
     <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
@@ -785,17 +761,15 @@ export default function ReelInsights() {
 </div>
           </section>
 
-                                       {/* Tabs placeholder */}
-<div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 45 : 0 }} />
-
-{/* Tabs */}
+                                        {/* Tabs placeholder */}
+          <div style={{ height: tabsSticky ? 86 : 0 }} />
 <LayoutGroup>
   <div
     ref={tabsRef}
-    className="flex border-b border-zinc-800/40 z-50"
+    className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 0 : undefined,
+      top: tabsSticky ? 42 : undefined, // Sticks exactly below the icons
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
@@ -920,21 +894,12 @@ export default function ReelInsights() {
                     </div>
                   </section>
 
-                                    <section className="px-4 py-5">
+                  <section className="px-4 py-5">
                     <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
-                    <div className="w-full flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
-                        <BoostIcon />
-                        <span className="text-[13px] text-white font-medium">Boost this Reel</span>
-                      </div>
-                      <LockMenu
-                        locked={locked}
-                        onToggle={toggleLock}
-                        onOpenEditor={() => setEditorOpen(true)}
-                        onLongPress={() => setBottomSheetOpen(true)}
-                        trigger={<ChevronRightIcon />}
-                      />
-                    </div>
+                    <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
+                      <div className="flex items-center gap-3"><BoostIcon /><span className="text-[13px] text-white font-medium">Boost this Reel</span></div>
+                      <ChevronRightIcon />
+                    </button>
                   </section>
                 </motion.div>
               )}
