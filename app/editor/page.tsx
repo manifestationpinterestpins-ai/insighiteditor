@@ -660,6 +660,7 @@ const generateOrganicViews = (
   const increments: number[] = []
 
   let phaseIndex = 0
+  let cumulative = 0
   let phasePoint = 0
   let previousIncrement =
     reelType === "viral" ? 1.8 :
@@ -669,12 +670,15 @@ const generateOrganicViews = (
   while (increments.length < points) {
     const phase = phases[Math.min(phaseIndex, phases.length - 1)]
     const progress = increments.length / Math.max(points - 1, 1)
-    const sinusoidal = 1 + Math.sin(progress * Math.PI * 3.1) * 0.08 + Math.sin(progress * Math.PI * 7.2) * 0.03
+    cconst sinusoidal =
+  1 +
+  Math.sin(progress * Math.PI * 3.1) * 0.08 +
+  Math.sin(progress * Math.PI * 11.2) * 0.02;
 
     let clusterBoost = 1
     const isBurstPhase = phase.name === "push" || phase.name === "re-push"
 
-    if (isBurstPhase && Math.random() < 0.16) {
+    if (isBurstPhase && previousIncrement > phase.base * 1.2 && Math.random() < 0.35) {
       const clusterLength = randomInRange(3, 6)
       clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.18
 
@@ -704,9 +708,22 @@ const generateOrganicViews = (
     }
 
     const noise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
-    let increment =
-      previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
-      phase.base * sinusoidal * noise
+    const hour = index % 24;
+let hourBoost = 1;
+
+if (hour < 8) hourBoost = 0.65;       // night slow
+else if (hour < 18) hourBoost = 1.0;  // normal
+else hourBoost = 1.35;                // evening boost
+
+let increment =
+  previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
+  phase.base * sinusoidal * noise;
+
+    // micro pause (realistic stagnation)
+if (Math.random() < scaleProfile.flatChance) {
+  increment *= 0.25 + Math.random() * 0.25;
+}
+increment *= hourBoost;
 
     if (total < 1000) {
       if (Math.random() < scaleProfile.dipChance) {
@@ -727,8 +744,12 @@ const generateOrganicViews = (
       increment *= 0.7 + Math.random() * 0.1
     }
 
-    increment = Math.max(0.05, increment)
-    increments.push(increment)
+    const saturation = cumulative / total;
+increment *= (1 - Math.pow(saturation, 1.4));
+
+increment = Math.max(0.05, increment);
+    increments.push(increment);
+cumulative += increment;
     previousIncrement = increment
     phasePoint++
 
@@ -786,15 +807,16 @@ const generateRetention = (
   const gaussian = (x: number, center: number, width: number) =>
     Math.exp(-Math.pow(x - center, 2) / (2 * width * width))
 
-  const raw: number[] = []
+  const hookStrength = Math.random(); // 0–1
 
   for (let t = 0; t <= totalSeconds; t++) {
     const base = 100 * Math.exp(-decayK * t)
     const earlyDropPenalty = t <= 3 ? t * (reelType === "dead" ? 8 : 6) : 0
 
     const earlyReplay =
-      (reelType === "viral" ? 8 : reelType === "dead" ? 4 : 6) *
-      gaussian(t, earlyReplayCenter, 0.8)
+  (reelType === "viral" ? 8 : reelType === "dead" ? 4 : 6) *
+  gaussian(t, earlyReplayCenter, 0.8) *
+  (0.6 + hookStrength);
 
     const midReplay =
       (reelType === "viral" ? 7 : reelType === "dead" ? 3 : 5) *
@@ -848,7 +870,12 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
     return {
       date: labels[labelIndex],
       thisReel: raw[rawIndex].value,
-      typical: Math.max(10, Math.round(raw[rawIndex].value * typicalFactor)),
+      const prevTypical = i === 0 ? raw[rawIndex].value * 0.2 : mapped[i-1]?.typical || 0;
+
+const smoothTypical =
+  prevTypical + (raw[rawIndex].value - prevTypical) * 0.12;
+
+typical: Math.max(10, Math.round(smoothTypical)),,
     }
   })
 
