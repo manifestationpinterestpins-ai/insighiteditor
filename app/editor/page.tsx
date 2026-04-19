@@ -571,8 +571,7 @@ const TABS = ["Overview", "Engagement", "Audience"] as const
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
-const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
-const [headerImage, setHeaderImage] = useState<string | null>(null)
+  const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
   const [animateCharts, setAnimateCharts] = useState(false)
@@ -583,8 +582,7 @@ const [headerImage, setHeaderImage] = useState<string | null>(null)
   const [profileActivity, setProfileActivity] = useState(0)
   const [profileVisits, setProfileVisits] = useState(0)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
-const retentionInputRef = useRef<HTMLInputElement>(null)
-const headerInputRef = useRef<HTMLInputElement>(null)
+  const retentionInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
   const [viewsAnimKey, setViewsAnimKey] = useState(0)
@@ -613,14 +611,12 @@ const headerInputRef = useRef<HTMLInputElement>(null)
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
   useEffect(() => {
-  try {
-    const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
-    const sp = localStorage.getItem("profile-activity"); if (sp) setProfileActivity(JSON.parse(sp))
-    const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
-    const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
-  } catch {}
-}, [])
-
+    try {
+      const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
+      const sp = localStorage.getItem("profile-activity"); if (sp) setProfileActivity(JSON.parse(sp))
+      const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
+    } catch {}
+  }, [])
 
   useEffect(() => {
     const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
@@ -681,22 +677,8 @@ const headerInputRef = useRef<HTMLInputElement>(null)
 
   const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
-const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
-const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (locked) return
-  const f = e.target.files?.[0]
-  if (f) {
-    const r = new FileReader()
-    r.onload = ev => {
-      const image = ev.target?.result as string
-      setHeaderImage(image)
-      try { localStorage.setItem("header-image", image) } catch {}
-    }
-    r.readAsDataURL(f)
-  }
-}
-const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }
-
+  const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
+  const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }
 
   const totalViews = insightsData.views || 1
   const affectsData = [
@@ -719,47 +701,16 @@ const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).to
         <div className="w-full max-w-[420px]">
 
           {/* Header */}
-<header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
-  <div className="px-4 py-2">
-    <div
-      className="relative w-full h-[48px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group"
-      onClick={() => { if (!locked) headerInputRef.current?.click() }}
-    >
-      {headerImage ? (
-        <>
-          <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
-          {!locked && (
-            <button
-              className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={e => {
-                e.stopPropagation()
-                setHeaderImage(null)
-                try { localStorage.removeItem("header-image") } catch {}
-              }}
-            >
-              <CloseIcon />
-            </button>
-          )}
-        </>
-      ) : (
-        <div className="flex items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors">
-          <div className="flex items-center gap-2">
-            <UploadIcon />
-            <span className="text-[11px] font-medium">Upload header image</span>
-          </div>
-        </div>
-      )}
-      <input
-        ref={headerInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleHeaderImageUpload}
-      />
-    </div>
-  </div>
-</header>
-
+          <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
+            <div className="flex items-center justify-between px-4 h-[48px]">
+              <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
+              <h1 className="text-[18px] font-semibold flex-1 ml-4">Reel insights</h1>
+              <div className="flex items-center gap-2">
+                <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
+                <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+              </div>
+            </div>
+          </header>
 
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
