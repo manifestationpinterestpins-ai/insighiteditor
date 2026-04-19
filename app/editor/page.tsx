@@ -590,10 +590,10 @@ const headerInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
   const [viewsAnimKey, setViewsAnimKey] = useState(0)
-    const overviewRef = useRef<HTMLDivElement>(null)
+      const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
-  const headerImagePlaceholderRef = useRef<HTMLDivElement>(null)
-  const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
+  const headerImageTriggerRef = useRef<HTMLDivElement>(null)
+  const tabsTriggerRef = useRef<HTMLDivElement>(null)
   const [headerImageSticky, setHeaderImageSticky] = useState(false)
   const [tabsSticky, setTabsSticky] = useState(false)
   const headerImageOffsetTop = useRef(0)
@@ -625,28 +625,34 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     } catch {}
   }, [])
 
-    useEffect(() => {
+      useEffect(() => {
     const updateOffset = () => {
-      if (headerImagePlaceholderRef.current) {
-        headerImageOffsetTop.current = headerImagePlaceholderRef.current.getBoundingClientRect().top + window.scrollY
+      if (headerImageTriggerRef.current) {
+        headerImageOffsetTop.current = headerImageTriggerRef.current.getBoundingClientRect().top + window.scrollY
       }
-      if (tabsPlaceholderRef.current) {
-        tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY
+      if (tabsTriggerRef.current) {
+        tabsOffsetTop.current = tabsTriggerRef.current.getBoundingClientRect().top + window.scrollY
       }
     }
 
-    updateOffset()
-    window.addEventListener("resize", updateOffset)
-
     const handleScroll = () => {
-      updateOffset()
       setHeaderImageSticky(window.scrollY >= headerImageOffsetTop.current)
       setTabsSticky(window.scrollY >= tabsOffsetTop.current)
     }
 
+    updateOffset()
+    handleScroll()
+
+    const raf = requestAnimationFrame(() => {
+      updateOffset()
+      handleScroll()
+    })
+
+    window.addEventListener("resize", updateOffset)
     window.addEventListener("scroll", handleScroll, { passive: true })
 
     return () => {
+      cancelAnimationFrame(raf)
       window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("resize", updateOffset)
     }
@@ -726,7 +732,8 @@ const headerInputRef = useRef<HTMLInputElement>(null)
         <div className="w-full max-w-[420px]">
 
                     {/* ===== HEADER IMAGE UPLOAD ===== */}
-<div ref={headerImagePlaceholderRef} style={{ height: headerImageSticky ? 72 : 0 }} />
+<div ref={headerImageTriggerRef} className="h-0" />
+<div style={{ height: headerImageSticky ? 72 : 0 }} />
 
 <section
   className="px-4 pt-2 pb-2"
@@ -815,7 +822,8 @@ const headerInputRef = useRef<HTMLInputElement>(null)
           </section>
 
                                        {/* Tabs placeholder */}
-<div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 44 : 0 }} />
+<div ref={tabsTriggerRef} className="h-0" />
+<div style={{ height: tabsSticky ? 44 : 0 }} />
 
 {/* Tabs */}
 <LayoutGroup>
