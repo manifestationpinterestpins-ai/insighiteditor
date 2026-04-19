@@ -690,6 +690,9 @@ export default function ReelInsights() {
     { icon: <CommentRateIcon />, label: "Comment rate", value: `${((insightsData.comments / totalViews) * 100).toFixed(1)}%` },
   ]
 
+    const [headerImage, setHeaderImage] = useState<string | null>(null);
+  const headerInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <>
       <style>{shimmerKeyframes}</style>
@@ -700,8 +703,49 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-                    {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-10 pb-4 px-5">
+          {/* New Header Upload Box */}
+          <section className="px-5 pt-6">
+            <div 
+              className="relative w-full h-[111px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg flex items-center justify-center border border-dashed border-zinc-700"
+              onClick={() => { if (!locked) headerInputRef.current?.click() }}
+            >
+              {headerImage ? (
+                <>
+                  <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
+                  {!locked && (
+                    <button 
+                      className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" 
+                      onClick={e => { e.stopPropagation(); setHeaderImage(null) }}
+                    >
+                      <CloseIcon />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center text-zinc-500">
+                  <UploadIcon />
+                  <span className="text-[10px] mt-1 font-medium">Header (720x111)</span>
+                </div>
+              )}
+              <input 
+                ref={headerInputRef} 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) {
+                    const r = new FileReader();
+                    r.onload = ev => setHeaderImage(ev.target?.result as string);
+                    r.readAsDataURL(f);
+                  }
+                }} 
+              />
+            </div>
+          </section>
+
+          {/* Thumbnail */}
+          <section className="flex flex-col items-center pt-6 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
