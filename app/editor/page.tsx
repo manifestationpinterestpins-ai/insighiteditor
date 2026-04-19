@@ -590,14 +590,8 @@ const headerInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
   const [viewsAnimKey, setViewsAnimKey] = useState(0)
-      const overviewRef = useRef<HTMLDivElement>(null)
+        const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
-  const headerImageTriggerRef = useRef<HTMLDivElement>(null)
-  const tabsTriggerRef = useRef<HTMLDivElement>(null)
-  const [headerImageSticky, setHeaderImageSticky] = useState(false)
-  const [tabsSticky, setTabsSticky] = useState(false)
-  const headerImageOffsetTop = useRef(0)
-  const tabsOffsetTop = useRef(0)
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -625,37 +619,7 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     } catch {}
   }, [])
 
-      useEffect(() => {
-    const updateOffset = () => {
-      if (headerImageTriggerRef.current) {
-        headerImageOffsetTop.current = headerImageTriggerRef.current.getBoundingClientRect().top + window.scrollY
-      }
-      if (tabsTriggerRef.current) {
-        tabsOffsetTop.current = tabsTriggerRef.current.getBoundingClientRect().top + window.scrollY
-      }
-    }
-
-    const handleScroll = () => {
-      setHeaderImageSticky(window.scrollY >= headerImageOffsetTop.current)
-      setTabsSticky(window.scrollY >= tabsOffsetTop.current)
-    }
-
-    updateOffset()
-    handleScroll()
-
-    const raf = requestAnimationFrame(() => {
-      updateOffset()
-      handleScroll()
-    })
-
-    window.addEventListener("resize", updateOffset)
-    window.addEventListener("scroll", handleScroll, { passive: true })
-
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", updateOffset)
-    }
+        useEffect(() => {
   }, [])
 
   const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
@@ -732,21 +696,10 @@ const headerInputRef = useRef<HTMLInputElement>(null)
         <div className="w-full max-w-[420px]">
 
                     {/* ===== HEADER IMAGE UPLOAD ===== */}
-<div ref={headerImageTriggerRef} className="h-0" />
-<div style={{ height: headerImageSticky ? 72 : 0 }} />
-
 <section
-  className="px-4 pt-2 pb-2"
+  className="sticky top-0 z-40 px-4 pt-2 pb-2"
   style={{
-    position: headerImageSticky ? "fixed" : "relative",
-    top: headerImageSticky ? 0 : undefined,
-    left: headerImageSticky ? 0 : undefined,
-    right: headerImageSticky ? 0 : undefined,
-    width: headerImageSticky ? "100%" : undefined,
-    maxWidth: headerImageSticky ? 420 : undefined,
-    margin: headerImageSticky ? "0 auto" : undefined,
     backgroundColor: BG,
-    zIndex: headerImageSticky ? 40 : undefined,
   }}
 >
   <div
@@ -822,22 +775,13 @@ const headerInputRef = useRef<HTMLInputElement>(null)
           </section>
 
                                        {/* Tabs placeholder */}
-<div ref={tabsTriggerRef} className="h-0" />
-<div style={{ height: tabsSticky ? 44 : 0 }} />
-
 {/* Tabs */}
 <LayoutGroup>
   <div
     ref={tabsRef}
-    className="flex border-b border-zinc-800/40 z-50"
+    className="sticky z-50 flex border-b border-zinc-800/40"
     style={{
-      position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 72 : undefined,
-      left: tabsSticky ? 0 : undefined,
-      right: tabsSticky ? 0 : undefined,
-      width: tabsSticky ? "100%" : undefined,
-      maxWidth: tabsSticky ? 420 : undefined,
-      margin: tabsSticky ? "0 auto" : undefined,
+      top: 72,
       backgroundColor: BG,
     }}
   >
