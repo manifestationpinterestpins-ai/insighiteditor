@@ -539,6 +539,15 @@ const getAutoAccountsReached = (views: number) => {
   return Math.max(1, views - randomInRange(50, 200))
 }
 
+const getAutomatedActions = (views: number) => {
+  if (views <= 1000) return { follows: randomInRange(0, 1), profileVisits: randomInRange(4, 8) }
+  if (views <= 2000) return { follows: randomInRange(2, 4), profileVisits: randomInRange(5, 15) }
+  if (views <= 3000) return { follows: randomInRange(3, 6), profileVisits: randomInRange(8, 20) }
+  if (views <= 5000) return { follows: randomInRange(5, 10), profileVisits: randomInRange(12, 30) }
+  if (views <= 10000) return { follows: randomInRange(8, 16), profileVisits: randomInRange(20, 60) }
+  return { follows: randomInRange(12, 24), profileVisits: randomInRange(35, 90) }
+}
+
 const getViewsAxisTop = (views: number) => {
   if (views <= 200) return 200
   if (views <= 2000) return Math.ceil(views / 200) * 200
