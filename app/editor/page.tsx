@@ -130,11 +130,7 @@ const ChevronLeftIcon = () => (
   />
 </svg>
 )
-const MoreVerticalIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
-  </svg>
-)
+
 const HeaderBoostIcon = () => (
   <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
@@ -941,19 +937,20 @@ export default function ReelInsights() {
                     </div>
                   </section>
 
-                                    <section className="px-4 py-5">
+                                                      <section className="px-4 py-5">
                     <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
-                    <div className="w-full flex items-center justify-between py-2">
+                    <button
+                      className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity"
+                      onClick={() => setBottomSheetOpen(true)}
+                    >
                       <div className="flex items-center gap-3">
                         <BoostIcon />
                         <span className="text-[13px] text-white font-medium">Boost this Reel</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
-                        <ChevronRightIcon />
-                      </div>
-                    </div>
+                      <ChevronRightIcon />
+                    </button>
                   </section>
+
                 </motion.div>
               )}
 
