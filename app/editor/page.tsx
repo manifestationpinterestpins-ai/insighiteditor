@@ -536,9 +536,8 @@ const getAutoAverageWatchTime = (videoDuration: string) => {
 
 const getAutoAccountsReached = (views: number) => {
   if (views <= 100) return Math.max(1, views - randomInRange(5, 25))
-  return Math.max(1, views - randomInRange(100, 300))
+  return Math.max(1, views - randomInRange(50, 200))
 }
-
 
 const getViewsAxisTop = (views: number) => {
   if (views <= 200) return 200
@@ -934,7 +933,7 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
 const TABS = ["Overview", "Engagement", "Audience"] as const
 
 export default function ReelInsights() {
-  const { data: insightsData, saveData } = useInsightsStorage()
+    const { data: insightsData, saveData, isLoaded } = useInsightsStorage()
     const [headerImage, setHeaderImage] = useState<string | null>(null)
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
@@ -1048,15 +1047,19 @@ export default function ReelInsights() {
 
 
 
-        useEffect(() => {
+          useEffect(() => {
+    if (!isLoaded) return
+
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
     setGraphData(generateViewsGraph(insightsData.views))
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
-  }, [insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
+  }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
   useEffect(() => {
+    if (!isLoaded) return
+
     const nextAvgWatchTime = getAutoAverageWatchTime(insightsData.videoDuration)
     const nextAccountsReached = getAutoAccountsReached(insightsData.views)
 
@@ -1072,7 +1075,8 @@ export default function ReelInsights() {
       avgWatchTime: nextAvgWatchTime,
       accountsReached: nextAccountsReached,
     })
-  }, [insightsData.videoDuration, insightsData.views])
+  }, [isLoaded, insightsData.videoDuration, insightsData.views])
+
 
 
   useEffect(() => {
