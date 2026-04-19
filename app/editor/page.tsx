@@ -792,7 +792,11 @@ export default function ReelInsights() {
         <div className="w-full max-w-[420px]">
 
                     {/* Header Image */}
-          <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
+                    <header
+            className="fixed top-0 z-50 w-full max-w-[420px]"
+            style={{ backgroundColor: BG }}
+          >
+
             <div
               className="relative h-[48px] w-full overflow-hidden cursor-pointer group bg-zinc-900"
               onClick={() => { if (!locked) headerInputRef.current?.click() }}
@@ -832,8 +836,12 @@ export default function ReelInsights() {
           </header>
 
 
+                    {/* Header Spacer */}
+          <div className="h-[48px]" />
+
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
+
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
@@ -884,7 +892,8 @@ export default function ReelInsights() {
     className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
     style={{
       position: tabsSticky ? "fixed" : "relative",
-            top: tabsSticky ? 48 : undefined, // Sticks below the header image
+                  top: tabsSticky ? 48 : undefined,
+
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
