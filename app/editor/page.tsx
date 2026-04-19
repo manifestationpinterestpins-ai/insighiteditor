@@ -516,16 +516,21 @@ type GraphPoint = { date: string; thisReel: number; typical: number }
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 const parseTimeToSeconds = (time: string) => {
+  if (time.endsWith("s")) {
+    const value = parseInt(time.replace("s", ""), 10)
+    return Number.isNaN(value) ? 0 : value
+  }
+
   const parts = time.split(":").map(Number)
   if (parts.length === 2) return parts[0] * 60 + parts[1]
   return 0
 }
 
+
 const formatSeconds = (seconds: number) => {
-  const min = Math.floor(seconds / 60)
-  const sec = seconds % 60
-  return `${min}:${sec.toString().padStart(2, "0")}`
+  return `${seconds}s`
 }
+
 
 const getAutoAverageWatchTime = (videoDuration: string) => {
   const totalSec = Math.max(parseTimeToSeconds(videoDuration), 1)
