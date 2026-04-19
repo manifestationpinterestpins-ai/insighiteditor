@@ -53,6 +53,7 @@ const tabContent = {
   },
 }
 
+// ===== ODOMETER STYLES =====
 const odometerKeyframes = `
 @keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
 @keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
@@ -66,30 +67,43 @@ const odometerKeyframes = `
 @keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
 `
 
+// ===== SINGLE ROLLING DIGIT =====
 const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
   return (
     <span
       className="inline-block overflow-hidden"
-      style={{ height: "1em", lineHeight: "1em", verticalAlign: "top", width: "0.62em" }}
+      style={{
+        height: "1em",
+        lineHeight: "1em",
+        verticalAlign: "top",
+        width: "0.62em",
+      }}
     >
       <span
         className="flex flex-col"
-        style={{ animation: `rollDigit${target} 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) ${delay}s both` }}
+        style={{
+          animation: `rollDigit${target} 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) ${delay}s both`,
+        }}
       >
         {[0,1,2,3,4,5,6,7,8,9].map(n => (
-          <span key={n} className="block text-center" style={{ height: "1em", lineHeight: "1em" }}>{n}</span>
+          <span key={n} className="block text-center" style={{ height: "1em", lineHeight: "1em" }}>
+            {n}
+          </span>
         ))}
       </span>
     </span>
   )
 }
 
+// ===== ANIMATED NUMBER (Odometer — digit rolling) =====
 const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
   const formatted = value.toLocaleString("en-IN")
   const chars = formatted.split("")
   const digitChars = chars.filter(c => /\d/.test(c))
   const totalDigits = digitChars.length
+
   let digitIndex = 0
+
   return (
     <span className={className} key={triggerKey} style={{ display: "inline-flex", alignItems: "baseline" }}>
       {chars.map((char, i) => {
@@ -104,11 +118,17 @@ const AnimatedNumber = ({ value, className, triggerKey }: { value: number; class
     </span>
   )
 }
-
+// ===== ICONS =====
 const ChevronLeftIcon = () => (
   <svg width="40" height="24" viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M36 12H10M10 12L18 4M10 12L18 20" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <path
+    d="M36 12H10M10 12L18 4M10 12L18 20"
+    stroke="white"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
 )
 const MoreVerticalIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -122,29 +142,105 @@ const HeaderBoostIcon = () => (
   </svg>
 )
 const HeartIcon = () => (
-  <svg width="26" height="26" viewBox="-1 -1 26 26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ overflow: "visible" }}>
+  <svg
+    width="26"
+    height="26"
+    viewBox="-1 -1 26 26"
+    fill="none"
+    stroke="white"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ overflow: "visible" }}
+  >
     <path d="M12 21s-7-4.35-9-8.5C1.5 8 4 5 7.5 5c2 0 3.5 1 4.5 2.5C13 6 14.5 5 16.5 5 20 5 22.5 8 21 12.5 19 16.65 12 21 12 21z"/>
   </svg>
 )
+
 const CommentIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="-1 -1 26 26" fill="currentColor" aria-label="Comment" style={{ overflow: "visible" }}>
-    <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="23"
+    height="23"
+    viewBox="-1 -1 26 26"
+    fill="currentColor"
+    aria-label="Comment"
+    className="x1lliihq x1n2onr6 x5n08af"
+    style={{ overflow: "visible" }}
+  >
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"
+    />
   </svg>
 )
+
 const RepostIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="-1 -1 26 26" fill="currentColor" aria-label="Repost" style={{ overflow: "visible" }}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="23"
+    height="23"
+    viewBox="-1 -1 26 26"
+    fill="currentColor"
+    aria-label="Repost"
+    className="x1lliihq x1n2onr6 xyb1xck"
+    style={{ overflow: "visible" }}
+  >
     <path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/>
   </svg>
 )
+
 const SendIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="-1 -1 26 26" fill="currentColor" aria-label="Share" style={{ overflow: "visible" }}>
-    <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"/>
-    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m7.488 12.208 8.027-4.567"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="23"
+    height="23"
+    viewBox="-1 -1 26 26"
+    fill="currentColor"
+    aria-label="Share"
+    className="x1lliihq x1n2onr6 xyb1xck"
+    style={{ overflow: "visible" }}
+  >
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M13.973 20.046 21.77 6.928C22.8 5.195 21.55 3 19.535 3H4.466C2.138 3 .984 5.825 2.646 7.456l4.842 4.752 1.723 7.121c.548 2.266 3.571 2.721 4.762.717Z"
+    />
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m7.488 12.208 8.027-4.567"
+    />
   </svg>
 )
+
 const BookmarkIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="-1 -1 26 26" fill="currentColor" aria-label="Save" style={{ overflow: "visible" }}>
-    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m20 21-8-7.56L4 21V3h16z"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="23"
+    height="23"
+    viewBox="-1 -1 26 26"
+    fill="currentColor"
+    aria-label="Save"
+    className="x1lliihq x1n2onr6 xyb1xck"
+    style={{ overflow: "visible" }}
+  >
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m20 21-8-7.56L4 21V3h16z"
+    />
   </svg>
 )
 const InfoIcon = () => (
@@ -199,16 +295,13 @@ const SaveRateIcon = () => (
   </svg>
 )
 const RepostRateIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Repost">
-    <path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/>
-  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Repost" class="x1lliihq x1n2onr6 xyb1xck"><path d="M19.998 9.497a1 1 0 0 0-1 1v4.228a3.274 3.274 0 0 1-3.27 3.27h-5.313l1.791-1.787a1 1 0 0 0-1.412-1.416L7.29 18.287a1 1 0 0 0-.294.707v.001c0 .023.012.042.013.065a.92.92 0 0 0 .281.643l3.502 3.504a1 1 0 0 0 1.414-1.414l-1.797-1.798h5.318a5.276 5.276 0 0 0 5.27-5.27v-4.228a1 1 0 0 0-1-1Zm-6.41-3.496-1.795 1.795a1 1 0 1 0 1.414 1.414l3.5-3.5a1.003 1.003 0 0 0 0-1.417l-3.5-3.5a1 1 0 0 0-1.414 1.414l1.794 1.794H8.27A5.277 5.277 0 0 0 3 9.271V13.5a1 1 0 0 0 2 0V9.271a3.275 3.275 0 0 1 3.271-3.27Z"/></svg>
 )
 const CommentRateIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Comment">
-    <path fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
-  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-label="Comment" class="x1lliihq x1n2onr6 x5n08af"><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/></svg>
 )
 
+// ===== AUDIENCE ROW =====
 const AudienceRow = ({ labelNode, percentage, barColor }: { labelNode: React.ReactNode; percentage: number; barColor: string; animateCharts?: boolean; delay?: number }) => {
   return (
     <div className="mb-3.5">
@@ -223,6 +316,7 @@ const AudienceRow = ({ labelNode, percentage, barColor }: { labelNode: React.Rea
   )
 }
 
+// ===== ANIMATED BAR =====
 const AnimatedBar = ({ percentage, color }: { percentage: number; color: string; animateCharts?: boolean; delay?: number }) => {
   return (
     <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
@@ -231,6 +325,7 @@ const AnimatedBar = ({ percentage, color }: { percentage: number; color: string;
   )
 }
 
+// ===== SIMPLE PROGRESS BAR =====
 const SimpleBar = ({ percentage, color }: { percentage: number; color: string; animateCharts?: boolean; delay?: number }) => {
   return (
     <div className="relative w-full h-[8px] rounded-full overflow-hidden" style={{ backgroundColor: BAR_BG }}>
@@ -239,6 +334,7 @@ const SimpleBar = ({ percentage, color }: { percentage: number; color: string; a
   )
 }
 
+// ===== GENDER PERCENTAGE EDITOR =====
 const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave: (n: number) => void; locked: boolean }) => {
   const [editing, setEditing] = useState(false)
   const [val, setVal] = useState(value.toFixed(1))
@@ -250,6 +346,7 @@ const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave:
   return <span className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) setEditing(true) }}>{value.toFixed(1)}%</span>
 }
 
+// ===== BOTTOM SHEET =====
 const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -284,6 +381,7 @@ const BottomSheet = ({ open, onClose }: { open: boolean; onClose: () => void }) 
   )
 }
 
+// ===== LOCK MENU =====
 const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress, trigger }: { locked: boolean; onToggle: () => void; onOpenEditor: () => void; onLongPress: () => void; trigger?: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -295,7 +393,7 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress, trigger }: { lo
   const handleClick = () => { if (isLongPress.current) { isLongPress.current = false; return }; setOpen(p => !p) }
   return (
     <div className="relative" ref={menuRef}>
-      <button className="p-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}>{trigger || <MoreVerticalIcon />}</button>
+            <button className="p-1 active:opacity-60 transition-opacity select-none" onClick={handleClick} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onMouseLeave={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} onTouchCancel={handlePressEnd}>{trigger || <MoreVerticalIcon />}</button>
       <AnimatePresence>
         {open && (
           <motion.div className="absolute right-0 top-10 w-[180px] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl overflow-hidden z-50" initial={{ opacity: 0, scale: 0.92, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -8 }} transition={{ duration: 0.15, ease: "easeOut" }}>
@@ -316,6 +414,7 @@ const LockMenu = ({ locked, onToggle, onOpenEditor, onLongPress, trigger }: { lo
   )
 }
 
+// ===== INLINE EDITOR =====
 const InlineEditor = ({ value, onSave, isNumber = false, className = "", locked = false }: { value: string | number; onSave: (val: any) => void; isNumber?: boolean; className?: string; locked?: boolean }) => {
   const [editing, setEditing] = useState(false)
   const [val, setVal] = useState(String(value))
@@ -327,6 +426,7 @@ const InlineEditor = ({ value, onSave, isNumber = false, className = "", locked 
   return <span className={`${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity ${className}`} onClick={() => { if (!locked) { setVal(String(value)); setEditing(true) } }}>{value}</span>
 }
 
+// ===== COUNTRY NAME EDITOR =====
 const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n: string) => void; locked: boolean }) => {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(name)
@@ -337,6 +437,7 @@ const CountryNameEditor = ({ name, onSave, locked }: { name: string; onSave: (n:
   return <span className={`text-[13px] text-white ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) { setValue(name); setEditing(true) } }}>{name}</span>
 }
 
+// ===== DRAGGABLE VIEWS GRAPH =====
 type GraphPoint = { date: string; thisReel: number; typical: number }
 const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; locked: boolean }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -347,10 +448,12 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const [editingY, setEditingY] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => { try { const sx = localStorage.getItem("graph-xlabels"); const sy = localStorage.getItem("graph-ylabels"); if (sx) setXLabels(JSON.parse(sx)); if (sy) setYLabels(JSON.parse(sy)) } catch {} }, [])
   useEffect(() => { if ((editingX !== null || editingY !== null) && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingX, editingY])
   const saveXLabels = (l: string[]) => { setXLabels(l); try { localStorage.setItem("graph-xlabels", JSON.stringify(l)) } catch {} }
   const saveYLabels = (l: string[]) => { setYLabels(l); try { localStorage.setItem("graph-ylabels", JSON.stringify(l)) } catch {} }
+
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380; const height = 170
   const chartW = width - padding.left - padding.right
@@ -369,10 +472,11 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW]
   const commitEdit = () => { if (editingX !== null) { const u = [...xLabels]; u[editingX] = editValue; saveXLabels(u); setEditingX(null) }; if (editingY !== null) { const u = [...yLabels]; u[editingY] = editValue; saveYLabels(u); setEditingY(null) }; setEditValue("") }
   const pathD = buildPath(allThisReel)
+
   return (
     <div className="relative -mx-1">
       {(editingX !== null || editingY !== null) && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={editValue} onChange={e => setEditValue(e.target.value)} onBlur={commitEdit} onKeyDown={e => { if (e.key === "Enter") commitEdit() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
-      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {yLabels.map((label, i) => <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill={editingY === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingY(i); setEditingX(null); setEditValue(label) }}>{label}</text>)}
         {xLabels.map((label, i) => <text key={`xt-${i}`} x={xPositions[i]} y={height - 6} textAnchor="middle" fill={editingX === i ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setEditingX(i); setEditingY(null); setEditValue(label) }}>{label}</text>)}
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
@@ -382,6 +486,7 @@ const DraggableGraph = ({ data, onChange, locked }: { data: GraphPoint[]; onChan
   )
 }
 
+// ===== DRAGGABLE ENGAGEMENT GRAPH =====
 type EngagementPoint = { time: string; value: number }
 const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { data: EngagementPoint[]; onChange: (d: EngagementPoint[]) => void; locked: boolean; videoDuration: string }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -390,11 +495,11 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const [rightXValue, setRightXValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-  const padding = { top: 15, right: 10, bottom: 38, left: 44 }
-  const width = 380; const height = 160
-  const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom
-  const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12)
-  const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH
+          const padding = { top: 15, right: 10, bottom: 38, left: 44 };
+  const width = 380; const height = 160;
+  const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
+  const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12);
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH;
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(100, Math.round(((padding.top + chartH - svgY) / chartH) * 100))) }
   const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.value) }))
@@ -403,10 +508,13 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const handlePointerMove = (e: React.PointerEvent) => { if (dragging === null || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging] = { ...nd[dragging], value: val }; onChange(nd) }
   const handlePointerUp = () => setDragging(null)
   const lastIdx = data.length - 1
-  const rightLabel = videoDuration
+  const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
+    // Right side label is always current video duration
+  const rightLabel = videoDuration;
+
   return (
     <div className="relative -mx-1">
-      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 15} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{rightLabel}</text>
@@ -417,6 +525,7 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   )
 }
 
+// ===== DRAGGABLE RETENTION GRAPH =====
 type RetentionPoint = { time: string; retention: number }
 const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { data: RetentionPoint[]; onChange: (d: RetentionPoint[]) => void; locked: boolean; videoDuration: string }) => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -442,10 +551,11 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
   const durMin = Math.floor(totalSec / 60); const durSec = totalSec % 60
   const dynamicDurLabel = `${durMin}:${durSec.toString().padStart(2, "0")}`
+
   return (
     <div className="relative -mx-1">
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
-      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
         <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
@@ -461,10 +571,6 @@ const TABS = ["Overview", "Engagement", "Audience"] as const
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
-  const [headerImage, setHeaderImage] = useState<string | null>(() => {
-    try { return localStorage.getItem("header-image") } catch { return null }
-  })
-  const headerInputRef = useRef<HTMLInputElement>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
@@ -478,30 +584,13 @@ export default function ReelInsights() {
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
-  const [animationKey, setAnimationKey] = useState(0)
+    const [animationKey, setAnimationKey] = useState(0)
   const [viewsAnimKey, setViewsAnimKey] = useState(0)
   const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
-
-  // ✅ NEW: dynamic header height
-  const headerRef = useRef<HTMLDivElement>(null)
-  const [headerHeight, setHeaderHeight] = useState(0)
-
-  useEffect(() => {
-    const updateHeight = () => {
-      if (headerRef.current) {
-        setHeaderHeight(headerRef.current.offsetHeight)
-      }
-    }
-    updateHeight()
-    const resizeObserver = new ResizeObserver(updateHeight)
-    if (headerRef.current) resizeObserver.observe(headerRef.current)
-    window.addEventListener("resize", updateHeight)
-    return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener("resize", updateHeight)
-    }
-  }, [])
+  const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
+  const [tabsSticky, setTabsSticky] = useState(false)
+  const tabsOffsetTop = useRef(0)
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -527,6 +616,15 @@ export default function ReelInsights() {
       const sp = localStorage.getItem("profile-activity"); if (sp) setProfileActivity(JSON.parse(sp))
       const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
     } catch {}
+  }, [])
+
+  useEffect(() => {
+    const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
+    updateOffset()
+    window.addEventListener("resize", updateOffset)
+    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY >= tabsOffsetTop.current) }
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
   }, [])
 
   const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
@@ -600,99 +698,78 @@ export default function ReelInsights() {
         className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
         style={{ backgroundColor: BG }}
       >
-        <div className="w-full max-w-[420px] relative">
+        <div className="w-full max-w-[420px]">
 
-          {/* ===== HEADER IMAGE UPLOAD — STICKY ===== */}
-          <section
-            ref={headerRef}
-            className="sticky top-0 z-50 px-4 pt-2 pb-2"
-            style={{ backgroundColor: BG }}
-          >
-            <div
-              className="relative w-full h-[56px] rounded-[12px] overflow-hidden flex items-center justify-center cursor-pointer"
-              style={{ backgroundColor: "#1c1c1e" }}
-              onClick={() => { if (!locked) headerInputRef.current?.click() }}
-            >
-              {headerImage ? (
-                <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center text-zinc-400">
-                  <UploadIcon />
-                  <span className="text-[11px] mt-1">Upload header image</span>
-                </div>
-              )}
-              <input
-                ref={headerInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    const reader = new FileReader()
-                    reader.onload = (ev) => {
-                      const result = ev.target?.result as string
-                      setHeaderImage(result)
-                      try { localStorage.setItem("header-image", result) } catch {}
-                    }
-                    reader.readAsDataURL(file)
-                  }
-                }}
-              />
-            </div>
-          </section>
-
-          {/* ===== THUMBNAIL ===== */}
-          <section className="flex flex-col items-center pt-2 pb-4 px-5">
+                    {/* Thumbnail */}
+          <section className="flex flex-col items-center pt-10 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
-              {thumbnailImage ? (
-                <><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>
-              )}
+              {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
+            <div ref={tabsPlaceholderRef} className="h-0" />
+        <div
+    
+  className={`flex items-center justify-center gap-7 w-full px-3 overflow-visible [&_svg]:block [&_svg]:overflow-visible ${tabsSticky ? "mt-0 py-2" : "mt-4"}`}
+  style={{
+    position: tabsSticky ? "fixed" : "relative",
+    top: tabsSticky ? 10 : undefined,
+    left: tabsSticky ? 0 : undefined,
+    right: tabsSticky ? 0 : undefined,
+    width: tabsSticky ? "100%" : undefined,
+    maxWidth: tabsSticky ? 420 : undefined,
+    margin: tabsSticky ? "0 auto" : undefined,
+    backgroundColor: tabsSticky ? BG : "transparent",
+    zIndex: tabsSticky ? 45 : undefined,
+  }}
+>
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <HeartIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
+  </div>
 
-            <div className="flex items-center justify-center gap-7 w-full px-3 mt-4 overflow-visible [&_svg]:block [&_svg]:overflow-visible">
-              <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
-                <HeartIcon />
-                <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
-                <CommentIcon />
-                <span className="text-[12px] text-white leading-none font-bold">{insightsData.comments}</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
-                <RepostIcon />
-                <span className="text-[12px] text-white leading-none font-bold">{insightsData.reposts}</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
-                <SendIcon />
-                <span className="text-[12px] text-white leading-none font-bold">{insightsData.shares}</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
-                <BookmarkIcon />
-                <span className="text-[12px] text-white leading-none font-bold">{insightsData.bookmarks}</span>
-              </div>
-            </div>
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <CommentIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.comments}</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <RepostIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.reposts}</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <SendIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.shares}</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
+    <BookmarkIcon />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.bookmarks}</span>
+  </div>
+</div>
           </section>
 
-          {/* ===== TABS — STICKY BELOW HEADER ===== */}
-          <LayoutGroup>
-            <div
-              ref={tabsRef}
-              className="sticky z-40 flex border-b border-zinc-800/40"
-              style={{
-                top: headerHeight,
-                backgroundColor: BG,
-              }}
-            >
+                                       {/* Tabs placeholder */}
+<div style={{ height: tabsSticky ? 104 : 0 }} />
+
+{/* Tabs */}
+<LayoutGroup>
+  <div
+    ref={tabsRef}
+    className="flex border-b border-zinc-800/40 z-50"
+    style={{
+      position: tabsSticky ? "fixed" : "relative",
+      top: tabsSticky ? 59 : undefined,
+      left: tabsSticky ? 0 : undefined,
+      right: tabsSticky ? 0 : undefined,
+      width: tabsSticky ? "100%" : undefined,
+      maxWidth: tabsSticky ? 420 : undefined,
+      margin: tabsSticky ? "0 auto" : undefined,
+      backgroundColor: BG,
+    }}
+  >
               {TABS.map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setMainTab(tab)}
-                  className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}
-                >
+                <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
                   {tab}
                   {mainTab === tab && (
                     <motion.div
@@ -706,14 +783,14 @@ export default function ReelInsights() {
             </div>
           </LayoutGroup>
 
-          {/* ===== MAIN CONTENT ===== */}
           <main className="pb-12">
             <AnimatePresence mode="wait">
 
               {/* ===== OVERVIEW ===== */}
               {mainTab === "Overview" && (
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
-                  <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
+
+                                                                        <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
                       <button onClick={() => { setSummaryLoading(true); setViewsAnimKey(k => k + 1); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
@@ -725,10 +802,17 @@ export default function ReelInsights() {
                         { label: "Average watch time", value: insightsData.avgWatchTime },
                         { label: "Follows", value: profileActivity },
                       ].map((card, i) => (
-                        <div key={card.label} className="rounded-xl p-3.5 relative overflow-hidden" style={{ backgroundColor: CARD_BG, minHeight: 72, transform: "none" }}>
+                        <div
+                          key={card.label}
+                          className="rounded-xl p-3.5 relative overflow-hidden"
+                          style={{ backgroundColor: CARD_BG, minHeight: 72, transform: "none" }}
+                        >
+                          {/* Shimmer overlay — sits on top, doesn't affect layout */}
                           {summaryLoading && (
                             <div className="absolute inset-0 z-10" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
                           )}
+
+                          {/* Content — ALWAYS rendered to maintain fixed height */}
                           <div style={{ opacity: summaryLoading ? 0 : 1, transition: "opacity 0.2s ease-out" }}>
                             <div className="h-[14px] mb-1 flex items-center">
                               <span className="text-[11px] text-gray-400">{card.label}</span>
@@ -751,7 +835,7 @@ export default function ReelInsights() {
                   <section className="px-4 py-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                      <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
+                           <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
                     <div className="flex gap-2 mb-6">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
@@ -763,10 +847,10 @@ export default function ReelInsights() {
 
                   <section className="px-4 py-5">
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
-                    <div className="space-y-5">
+                                        <div className="space-y-5">
                       {affectsData.map((item, i) => (
                         <div key={i} className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-4">
                             <div className="rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: CARD_BG, width: 52, height: 52 }}>{item.icon}</div>
                             <span className="text-[14px] text-white font-medium">{item.label}</span>
                           </div>
@@ -780,11 +864,7 @@ export default function ReelInsights() {
                     <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">How long people watched your reel</h3><InfoIcon /></div>
                     <div className="flex justify-center mb-5">
                       <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
-                        {retentionThumbnail ? (
-                          <><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>
-                        ) : (
-                          <div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>
-                        )}
+                        {retentionThumbnail ? (<><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>)}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
                         <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                       </div>
@@ -804,7 +884,7 @@ export default function ReelInsights() {
                     </div>
                   </section>
 
-                  <section className="px-4 py-5">
+                                    <section className="px-4 py-5">
                     <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
                     <div className="w-full flex items-center justify-between py-2">
                       <div className="flex items-center gap-3">
@@ -872,7 +952,7 @@ export default function ReelInsights() {
                     <div className="flex items-center gap-2 mb-3"><h3 className="text-[15px] font-semibold">Audience details</h3><InfoIcon /></div>
                     <div className="flex gap-2 mb-5">
                       {(["Age", "Country", "Gender"] as const).map(tab => (
-                        <button key={tab} onClick={() => setAudienceTab(tab)} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
+                        <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
                       ))}
                     </div>
 
