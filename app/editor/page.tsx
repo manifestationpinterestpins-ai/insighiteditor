@@ -697,7 +697,7 @@ const headerInputRef = useRef<HTMLInputElement>(null)
 
                     {/* ===== HEADER IMAGE UPLOAD ===== */}
 <section
-  className="sticky top-0 z-40 px-4 pt-2 pb-2"
+  className="sticky top-0 z-50 px-4 pt-2 pb-2"
   style={{
     backgroundColor: BG,
   }}
@@ -779,9 +779,9 @@ const headerInputRef = useRef<HTMLInputElement>(null)
 <LayoutGroup>
   <div
     ref={tabsRef}
-    className="sticky z-50 flex border-b border-zinc-800/40"
+    className="sticky z-40 flex border-b border-zinc-800/40"
     style={{
-      top: 72,
+      top: 76,
       backgroundColor: BG,
     }}
   >
