@@ -527,6 +527,19 @@ const formatSeconds = (seconds: number) => {
   return `${min}:${sec.toString().padStart(2, "0")}`
 }
 
+const getAutoAverageWatchTime = (videoDuration: string) => {
+  const totalSec = Math.max(parseTimeToSeconds(videoDuration), 1)
+  const ratio = 0.6 + Math.random() * 0.2
+  const watchSec = Math.max(1, Math.min(totalSec, Math.round(totalSec * ratio)))
+  return formatSeconds(watchSec)
+}
+
+const getAutoAccountsReached = (views: number) => {
+  if (views <= 100) return Math.max(1, views - randomInRange(5, 25))
+  return Math.max(1, views - randomInRange(100, 300))
+}
+
+
 const getViewsAxisTop = (views: number) => {
   if (views <= 200) return 200
   if (views <= 2000) return Math.ceil(views / 200) * 200
@@ -1035,13 +1048,32 @@ export default function ReelInsights() {
 
 
 
-      useEffect(() => {
+        useEffect(() => {
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
     setGraphData(generateViewsGraph(insightsData.views))
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
+
+  useEffect(() => {
+    const nextAvgWatchTime = getAutoAverageWatchTime(insightsData.videoDuration)
+    const nextAccountsReached = getAutoAccountsReached(insightsData.views)
+
+    if (
+      insightsData.avgWatchTime === nextAvgWatchTime &&
+      insightsData.accountsReached === nextAccountsReached
+    ) {
+      return
+    }
+
+    saveData({
+      ...insightsData,
+      avgWatchTime: nextAvgWatchTime,
+      accountsReached: nextAccountsReached,
+    })
+  }, [insightsData.videoDuration, insightsData.views])
+
 
   useEffect(() => {
     setSummaryLoading(true)
