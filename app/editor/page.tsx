@@ -580,46 +580,43 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
   const labels = ["28 Jan", "29 Jan", "30 Jan"]
   const points: GraphPoint[] = []
 
-  let previous = Math.max(Math.round(total * 0.04), 10)
-  const startValue = Math.max(Math.round(total * 0.05), 12)
+  const sigmoid = (x: number) => 1 / (1 + Math.exp(-x))
+  const startValue = Math.max(Math.round(total * 0.025), 6)
+  let previous = startValue
 
   for (let i = 0; i < pointCount; i++) {
     const progress = i / (pointCount - 1)
 
-    const baseCurve =
-      startValue +
-      total * (0.18 * progress + 0.82 * Math.pow(progress, 1.28))
+    const sCurve = sigmoid((progress - 0.5) * 7.2)
+    const normalized = (sCurve - sigmoid(-3.6)) / (sigmoid(3.6) - sigmoid(-3.6))
+    const baseCurve = startValue + normalized * (total - startValue)
 
-    const wave1 = Math.sin(progress * Math.PI * 1.3) * total * 0.018
-    const wave2 = Math.sin(progress * Math.PI * 3.7) * total * 0.009
-    const jitter = (Math.random() - 0.5) * total * 0.006
+    const wave1 = Math.sin(progress * Math.PI * 2.2) * total * 0.018
+    const wave2 = Math.sin(progress * Math.PI * 5.4) * total * 0.007
+    const jitter = (Math.random() - 0.5) * total * 0.005
 
     let current = Math.round(baseCurve + wave1 + wave2 + jitter)
 
     if (i === 0) {
       current = startValue
     } else if (i < pointCount - 1) {
-      const minGrowth = Math.max(1, Math.round(total * (0.012 + progress * 0.003)))
-      const maxGrowth = Math.max(minGrowth + 1, Math.round(total * (0.035 - progress * 0.008)))
-      const growth = randomInRange(minGrowth, Math.max(minGrowth, maxGrowth))
+      const minGrowth = Math.max(1, Math.round(total * (progress < 0.2 ? 0.004 : progress < 0.7 ? 0.012 : 0.007)))
+      current = Math.max(current, previous + minGrowth)
 
-      current = Math.max(current, previous + growth)
-
-      if (progress > 0.25 && progress < 0.85 && Math.random() < 0.18) {
-        current -= Math.round(total * (0.004 + Math.random() * 0.005))
+      if (progress > 0.18 && progress < 0.85 && Math.random() < 0.22) {
+        current -= Math.round(total * (0.003 + Math.random() * 0.005))
       }
 
-      current = Math.max(current, previous + Math.max(1, Math.round(total * 0.003)))
+      current = Math.max(current, previous + Math.max(1, Math.round(total * 0.0015)))
     }
 
-    current = clamp(current, 8, total)
+    current = clamp(current, 4, total)
     if (i === pointCount - 1) current = total
 
-    const typicalBase = total * (0.07 + progress * 0.16)
-    const typicalWave1 = Math.sin(progress * Math.PI * 1.8) * total * 0.008
-    const typicalWave2 = Math.sin(progress * Math.PI * 4.4) * total * 0.004
+    const typicalBase = total * (0.06 + progress * 0.17)
+    const typicalWave = Math.sin(progress * Math.PI * 2.1) * total * 0.006
     const typical = clamp(
-      Math.round(typicalBase + typicalWave1 + typicalWave2 + Math.random() * total * 0.004),
+      Math.round(typicalBase + typicalWave + Math.random() * total * 0.003),
       10,
       Math.round(total * 0.34)
     )
@@ -640,6 +637,7 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
 
 
 
+
 const getRetentionPointCount = (views: number) => {
   if (views <= 2000) return 10
   if (views <= 5000) return 12
@@ -656,40 +654,38 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
   const data: RetentionPoint[] = []
 
   let previous = 100
-  const finalFloor = clamp(Math.round(10 + quality * 24), 8, 38)
+  const endFloor = clamp(Math.round(quality * 6), 0, 6)
 
   for (let i = 0; i < pointCount; i++) {
     const progress = i / (pointCount - 1)
     const timeSec = Math.round(progress * totalSec)
 
-    const baseDrop =
-      100 -
-      (26 + (1 - quality) * 12) * Math.pow(progress, 0.72) -
-      (18 + (1 - quality) * 10) * Math.pow(progress, 1.7)
+    const earlyDrop = 100 - (54 + (1 - quality) * 12) * Math.pow(progress, 0.58)
+    const lateTail = (32 + (1 - quality) * 16) * Math.pow(progress, 2.2)
+    const shape = earlyDrop - lateTail
 
-    const wave1 = Math.sin(progress * Math.PI * 1.9) * 1.8
-    const wave2 = Math.sin(progress * Math.PI * 4.1) * 0.9
-    const jitter = (Math.random() - 0.5) * 1.4
+    const wave1 = Math.sin(progress * Math.PI * 1.4) * 1.6
+    const wave2 = Math.sin(progress * Math.PI * 4.6) * 0.8
+    const jitter = (Math.random() - 0.5) * 1.1
 
-    let value = Math.round(baseDrop + wave1 + wave2 + jitter)
+    let value = Math.round(shape + wave1 + wave2 + jitter)
 
     if (i === 0) {
       value = 100
     } else if (i === pointCount - 1) {
-      value = Math.min(previous - 1, finalFloor)
+      value = Math.max(0, Math.min(previous - 1, endFloor))
     } else {
-      const minDrop = progress < 0.2 ? 3 : progress < 0.6 ? 2 : 1
-      const maxAllowed = previous - minDrop
-      value = Math.min(value, maxAllowed)
+      const minDrop = progress < 0.18 ? 4 : progress < 0.55 ? 2 : 1
+      value = Math.min(value, previous - minDrop)
 
-      if (Math.random() < 0.15 && progress > 0.18 && progress < 0.75) {
+      if (progress > 0.2 && progress < 0.78 && Math.random() < 0.14) {
         value += 1
       }
 
       value = Math.min(value, previous - 1)
     }
 
-    value = clamp(value, finalFloor, 100)
+    value = clamp(value, 0, 100)
 
     data.push({
       time: formatSeconds(timeSec),
@@ -702,9 +698,6 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
   data[0].retention = 100
   return data
 }
-
-
-
 
 const DraggableGraph = ({
   data,
