@@ -570,6 +570,7 @@ const TABS = ["Overview", "Engagement", "Audience"] as const
 
 export default function ReelInsights() {
   const { data: insightsData, saveData } = useInsightsStorage()
+    const [headerImage, setHeaderImage] = useState<string | null>(null)
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
@@ -581,6 +582,7 @@ export default function ReelInsights() {
   const [locked, setLocked] = useState(false)
   const [profileActivity, setProfileActivity] = useState(0)
   const [profileVisits, setProfileVisits] = useState(0)
+    const headerInputRef = useRef<HTMLInputElement>(null)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
@@ -610,13 +612,15 @@ export default function ReelInsights() {
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-  useEffect(() => {
+    useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
       const sp = localStorage.getItem("profile-activity"); if (sp) setProfileActivity(JSON.parse(sp))
       const sv = localStorage.getItem("profile-visits"); if (sv) setProfileVisits(JSON.parse(sv))
+      const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
     } catch {}
   }, [])
+
 
   useEffect(() => {
     const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
@@ -675,9 +679,23 @@ export default function ReelInsights() {
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [insightsData])
 
-  const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
+    const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
+  const handleHeaderUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (locked) return
+    const f = e.target.files?.[0]
+    if (f) {
+      const r = new FileReader()
+      r.onload = ev => {
+        const result = ev.target?.result as string
+        setHeaderImage(result)
+        try { localStorage.setItem("header-image", result) } catch {}
+      }
+      r.readAsDataURL(f)
+    }
+  }
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
+
   const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }
 
   const totalViews = insightsData.views || 1
@@ -700,17 +718,46 @@ export default function ReelInsights() {
       >
         <div className="w-full max-w-[420px]">
 
-          {/* Header */}
+                    {/* Header Image */}
           <header className="sticky top-0 z-50" style={{ backgroundColor: BG }}>
-            <div className="flex items-center justify-between px-4 h-[48px]">
-              <button className="p-1 -ml-1 active:opacity-60 transition-opacity"><ChevronLeftIcon /></button>
-              <h1 className="text-[18px] font-semibold flex-1 ml-4">Reel insights</h1>
-              <div className="flex items-center gap-2">
-                <button className="p-1 active:opacity-60 transition-opacity" onClick={() => {}}><HeaderBoostIcon /></button>
-                <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
-              </div>
+            <div
+              className="relative h-[48px] w-full overflow-hidden cursor-pointer group bg-zinc-900"
+              onClick={() => { if (!locked) headerInputRef.current?.click() }}
+            >
+              {headerImage ? (
+                <>
+                  <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
+                  {!locked && (
+                    <button
+                      className="absolute top-1.5 right-2 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={e => {
+                        e.stopPropagation()
+                        setHeaderImage(null)
+                        try { localStorage.removeItem("header-image") } catch {}
+                      }}
+                    >
+                      <CloseIcon />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <UploadIcon />
+                    <span className="text-[11px] font-medium">Upload header image</span>
+                  </div>
+                </div>
+              )}
+              <input
+                ref={headerInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleHeaderUpload}
+              />
             </div>
           </header>
+
 
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
@@ -894,12 +941,18 @@ export default function ReelInsights() {
                     </div>
                   </section>
 
-                  <section className="px-4 py-5">
+                                    <section className="px-4 py-5">
                     <h3 className="text-[15px] font-semibold mb-3">Ad</h3>
-                    <button className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
-                      <div className="flex items-center gap-3"><BoostIcon /><span className="text-[13px] text-white font-medium">Boost this Reel</span></div>
-                      <ChevronRightIcon />
-                    </button>
+                    <div className="w-full flex items-center justify-between py-2">
+                      <div className="flex items-center gap-3">
+                        <BoostIcon />
+                        <span className="text-[13px] text-white font-medium">Boost this Reel</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <LockMenu locked={locked} onToggle={toggleLock} onOpenEditor={() => setEditorOpen(true)} onLongPress={() => setBottomSheetOpen(true)} />
+                        <ChevronRightIcon />
+                      </div>
+                    </div>
                   </section>
                 </motion.div>
               )}
