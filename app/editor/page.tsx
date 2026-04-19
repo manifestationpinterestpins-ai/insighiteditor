@@ -590,10 +590,13 @@ const headerInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
   const [viewsAnimKey, setViewsAnimKey] = useState(0)
-  const overviewRef = useRef<HTMLDivElement>(null)
+    const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
+  const headerImagePlaceholderRef = useRef<HTMLDivElement>(null)
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
+  const [headerImageSticky, setHeaderImageSticky] = useState(false)
   const [tabsSticky, setTabsSticky] = useState(false)
+  const headerImageOffsetTop = useRef(0)
   const tabsOffsetTop = useRef(0)
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
@@ -622,13 +625,31 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     } catch {}
   }, [])
 
-  useEffect(() => {
-    const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
+    useEffect(() => {
+    const updateOffset = () => {
+      if (headerImagePlaceholderRef.current) {
+        headerImageOffsetTop.current = headerImagePlaceholderRef.current.getBoundingClientRect().top + window.scrollY
+      }
+      if (tabsPlaceholderRef.current) {
+        tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY
+      }
+    }
+
     updateOffset()
     window.addEventListener("resize", updateOffset)
-    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY >= tabsOffsetTop.current) }
+
+    const handleScroll = () => {
+      updateOffset()
+      setHeaderImageSticky(window.scrollY >= headerImageOffsetTop.current)
+      setTabsSticky(window.scrollY >= tabsOffsetTop.current)
+    }
+
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", updateOffset)
+    }
   }, [])
 
   const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
@@ -705,7 +726,22 @@ const headerInputRef = useRef<HTMLInputElement>(null)
         <div className="w-full max-w-[420px]">
 
                     {/* ===== HEADER IMAGE UPLOAD ===== */}
-<section className="px-4 pt-2 pb-2">
+<div ref={headerImagePlaceholderRef} style={{ height: headerImageSticky ? 72 : 0 }} />
+
+<section
+  className="px-4 pt-2 pb-2"
+  style={{
+    position: headerImageSticky ? "fixed" : "relative",
+    top: headerImageSticky ? 0 : undefined,
+    left: headerImageSticky ? 0 : undefined,
+    right: headerImageSticky ? 0 : undefined,
+    width: headerImageSticky ? "100%" : undefined,
+    maxWidth: headerImageSticky ? 420 : undefined,
+    margin: headerImageSticky ? "0 auto" : undefined,
+    backgroundColor: BG,
+    zIndex: headerImageSticky ? 40 : undefined,
+  }}
+>
   <div
     className="relative w-full h-[56px] rounded-[12px] overflow-hidden flex items-center justify-center cursor-pointer"
     style={{ backgroundColor: "#1c1c1e" }}
@@ -729,17 +765,17 @@ const headerInputRef = useRef<HTMLInputElement>(null)
       accept="image/*"
       className="hidden"
       onChange={(e) => {
-  const file = e.target.files?.[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const result = ev.target?.result as string
-      setHeaderImage(result)
-      try { localStorage.setItem("header-image", result) } catch {}
-    }
-    reader.readAsDataURL(file)
-  }
-}}
+        const file = e.target.files?.[0]
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            const result = ev.target?.result as string
+            setHeaderImage(result)
+            try { localStorage.setItem("header-image", result) } catch {}
+          }
+          reader.readAsDataURL(file)
+        }
+      }}
     />
   </div>
 </section>
@@ -788,7 +824,7 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     className="flex border-b border-zinc-800/40 z-50"
     style={{
       position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 0 : undefined,
+      top: tabsSticky ? 72 : undefined,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
