@@ -567,31 +567,39 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
   const pointCount = getViewsPointCount(total)
   const labels = ["28 Jan", "29 Jan", "30 Jan"]
   const points: GraphPoint[] = []
-  let previous = Math.max(Math.round(total * 0.04), 10)
+
+  let previous = Math.max(Math.round(total * 0.03), 8)
+  const targetStart = Math.max(Math.round(total * 0.05), 12)
 
   for (let i = 0; i < pointCount; i++) {
     const progress = i / (pointCount - 1)
-    const baseGrowth = total * (0.05 + progress * 0.95)
-    const wiggle = total * ((Math.random() * 0.06) - 0.025)
-    let current = Math.round(baseGrowth + wiggle)
+    const smoothBase = total * Math.pow(progress, 1.22)
+    const waveA = Math.sin(progress * Math.PI * 1.6) * total * 0.035
+    const waveB = Math.sin(progress * Math.PI * 4.2) * total * 0.012
+    const noise = (Math.random() - 0.5) * total * 0.012
 
-    if (i === 0) current = Math.max(previous, Math.round(total * 0.05))
-    if (i > 0) {
-      const smallDip = Math.random() < 0.2 && i < pointCount - 1
-      if (smallDip) {
-        current = Math.max(previous - Math.round(total * (0.015 + Math.random() * 0.02)), 10)
+    let current = Math.round(targetStart + smoothBase + waveA + waveB + noise)
+
+    if (i === 0) {
+      current = targetStart
+    } else if (i < pointCount - 1) {
+      const dipChance = progress > 0.2 && progress < 0.88 && Math.random() < 0.14
+      if (dipChance) {
+        current = previous - Math.round(total * (0.008 + Math.random() * 0.012))
       } else {
-        current = Math.max(current, previous + Math.round(total * (0.015 + Math.random() * 0.03)))
+        current = Math.max(current, previous + Math.round(total * (0.012 + Math.random() * 0.02)))
       }
     }
 
+    current = clamp(current, 8, total)
     if (i === pointCount - 1) current = total
-    current = clamp(current, 10, total)
 
+    const typicalBase = total * (0.06 + progress * 0.17)
+    const typicalWave = Math.sin(progress * Math.PI * 2.1) * total * 0.01
     const typical = clamp(
-      Math.round(total * (0.08 + progress * 0.16 + Math.random() * 0.03)),
+      Math.round(typicalBase + typicalWave + Math.random() * total * 0.01),
       10,
-      Math.round(total * 0.35)
+      Math.round(total * 0.34)
     )
 
     const labelIndex = Math.min(2, Math.floor((i / Math.max(pointCount - 1, 1)) * 3))
@@ -607,6 +615,7 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
   points[pointCount - 1].thisReel = total
   return points
 }
+
 
 const getRetentionPointCount = (views: number) => {
   if (views <= 2000) return 10
@@ -624,25 +633,28 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
   const data: RetentionPoint[] = []
 
   let previous = 100
+  const finalFloor = clamp(Math.round(10 + quality * 24), 8, 38)
 
   for (let i = 0; i < pointCount; i++) {
     const progress = i / (pointCount - 1)
     const timeSec = Math.round(progress * totalSec)
 
-    let value = Math.round(100 - progress * (58 + (1 - quality) * 20))
-    value += Math.round((Math.random() * 6) - 3)
+    const earlyDrop = 100 - progress * (34 + (1 - quality) * 16)
+    const curve = earlyDrop - Math.pow(progress, 1.7) * (18 + (1 - quality) * 14)
+    const bump =
+      progress > 0.18 && progress < 0.72 && Math.random() < 0.16
+        ? randomInRange(1, 3)
+        : 0
+    let value = Math.round(curve + bump + (Math.random() - 0.5) * 3)
 
     if (i === 0) value = 100
-    if (i > 0 && i < pointCount - 1 && Math.random() < 0.18) {
-      value += randomInRange(2, 5)
+    if (i === pointCount - 1) value = Math.min(previous, finalFloor)
+    if (i > 0 && i < pointCount - 1) {
+      value = Math.min(value, previous)
+      value = Math.max(value, finalFloor + Math.round((pointCount - 1 - i) * 0.8))
     }
 
-    value = Math.min(value, previous)
-    value = clamp(value, 8, 100)
-
-    if (i === pointCount - 1) {
-      value = clamp(Math.min(previous, Math.round(12 + quality * 30)), 8, previous)
-    }
+    value = clamp(value, finalFloor, 100)
 
     data.push({
       time: formatSeconds(timeSec),
@@ -655,6 +667,7 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
   data[0].retention = 100
   return data
 }
+
 
 
 const DraggableGraph = ({
@@ -982,9 +995,20 @@ export default function ReelInsights() {
 
 
 
-    const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd) }
+      const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd) }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
+
+  const refreshViewsGraph = () => {
+    if (locked) return
+    setGraphData(generateViewsGraph(insightsData.views))
+  }
+
+  const refreshRetentionGraph = () => {
+    if (locked) return
+    setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
+  }
+
 
 
       useEffect(() => {
@@ -1220,10 +1244,19 @@ export default function ReelInsights() {
                   </section>
 
                   <section className="px-4 py-5">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2"><h3 className="text-[15px] font-semibold">Views</h3><InfoIcon /></div>
-                           <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
+                                        <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-[15px] font-semibold">Views</h3>
+                        <button
+                          className="focus:outline-none active:opacity-60 transition-opacity"
+                          onClick={refreshViewsGraph}
+                        >
+                          <InfoIcon />
+                        </button>
+                      </div>
+                      <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
+
                     <div className="flex gap-2 mb-6">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
                         <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
@@ -1253,9 +1286,18 @@ export default function ReelInsights() {
                     </div>
                   </section>
 
-                  <section className="px-4 py-5">
-                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">How long people watched your reel</h3><InfoIcon /></div>
+                                   <section className="px-4 py-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <h3 className="text-[15px] font-semibold">How long people watched your reel</h3>
+                      <button
+                        className="focus:outline-none active:opacity-60 transition-opacity"
+                        onClick={refreshRetentionGraph}
+                      >
+                        <InfoIcon />
+                      </button>
+                    </div>
                     <div className="flex justify-center mb-5">
+
                       <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
                         {retentionThumbnail ? (<><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>)}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
