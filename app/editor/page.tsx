@@ -570,21 +570,14 @@ const randomInRange = (min: number, max: number) => Math.floor(Math.random() * (
 
 type ReelType = "viral" | "normal" | "dead"
 
-const movingAverage = (values: number[], windowSize = 3) => {
-  const radius = Math.floor(windowSize / 2)
-  return values.map((_, index) => {
-    let sum = 0
-    let count = 0
+const weightedSmooth = (values: number[]) => {
+  if (values.length < 3) return [...values]
 
-    for (let i = index - radius; i <= index + radius; i++) {
-      if (i >= 0 && i < values.length) {
-        sum += values[i]
-        count++
-      }
-    }
-
-    return sum / Math.max(count, 1)
-  })
+  const result = [...values]
+  for (let i = 1; i < values.length - 1; i++) {
+    result[i] = values[i - 1] * 0.2 + values[i] * 0.6 + values[i + 1] * 0.2
+  }
+  return result
 }
 
 const getViewsPointCount = (views: number) => {
@@ -603,74 +596,95 @@ const getRetentionPointCount = (views: number) => {
   return 18
 }
 
+type ReelType = "viral" | "normal" | "dead"
+
 const pickReelType = (views: number): ReelType => {
   if (views >= 12000) return "viral"
   if (views <= 1200) return "dead"
   return "normal"
 }
 
+const buildPhases = (points: number, reelType: ReelType) => {
+  if (reelType === "viral") {
+    return [
+      { name: "test", length: Math.max(6, Math.round(points * 0.12)), base: 0.25, momentum: 0.78 },
+      { name: "push", length: Math.max(10, Math.round(points * 0.26)), base: 2.7, momentum: 1.1 },
+      { name: "cooldown", length: Math.max(8, Math.round(points * 0.18)), base: 1.15, momentum: 0.9 },
+      { name: "re-push", length: Math.max(8, Math.round(points * 0.18)), base: 2.05, momentum: 1.04 },
+      { name: "dead", length: points, base: 0.42, momentum: 0.8 },
+    ]
+  }
+
+  if (reelType === "dead") {
+    return [
+      { name: "test", length: Math.max(8, Math.round(points * 0.18)), base: 0.18, momentum: 0.72 },
+      { name: "push", length: Math.max(7, Math.round(points * 0.16)), base: 0.75, momentum: 0.94 },
+      { name: "cooldown", length: Math.max(8, Math.round(points * 0.2)), base: 0.32, momentum: 0.82 },
+      { name: "dead", length: points, base: 0.1, momentum: 0.72 },
+    ]
+  }
+
+  return [
+    { name: "test", length: Math.max(7, Math.round(points * 0.14)), base: 0.22, momentum: 0.75 },
+    { name: "push", length: Math.max(10, Math.round(points * 0.24)), base: 1.75, momentum: 1.04 },
+    { name: "cooldown", length: Math.max(9, Math.round(points * 0.2)), base: 0.82, momentum: 0.88 },
+    { name: "re-push", length: Math.max(7, Math.round(points * 0.14)), base: 1.2, momentum: 0.96 },
+    { name: "dead", length: points, base: 0.24, momentum: 0.76 },
+  ]
+}
+
 const generateOrganicViews = (
   totalViews: number,
-  totalPoints = 60,
+  points = 60,
   reelType: ReelType = "normal"
 ): { time: number; value: number }[] => {
   const total = Math.max(totalViews, 120)
+  const phases = buildPhases(points, reelType)
   const increments: number[] = []
+  let phaseIndex = 0
+  let phasePoint = 0
+  let previousIncrement =
+    reelType === "viral" ? 1.6 :
+    reelType === "dead" ? 0.4 :
+    0.9
 
-  const typeMultiplier =
-    reelType === "viral" ? 1.45 :
-    reelType === "dead" ? 0.55 :
-    1
+  while (increments.length < points) {
+    const phase = phases[Math.min(phaseIndex, phases.length - 1)]
+    const progress = increments.length / Math.max(points - 1, 1)
+    const sinusoidal = 1 + Math.sin(progress * Math.PI * 3.2) * 0.08
+    const noise = 0.92 + Math.random() * 0.16
 
-  for (let i = 0; i < totalPoints; i++) {
-    let growth = 0
-    const progress = i / Math.max(totalPoints - 1, 1)
-
-    if (i < 10) {
-      growth = total * (0.002 + Math.random() * 0.0025)
-    } else if (progress < 0.45) {
-      growth = total * (0.008 + Math.random() * 0.008)
-    } else if (progress < 0.72) {
-      growth = total * (0.014 + Math.random() * 0.014)
-    } else {
-      growth = total * (0.004 + Math.random() * 0.006)
+    let clusterBoost = 1
+    const isBurstPhase = phase.name === "push" || phase.name === "re-push"
+    if (isBurstPhase && Math.random() < 0.18) {
+      clusterBoost = 1.35 + Math.random() * 0.45
     }
 
-    if (progress > 0.18 && progress < 0.8) {
-      const spikeChance = 0.1 + Math.random() * 0.1
-      if (Math.random() < spikeChance) {
-        growth += total * (
-          reelType === "viral"
-            ? 0.03 + Math.random() * 0.045
-            : reelType === "dead"
-              ? 0.008 + Math.random() * 0.014
-              : 0.015 + Math.random() * 0.025
-        )
-      }
+    let increment =
+      previousIncrement * phase.momentum +
+      phase.base * sinusoidal * noise * clusterBoost
+
+    if (phase.name === "dead") {
+      increment *= 0.7 + Math.random() * 0.12
     }
 
-    if (progress > 0.58 && progress < 0.9 && Math.random() < 0.12) {
-      growth += total * (
-        reelType === "viral"
-          ? 0.018 + Math.random() * 0.03
-          : 0.008 + Math.random() * 0.015
-      )
-    }
+    increment = Math.max(0.08, increment)
+    increments.push(increment)
+    previousIncrement = increment
+    phasePoint++
 
-    if (progress > 0.3 && progress < 0.88 && Math.random() < 0.18) {
-      growth *= 0.45 + Math.random() * 0.28
+    if (phasePoint >= phase.length) {
+      phaseIndex++
+      phasePoint = 0
     }
-
-    growth *= typeMultiplier
-    increments.push(Math.max(1, growth))
   }
 
-  const smoothedIncrements = movingAverage(increments, 5)
-  const totalIncrement = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
-  const scale = total / totalIncrement
+  const smoothedIncrements = weightedSmooth(increments)
+  const rawTotal = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
+  const scale = total / rawTotal
 
   let cumulative = 0
-  const points = smoothedIncrements.map((inc, index) => {
+  const result = smoothedIncrements.map((inc, index) => {
     cumulative += inc * scale
     return {
       time: index,
@@ -678,79 +692,70 @@ const generateOrganicViews = (
     }
   })
 
-  points[0].value = Math.max(1, Math.round(total * 0.004))
-  points[points.length - 1].value = total
-
-  for (let i = 1; i < points.length; i++) {
-    points[i].value = Math.max(points[i].value, points[i - 1].value + 1)
+  result[0].value = Math.max(1, Math.round(total * 0.003))
+  for (let i = 1; i < result.length; i++) {
+    result[i].value = Math.max(result[i].value, result[i - 1].value + 1)
   }
+  result[result.length - 1].value = total
 
-  points[points.length - 1].value = total
-  return points
+  return result
 }
 
 const generateRetention = (
-  duration: number,
+  duration = 20,
   reelType: ReelType = "normal"
 ): { second: number; retention: number }[] => {
   const totalSeconds = clamp(duration, 6, 45)
+
+  const decayK =
+    reelType === "viral" ? 0.085 :
+    reelType === "dead" ? 0.14 :
+    0.11
+
+  const earlyReplayCenter = clamp(randomInRange(2, 4), 2, totalSeconds - 2)
+  const midReplayCenter = clamp(Math.round(totalSeconds * (0.4 + Math.random() * 0.2)), 4, totalSeconds - 2)
+
+  const gaussian = (x: number, center: number, width: number) =>
+    Math.exp(-Math.pow(x - center, 2) / (2 * width * width))
+
   const raw: number[] = []
 
-  let current = 100
-  raw.push(current)
+  for (let t = 0; t <= totalSeconds; t++) {
+    const base = 100 * Math.exp(-decayK * t)
+    const earlyDropPenalty = t <= 3 ? t * (reelType === "dead" ? 8 : 6) : 0
 
-  for (let second = 1; second <= totalSeconds; second++) {
-    let drop = 0
+    const earlyReplay =
+      (reelType === "viral" ? 8 : reelType === "dead" ? 4 : 6) *
+      gaussian(t, earlyReplayCenter, 0.8)
 
-    if (second <= 2) {
-      drop = reelType === "viral" ? 10 + Math.random() * 4 : reelType === "dead" ? 18 + Math.random() * 7 : 14 + Math.random() * 5
-    } else if (second <= 5) {
-      drop = reelType === "viral" ? 3 + Math.random() * 2 : reelType === "dead" ? 6 + Math.random() * 3 : 4 + Math.random() * 2.5
-    } else {
-      drop = reelType === "viral" ? 1 + Math.random() * 1.2 : reelType === "dead" ? 2.2 + Math.random() * 1.4 : 1.4 + Math.random() * 1.2
-    }
+    const midReplay =
+      (reelType === "viral" ? 7 : reelType === "dead" ? 3 : 5) *
+      gaussian(t, midReplayCenter, 1.3)
 
-    let next = current - drop
+    const shaped =
+      base -
+      earlyDropPenalty +
+      earlyReplay +
+      midReplay
 
-    if (second > 4 && second < totalSeconds - 2 && Math.random() < 0.14) {
-      next += 1 + Math.random() * 3
-    }
-
-    next = Math.min(next, current + 3)
-    next = Math.max(next, 5)
-
-    raw.push(next)
-    current = next
+    raw.push(clamp(shaped, 5, 100))
   }
 
-  const smoothed = movingAverage(raw, 3).map((value, index) => {
-    if (index === 0) return 100
-    return value
-  })
-
+  const smoothed = weightedSmooth(raw)
   const result: { second: number; retention: number }[] = []
-  let runningPeak = 100
   let previous = 100
 
   for (let i = 0; i < smoothed.length; i++) {
     let value = i === 0 ? 100 : Math.round(smoothed[i])
 
-    if (i <= 3) {
-      value = Math.min(value, previous - 4)
-    } else if (i > 0) {
-      value = Math.min(value, previous + 3)
+    if (i > 0) {
+      const allowedRise = i <= 4 ? 4 : 2
+      value = Math.min(value, previous + allowedRise)
     }
 
-    value = Math.min(value, runningPeak)
     value = clamp(value, 5, 100)
-
-    runningPeak = Math.max(runningPeak, value)
+    result.push({ second: i, retention: value })
     previous = value
-
-    result.push({
-      second: i,
-      retention: value,
-    })
   }
 
   result[0].retention = 100
@@ -763,20 +768,29 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
   const raw = generateOrganicViews(views, 60, reelType)
   const labels = ["28 Jan", "29 Jan", "30 Jan"]
 
-  return Array.from({ length: pointCount }, (_, i) => {
+  const mapped = Array.from({ length: pointCount }, (_, i) => {
     const rawIndex = Math.round((i / Math.max(pointCount - 1, 1)) * (raw.length - 1))
     const progress = i / Math.max(pointCount - 1, 1)
     const labelIndex = Math.min(2, Math.floor(progress * 3))
+    const typicalFactor =
+      reelType === "viral" ? 0.16 + Math.random() * 0.05 :
+      reelType === "dead" ? 0.2 + Math.random() * 0.05 :
+      0.18 + Math.random() * 0.05
 
     return {
       date: labels[labelIndex],
       thisReel: raw[rawIndex].value,
-      typical: Math.max(10, Math.round(raw[rawIndex].value * (0.14 + Math.random() * 0.08))),
+      typical: Math.max(10, Math.round(raw[rawIndex].value * typicalFactor)),
     }
-  }).map((point, index, arr) => ({
-    ...point,
-    thisReel: index === 0 ? point.thisReel : Math.max(point.thisReel, arr[index - 1].thisReel + 1),
-  }))
+  })
+
+  mapped[0].thisReel = Math.max(1, mapped[0].thisReel)
+  for (let i = 1; i < mapped.length; i++) {
+    mapped[i].thisReel = Math.max(mapped[i].thisReel, mapped[i - 1].thisReel + 1)
+  }
+  mapped[mapped.length - 1].thisReel = Math.max(views, mapped[mapped.length - 1].thisReel)
+
+  return mapped
 }
 
 const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
@@ -791,11 +805,9 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
       time: formatSeconds(raw[rawIndex].second),
       retention: raw[rawIndex].retention,
     }
-  }).map((point, index, arr) => ({
-    ...point,
-    retention: index === 0 ? 100 : Math.min(point.retention, arr[index - 1].retention + 3),
-  }))
+  })
 }
+
 
 
 const DraggableGraph = ({
