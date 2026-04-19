@@ -619,8 +619,6 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     } catch {}
   }, [])
 
-        useEffect(() => {
-  }, [])
 
   const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
@@ -689,17 +687,18 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     <>
       <style>{shimmerKeyframes}</style>
 
-      <div
+            <div
         className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
         style={{ backgroundColor: BG }}
       >
-        <div className="w-full max-w-[420px]">
+        <div className="w-full max-w-[420px] relative">
 
                     {/* ===== HEADER IMAGE UPLOAD ===== */}
 <section
   className="sticky top-0 z-50 px-4 pt-2 pb-2"
   style={{
     backgroundColor: BG,
+    willChange: "transform",
   }}
 >
   <div
@@ -781,8 +780,9 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     ref={tabsRef}
     className="sticky z-40 flex border-b border-zinc-800/40"
     style={{
-      top: 76,
+      top: 72,
       backgroundColor: BG,
+      willChange: "transform",
     }}
   >
               {TABS.map(tab => (
