@@ -515,11 +515,6 @@ type GraphPoint = { date: string; thisReel: number; typical: number }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
-const seeded = (seed: number) => {
-  const x = Math.sin(seed * 999) * 10000
-  return x - Math.floor(x)
-}
-
 const parseTimeToSeconds = (time: string) => {
   const parts = time.split(":").map(Number)
   if (parts.length === 2) return parts[0] * 60 + parts[1]
@@ -541,104 +536,126 @@ const getViewsAxisTop = (views: number) => {
 }
 
 const formatViewsAxisLabel = (value: number) => {
-  if (value >= 1000 && value % 1000 === 0) return `${value / 1000}k`
+  if (value >= 1000) {
+    const k = value / 1000
+    return Number.isInteger(k) ? `${k}k` : `${k.toFixed(1)}k`
+  }
   return value.toLocaleString("en-IN")
 }
 
+const randomInRange = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
+
 const getAutomatedActions = (views: number) => {
-  let followsMin = 0
-  let followsMax = 1
-  let visitsMin = 4
-  let visitsMax = 8
+  if (views <= 1000) return { follows: randomInRange(0, 1), profileVisits: randomInRange(4, 8) }
+  if (views <= 2000) return { follows: randomInRange(2, 4), profileVisits: randomInRange(5, 15) }
+  if (views <= 3000) return { follows: randomInRange(3, 6), profileVisits: randomInRange(8, 20) }
+  if (views <= 5000) return { follows: randomInRange(5, 10), profileVisits: randomInRange(12, 30) }
+  if (views <= 10000) return { follows: randomInRange(8, 16), profileVisits: randomInRange(20, 60) }
+  return { follows: randomInRange(12, 24), profileVisits: randomInRange(35, 90) }
+}
 
-  if (views <= 1000) {
-    followsMin = 0; followsMax = 1
-    visitsMin = 4; visitsMax = 8
-  } else if (views <= 2000) {
-    followsMin = 2; followsMax = 4
-    visitsMin = 5; visitsMax = 15
-  } else if (views <= 3000) {
-    followsMin = 3; followsMax = 6
-    visitsMin = 8; visitsMax = 20
-  } else if (views <= 5000) {
-    followsMin = 5; followsMax = 10
-    visitsMin = 12; visitsMax = 30
-  } else if (views <= 10000) {
-    followsMin = 8; followsMax = 16
-    visitsMin = 20; visitsMax = 60
-  } else {
-    followsMin = 12; followsMax = 24
-    visitsMin = 35; visitsMax = 90
-  }
-
-  const followSeed = Math.floor(views / 37) + 11
-  const visitSeed = Math.floor(views / 29) + 19
-
-  return {
-    follows: followsMin + Math.floor(seeded(followSeed) * (followsMax - followsMin + 1)),
-    profileVisits: visitsMin + Math.floor(seeded(visitSeed) * (visitsMax - visitsMin + 1)),
-  }
+const getViewsPointCount = (views: number) => {
+  if (views <= 2000) return 10
+  if (views <= 5000) return 12
+  if (views <= 10000) return 14
+  if (views <= 25000) return 16
+  return 18
 }
 
 const generateViewsGraph = (views: number): GraphPoint[] => {
   const total = Math.max(views, 120)
-  const dates = ["28 Jan", "28 Jan", "28 Jan", "29 Jan", "29 Jan", "29 Jan", "30 Jan", "30 Jan", "30 Jan"]
-  const progress = [0.08, 0.16, 0.28, 0.4, 0.36, 0.58, 0.74, 0.7, 1]
-  const data: GraphPoint[] = []
+  const pointCount = getViewsPointCount(total)
+  const labels = ["28 Jan", "29 Jan", "30 Jan"]
+  const points: GraphPoint[] = []
+  let previous = Math.max(Math.round(total * 0.04), 10)
 
-  for (let i = 0; i < progress.length; i++) {
-    let current =
-      i === progress.length - 1
-        ? total
-        : Math.round(total * progress[i] + total * ((seeded(total + i * 13) - 0.5) * 0.05))
+  for (let i = 0; i < pointCount; i++) {
+    const progress = i / (pointCount - 1)
+    const baseGrowth = total * (0.05 + progress * 0.95)
+    const wiggle = total * ((Math.random() * 0.06) - 0.025)
+    let current = Math.round(baseGrowth + wiggle)
 
-    current = clamp(current, Math.round(total * 0.05), total)
+    if (i === 0) current = Math.max(previous, Math.round(total * 0.05))
+    if (i > 0) {
+      const smallDip = Math.random() < 0.2 && i < pointCount - 1
+      if (smallDip) {
+        current = Math.max(previous - Math.round(total * (0.015 + Math.random() * 0.02)), 10)
+      } else {
+        current = Math.max(current, previous + Math.round(total * (0.015 + Math.random() * 0.03)))
+      }
+    }
+
+    if (i === pointCount - 1) current = total
+    current = clamp(current, 10, total)
 
     const typical = clamp(
-      Math.round(total * (0.12 + i * 0.02 + seeded(total + i * 7) * 0.025)),
-      20,
+      Math.round(total * (0.08 + progress * 0.16 + Math.random() * 0.03)),
+      10,
       Math.round(total * 0.35)
     )
 
-    data.push({
-      date: dates[i],
+    const labelIndex = Math.min(2, Math.floor((i / Math.max(pointCount - 1, 1)) * 3))
+    points.push({
+      date: labels[labelIndex],
       thisReel: current,
       typical,
     })
+
+    previous = current
   }
 
-  data[data.length - 1].thisReel = total
-  return data
+  points[pointCount - 1].thisReel = total
+  return points
 }
 
-const generateRetentionGraph = (videoDuration: string, avgWatchTime: string): RetentionPoint[] => {
+const getRetentionPointCount = (views: number) => {
+  if (views <= 2000) return 10
+  if (views <= 5000) return 12
+  if (views <= 10000) return 14
+  if (views <= 25000) return 16
+  return 18
+}
+
+const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
   const totalSec = Math.max(parseTimeToSeconds(videoDuration), 6)
   const avgSec = Math.max(parseTimeToSeconds(avgWatchTime), 1)
   const quality = clamp(avgSec / totalSec, 0.12, 0.95)
-  const pointCount = clamp(totalSec <= 12 ? totalSec + 1 : 10, 7, 12)
+  const pointCount = getRetentionPointCount(views)
   const data: RetentionPoint[] = []
+
+  let previous = 100
 
   for (let i = 0; i < pointCount; i++) {
     const progress = i / (pointCount - 1)
     const timeSec = Math.round(progress * totalSec)
 
-    let value = Math.round(100 * Math.exp(-(2.15 - quality * 0.8) * progress))
-    value += Math.round((seeded(totalSec + i * 17) - 0.5) * 8)
+    let value = Math.round(100 - progress * (58 + (1 - quality) * 20))
+    value += Math.round((Math.random() * 6) - 3)
 
     if (i === 0) value = 100
-    if (i === Math.round(pointCount * 0.35)) value += 7
-    if (i === Math.round(pointCount * 0.65) && quality > 0.35) value += 4
-    if (i === pointCount - 1) value = clamp(Math.round(16 + quality * 38), 12, 55)
+    if (i > 0 && i < pointCount - 1 && Math.random() < 0.18) {
+      value += randomInRange(2, 5)
+    }
+
+    value = Math.min(value, previous)
+    value = clamp(value, 8, 100)
+
+    if (i === pointCount - 1) {
+      value = clamp(Math.min(previous, Math.round(12 + quality * 30)), 8, previous)
+    }
 
     data.push({
       time: formatSeconds(timeSec),
-      retention: clamp(value, 8, 100),
+      retention: value,
     })
+
+    previous = value
   }
 
   data[0].retention = 100
   return data
 }
+
 
 const DraggableGraph = ({
   data,
@@ -770,7 +787,7 @@ const DraggableGraph = ({
             key={`tr-${i}`}
             cx={getX(i)}
             cy={getY(d.thisReel)}
-            r={18}
+            r={16}
             fill="transparent"
             className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
             onPointerDown={e => handlePointerDown(i, "thisReel", e)}
@@ -781,6 +798,7 @@ const DraggableGraph = ({
     </div>
   )
 }
+
 
 
 // ===== DRAGGABLE ENGAGEMENT GRAPH =====
@@ -938,26 +956,15 @@ export default function ReelInsights() {
     { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
   const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
-    const [retentionData, setRetentionData] = useState<RetentionPoint[]>(
-    generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime)
+      const [retentionData, setRetentionData] = useState<RetentionPoint[]>(
+    generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views)
   )
 
 
-  useEffect(() => {
-    const fp = parseFloat((Math.random() * 8 + 2).toFixed(1))
-    const reels = parseFloat((Math.random() * 10 + 75).toFixed(1)); const explore = parseFloat((Math.random() * 5 + 10).toFixed(1)); const rem = parseFloat((100 - reels - explore).toFixed(1)); const stories = parseFloat((rem * 0.55).toFixed(1)); const profile = parseFloat((rem * 0.28).toFixed(1)); const feed = parseFloat((rem - stories - profile).toFixed(1))
-    const sT = parseFloat((Math.random() * 10 + 10).toFixed(1)); const sTy = parseFloat((Math.random() * 10 + 20).toFixed(1))
-    const us = parseFloat((Math.random() * 10 + 35).toFixed(1)); const uk = parseFloat((Math.random() * 8 + 20).toFixed(1)); const ca = parseFloat((Math.random() * 6 + 12).toFixed(1)); const au = parseFloat((Math.random() * 5 + 8).toFixed(1)); const de = parseFloat((Math.random() * 3 + 4).toFixed(1)); const ot = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
-    const a18 = parseFloat((Math.random() * 13 + 35).toFixed(1)); const a25 = parseFloat((Math.random() * 12 + 30).toFixed(1)); const a35 = parseFloat((Math.random() * 5 + 5).toFixed(1)); const a45 = parseFloat((Math.random() * 3 + 1).toFixed(1)); const a55 = parseFloat((Math.random() * 1.2 + 0.3).toFixed(1)); const a65 = parseFloat((Math.random() * 0.8 + 0.2).toFixed(1)); const a13 = parseFloat((100 - a18 - a25 - a35 - a45 - a55 - a65).toFixed(1))
-    saveData({
-      ...insightsData, followerPercentage: fp, skipRateThis: sT, skipRateTypical: sTy,
-      countryData: [{ name: insightsData.countryData[0]?.name ?? "United States", percentage: us }, { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk }, { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca }, { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au }, { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de }, { name: insightsData.countryData[5]?.name ?? "Others", percentage: Math.max(0, ot) }],
-      ageData: [{ name: "13-17", percentage: Math.max(0, a13) }, { name: "18-24", percentage: a18 }, { name: "25-34", percentage: a25 }, { name: "35-44", percentage: a35 }, { name: "45-54", percentage: a45 }, { name: "55-64", percentage: a55 }, { name: "65+", percentage: a65 }],
-      sourcesData: [{ name: "Reels tab", percentage: reels }, { name: "Explore", percentage: explore }, { name: "Stories", percentage: stories }, { name: "Profile", percentage: profile }, { name: "Feed", percentage: Math.max(0, feed) }],
-    })
-  }, [])
 
-    useEffect(() => {
+  
+
+      useEffect(() => {
     try {
       const se = localStorage.getItem("engagement-graph-data")
       if (se) {
@@ -971,7 +978,8 @@ export default function ReelInsights() {
     } catch {
       setEngagementData(buildEngagementData(insightsData.videoDuration))
     }
-  }, [])
+  }, [insightsData.videoDuration])
+
 
 
     const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd) }
@@ -979,34 +987,13 @@ export default function ReelInsights() {
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
 
-    useEffect(() => {
+      useEffect(() => {
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
-  }, [insightsData.views])
-
-  useEffect(() => {
     setGraphData(generateViewsGraph(insightsData.views))
-  }, [insightsData.views])
-
-  useEffect(() => {
-    setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime))
-  }, [insightsData.videoDuration, insightsData.avgWatchTime])
-
-  useEffect(() => {
-    try { localStorage.setItem("saved-reel-views", JSON.stringify(insightsData.views)) } catch {}
-  }, [insightsData.views])
-
-  useEffect(() => {
-    try {
-      const savedViews = localStorage.getItem("saved-reel-views")
-      if (!savedViews) return
-      const parsedViews = JSON.parse(savedViews)
-      if (typeof parsedViews === "number" && parsedViews !== insightsData.views) {
-        saveData({ ...insightsData, views: parsedViews })
-      }
-    } catch {}
-  }, [])
+    setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
+  }, [insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
   useEffect(() => {
     setSummaryLoading(true)
@@ -1014,6 +1001,7 @@ export default function ReelInsights() {
     const t2 = setTimeout(() => setAnimateCharts(true), 300)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [insightsData])
+
 
 
     const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
