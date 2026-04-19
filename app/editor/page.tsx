@@ -702,26 +702,10 @@ const headerInputRef = useRef<HTMLInputElement>(null)
       >
         <div className="w-full max-w-[420px]">
 
-                    {/* ===== TOP HEADER ===== */}
-<header className="flex items-center justify-between px-4 h-[56px]" style={{ backgroundColor: "#0c0f14" }}>
-  <div className="flex items-center">
-    <ChevronLeftIcon />
-  </div>
-
-  <div className="text-white text-[16px] font-semibold">
-    Reel insights
-  </div>
-
-  <div className="flex items-center gap-4">
-    <HeaderBoostIcon />
-    <MoreVerticalIcon />
-  </div>
-</header>
-
-{/* ===== HEADER IMAGE UPLOAD ===== */}
-<section className="px-4 pt-4 pb-4">
+                    {/* ===== HEADER IMAGE UPLOAD ===== */}
+<section className="px-4 pt-2 pb-2">
   <div
-    className="relative w-full h-[200px] rounded-[12px] overflow-hidden flex items-center justify-center cursor-pointer"
+    className="relative w-full h-[56px] rounded-[12px] overflow-hidden flex items-center justify-center cursor-pointer"
     style={{ backgroundColor: "#1c1c1e" }}
     onClick={() => { if (!locked) headerInputRef.current?.click() }}
   >
@@ -734,10 +718,9 @@ const headerInputRef = useRef<HTMLInputElement>(null)
     ) : (
       <div className="flex flex-col items-center text-zinc-400">
         <UploadIcon />
-        <span className="text-[13px] mt-2">Upload header image</span>
+        <span className="text-[11px] mt-1">Upload header image</span>
       </div>
     )}
-
     <input
       ref={headerInputRef}
       type="file"
@@ -758,7 +741,7 @@ const headerInputRef = useRef<HTMLInputElement>(null)
 </section>
 
 {/* Thumbnail */}
-<section className="flex flex-col items-center pt-6 pb-4 px-5">
+<section className="flex flex-col items-center pt-10 pb-4 px-5">
             <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
               {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
