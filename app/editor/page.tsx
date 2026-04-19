@@ -596,7 +596,6 @@ const getRetentionPointCount = (views: number) => {
   return 18
 }
 
-type ReelType = "viral" | "normal" | "dead"
 
 const pickReelType = (views: number): ReelType => {
   if (views >= 12000) return "viral"
@@ -670,7 +669,7 @@ const generateOrganicViews = (
   while (increments.length < points) {
     const phase = phases[Math.min(phaseIndex, phases.length - 1)]
     const progress = increments.length / Math.max(points - 1, 1)
-    cconst sinusoidal =
+    const sinusoidal =
   1 +
   Math.sin(progress * Math.PI * 3.1) * 0.08 +
   Math.sin(progress * Math.PI * 11.2) * 0.02;
@@ -708,7 +707,7 @@ const generateOrganicViews = (
     }
 
     const noise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
-    const hour = index % 24;
+    const hour = increments.length % 24;
 let hourBoost = 1;
 
 if (hour < 8) hourBoost = 0.65;       // night slow
@@ -771,7 +770,7 @@ cumulative += increment;
   const rawTotal = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
   const scale = total / rawTotal
 
-  let cumulative = 0
+  cumulative = 0
   const result = smoothedIncrements.map((inc, index) => {
     cumulative += inc * scale
     return {
@@ -808,6 +807,7 @@ const generateRetention = (
     Math.exp(-Math.pow(x - center, 2) / (2 * width * width))
 
   const hookStrength = Math.random(); // 0–1
+  const raw: number[] = []
 
   for (let t = 0; t <= totalSeconds; t++) {
     const base = 100 * Math.exp(-decayK * t)
@@ -867,16 +867,18 @@ const generateViewsGraph = (views: number): GraphPoint[] => {
       reelType === "dead" ? 0.2 + Math.random() * 0.05 :
       0.18 + Math.random() * 0.05
 
-    return {
-      date: labels[labelIndex],
-      thisReel: raw[rawIndex].value,
-      const prevTypical = i === 0 ? raw[rawIndex].value * 0.2 : mapped[i-1]?.typical || 0;
+    const prevTypical = i === 0
+  ? raw[rawIndex].value * 0.2
+  : (i > 0 ? mapped[i - 1].typical : 0);
 
 const smoothTypical =
   prevTypical + (raw[rawIndex].value - prevTypical) * 0.12;
 
-typical: Math.max(10, Math.round(smoothTypical)),,
-    }
+return {
+  date: labels[labelIndex],
+  thisReel: raw[rawIndex].value,
+  typical: Math.max(10, Math.round(smoothTypical)),
+};
   })
 
   mapped[0].thisReel = Math.max(1, mapped[0].thisReel)
