@@ -604,6 +604,22 @@ const pickReelType = (views: number): ReelType => {
   return "normal"
 }
 
+const lerp = (start: number, end: number, t: number) => start + (end - start) * t
+
+const getViewScaleProfile = (totalViews: number) => {
+  const settle = clamp((totalViews - 300) / 6700, 0, 1)
+
+  return {
+    jitter: lerp(0.34, 0.06, settle),
+    chaos: lerp(0.28, 0.03, settle),
+    flatChance: lerp(0.22, 0.05, settle),
+    dipChance: lerp(0.2, 0.04, settle),
+    clusterBoost: lerp(1.45, 1.12, settle),
+    momentumBonus: lerp(0.88, 1.03, settle),
+  }
+}
+
+
 const buildPhases = (points: number, reelType: ReelType) => {
   if (reelType === "viral") {
     return [
@@ -640,35 +656,78 @@ const generateOrganicViews = (
 ): { time: number; value: number }[] => {
   const total = Math.max(totalViews, 120)
   const phases = buildPhases(points, reelType)
+  const scaleProfile = getViewScaleProfile(total)
   const increments: number[] = []
+
   let phaseIndex = 0
   let phasePoint = 0
   let previousIncrement =
-    reelType === "viral" ? 1.6 :
-    reelType === "dead" ? 0.4 :
-    0.9
+    reelType === "viral" ? 1.8 :
+    reelType === "dead" ? 0.45 :
+    1
 
   while (increments.length < points) {
     const phase = phases[Math.min(phaseIndex, phases.length - 1)]
     const progress = increments.length / Math.max(points - 1, 1)
-    const sinusoidal = 1 + Math.sin(progress * Math.PI * 3.2) * 0.08
-    const noise = 0.92 + Math.random() * 0.16
+    const sinusoidal = 1 + Math.sin(progress * Math.PI * 3.1) * 0.08 + Math.sin(progress * Math.PI * 7.2) * 0.03
 
     let clusterBoost = 1
     const isBurstPhase = phase.name === "push" || phase.name === "re-push"
-    if (isBurstPhase && Math.random() < 0.18) {
-      clusterBoost = 1.35 + Math.random() * 0.45
+
+    if (isBurstPhase && Math.random() < 0.16) {
+      const clusterLength = randomInRange(3, 6)
+      clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.18
+
+      for (let burstOffset = 0; burstOffset < clusterLength && increments.length < points; burstOffset++) {
+        const burstWave = 1 + Math.sin((burstOffset / Math.max(clusterLength - 1, 1)) * Math.PI) * 0.22
+        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
+        let burstIncrement =
+          previousIncrement * (phase.momentum + 0.03 * scaleProfile.momentumBonus) +
+          phase.base * clusterBoost * burstWave * sinusoidal * burstNoise
+
+        if (total < 1000 && Math.random() < scaleProfile.dipChance) {
+          burstIncrement *= 0.72 + Math.random() * 0.18
+        }
+
+        burstIncrement = Math.max(0.05, burstIncrement)
+        increments.push(burstIncrement)
+        previousIncrement = burstIncrement
+        phasePoint++
+
+        if (phasePoint >= phase.length) {
+          phaseIndex++
+          phasePoint = 0
+        }
+      }
+
+      continue
     }
 
+    const noise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
     let increment =
-      previousIncrement * phase.momentum +
-      phase.base * sinusoidal * noise * clusterBoost
+      previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
+      phase.base * sinusoidal * noise
+
+    if (total < 1000) {
+      if (Math.random() < scaleProfile.dipChance) {
+        increment *= 0.62 + Math.random() * 0.22
+      }
+      if (Math.random() < scaleProfile.chaos) {
+        increment += phase.base * (Math.random() - 0.35)
+      }
+    } else if (total < 5000) {
+      if (Math.random() < scaleProfile.flatChance) {
+        increment *= 0.74 + Math.random() * 0.12
+      }
+    } else {
+      increment = previousIncrement * 0.84 + increment * 0.16
+    }
 
     if (phase.name === "dead") {
-      increment *= 0.7 + Math.random() * 0.12
+      increment *= 0.7 + Math.random() * 0.1
     }
 
-    increment = Math.max(0.08, increment)
+    increment = Math.max(0.05, increment)
     increments.push(increment)
     previousIncrement = increment
     phasePoint++
@@ -679,7 +738,15 @@ const generateOrganicViews = (
     }
   }
 
-  const smoothedIncrements = weightedSmooth(increments)
+  const smoothedIncrements =
+    total > 5000
+      ? weightedSmooth(weightedSmooth(increments))
+      : total > 1000
+        ? weightedSmooth(increments)
+        : increments.map((value, index, arr) =>
+            index === 0 || index === arr.length - 1 ? value : value * 0.72 + arr[index - 1] * 0.14 + arr[index + 1] * 0.14
+          )
+
   const rawTotal = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
   const scale = total / rawTotal
 
@@ -700,6 +767,7 @@ const generateOrganicViews = (
 
   return result
 }
+
 
 const generateRetention = (
   duration = 20,
@@ -875,7 +943,7 @@ const DraggableGraph = ({
     onChange(nd)
   }
   const handlePointerUp = () => setDragging(null)
-  const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW]
+    const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW - 14]
   const commitEdit = () => {
     if (editingX !== null) {
       const updated = [...xLabels]
@@ -1025,7 +1093,7 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-        {data[0] && <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{data[0].time}</text>}
+                <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
