@@ -342,7 +342,7 @@ const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave:
   return <span className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) setEditing(true) }}>{value.toFixed(1)}%</span>
 }
 // ===== GREY LINE EDITOR =====
-const GreyLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; yAxisTop: number }) => {
+const GreyLineEditor = ({ data, onChange, yAxisTop, onSaveGrey }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; yAxisTop: number; onSaveGrey: (values: number[]) => void }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<number | null>(null)
   const padding = { top: 10, right: 10, bottom: 10, left: 10 }
@@ -373,8 +373,8 @@ const GreyLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onCh
     const val = getValFromY(e.clientY)
     const nd = [...data]
     nd[dragging] = { ...nd[dragging], typical: val }
-    onChange(nd)
-    try { localStorage.setItem("permanent-grey-line", JSON.stringify(nd.map(p => p.typical))) } catch {}
+        onChange(nd)
+    onSaveGrey(nd.map(p => p.typical))
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
@@ -400,6 +400,7 @@ const BottomSheet = ({
   graphData,
   onUpdateGraph,
   yAxisTop,
+  onSaveGrey,
 }: {
   open: boolean
   onClose: () => void
@@ -411,6 +412,7 @@ const BottomSheet = ({
   graphData: GraphPoint[]
   onUpdateGraph: (d: GraphPoint[]) => void
   yAxisTop: number
+  onSaveGrey: (values: number[]) => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
@@ -471,7 +473,7 @@ const BottomSheet = ({
               </button>
                             {showGreyEditor && (
                 <div className="py-3">
-                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} />
+                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} onSaveGrey={onSaveGrey} />
                 </div>
               )}
               <div className="h-px bg-zinc-800" />
@@ -1236,6 +1238,7 @@ export default function ReelInsights() {
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
   const [tabsSticky, setTabsSticky] = useState(false)
   const tabsOffsetTop = useRef(0)
+   const permanentGreyLine = useRef<number[]>([])
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
     const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -1263,15 +1266,13 @@ export default function ReelInsights() {
     } catch {}
   }, [])
 
-  const savedGreyLineRef = useRef<number[] | null>(null)
-
-  useEffect(() => {
+    useEffect(() => {
     try {
-      const savedGrey = localStorage.getItem("grey-line-values")
+      const savedGrey = localStorage.getItem("permanent-grey-line")
       if (savedGrey) {
         const parsed: number[] = JSON.parse(savedGrey)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          savedGreyLineRef.current = parsed
+          permanentGreyLine.current = parsed
         }
       }
     } catch {}
@@ -1340,26 +1341,26 @@ export default function ReelInsights() {
 
 
 
-          const handleGraphChange = (nd: GraphPoint[]) => {
+            const handleGraphChange = (nd: GraphPoint[]) => {
     if (locked) return
+    permanentGreyLine.current = nd.map(p => p.typical)
     setGraphData(nd)
-    try { localStorage.setItem("permanent-grey-line", JSON.stringify(nd.map(p => p.typical))) } catch {}
+    try { localStorage.setItem("permanent-grey-line", JSON.stringify(permanentGreyLine.current)) } catch {}
   }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-          const refreshViewsGraph = () => {
+            const refreshViewsGraph = () => {
     if (locked) return
     const next = generateViewsGraph(insightsData.views)
-    const saved = localStorage.getItem("permanent-grey-line");
-    if (saved) {
-      const values = JSON.parse(saved);
+    if (permanentGreyLine.current.length > 0) {
+      const values = permanentGreyLine.current
       setGraphData(next.map((p, i) => ({
         ...p,
-        typical: values[Math.round((i / (next.length - 1)) * (values.length - 1))] ?? p.typical
-      })));
+        typical: values[Math.round((i / Math.max(next.length - 1, 1)) * Math.max(values.length - 1, 1))] ?? p.typical
+      })))
     } else {
-      setGraphData(next);
+      setGraphData(next)
     }
   }
 
@@ -1379,20 +1380,16 @@ export default function ReelInsights() {
 
         const next = generateViewsGraph(insightsData.views)
 
-                // FINAL FIX: Force load from permanent-grey-line
-    const forceLoadGreyLine = (newData: GraphPoint[]) => {
-      const saved = localStorage.getItem("permanent-grey-line");
-      if (saved) {
-        const values = JSON.parse(saved);
-        return newData.map((p, i) => ({
-          ...p,
-          typical: values[Math.round((i / (newData.length - 1)) * (values.length - 1))] ?? p.typical
-        }));
-      }
-      return newData;
-    };
-
-    setGraphData(forceLoadGreyLine(next));
+                    // Use ref — always available, never stale
+    if (permanentGreyLine.current.length > 0) {
+      const values = permanentGreyLine.current
+      setGraphData(next.map((p, i) => ({
+        ...p,
+        typical: values[Math.round((i / Math.max(next.length - 1, 1)) * Math.max(values.length - 1, 1))] ?? p.typical
+      })))
+    } else {
+      setGraphData(next)
+    }
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
@@ -1840,7 +1837,7 @@ export default function ReelInsights() {
           </main>
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-                                        <BottomSheet 
+                                                  <BottomSheet 
   open={bottomSheetOpen} 
   onClose={() => setBottomSheetOpen(false)} 
   onOpenEditor={() => setEditorOpen(true)} 
@@ -1849,10 +1846,16 @@ export default function ReelInsights() {
   greyLineLocked={greyLineLocked} 
   onToggleGreyLine={toggleGreyLineLock}
   graphData={graphData}
-  onUpdateGraph={setGraphData}
+  onUpdateGraph={nd => {
+    permanentGreyLine.current = nd.map(p => p.typical)
+    setGraphData(nd)
+  }}
   yAxisTop={getViewsAxisTop(insightsData.views)}
+  onSaveGrey={values => {
+    permanentGreyLine.current = values
+    try { localStorage.setItem("permanent-grey-line", JSON.stringify(values)) } catch {}
+  }}
 />
-
 
         </div>
       </div>
