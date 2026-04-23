@@ -341,7 +341,50 @@ const GenderPercentEditor = ({ value, onSave, locked }: { value: number; onSave:
   if (editing) return <input ref={inputRef} value={val} onChange={e => setVal(e.target.value)} onBlur={commit} onKeyDown={e => { if (e.key === "Enter") commit() }} className="bg-zinc-800 border border-fuchsia-500 rounded-lg px-1 py-0.5 text-[13px] text-white text-center outline-none" style={{ caretColor: PINK, width: 60 }} />
   return <span className={`text-[13px] text-white font-semibold w-[46px] text-right shrink-0 ${locked ? "cursor-default" : "cursor-pointer hover:opacity-70"} transition-opacity`} onClick={() => { if (!locked) setEditing(true) }}>{value.toFixed(1)}%</span>
 }
-
+// ===== GREY LINE EDITOR =====
+const GreyLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; yAxisTop: number }) => {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [dragging, setDragging] = useState<number | null>(null)
+  const padding = { top: 10, right: 10, bottom: 10, left: 10 }
+  const width = 340; const height = 120
+  const chartW = width - padding.left - padding.right
+  const chartH = height - padding.top - padding.bottom
+  const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
+  const getValFromY = (clientY: number) => {
+    const svg = svgRef.current; if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * height
+    return Math.max(0, Math.min(yAxisTop, Math.round(((padding.top + chartH - svgY) / chartH) * yAxisTop)))
+  }
+  const buildPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`
+    return d
+  }
+  const handlePointerDown = (index: number, e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+    setDragging(index)
+  }
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (dragging === null) return
+    const val = getValFromY(e.clientY)
+    const nd = [...data]; nd[dragging] = { ...nd[dragging], typical: val }; onChange(nd)
+  }
+  return (
+    <div className="bg-zinc-800/50 rounded-xl p-2">
+      <div className="text-[11px] text-zinc-400 mb-1 pl-1">Drag to edit typical line</div>
+      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full select-none touch-none" onPointerMove={handlePointerMove} onPointerUp={() => setDragging(null)} onPointerLeave={() => setDragging(null)}>
+        <path d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))} fill="none" stroke="#8a8a8a" strokeWidth={3} strokeDasharray="5 5" strokeLinecap="round" />
+        {data.map((d, i) => (
+          <circle key={i} cx={getX(i)} cy={getY(d.typical)} r={8} fill="#8a8a8a" fillOpacity={0.4} stroke="#8a8a8a" strokeWidth={1.5} className="cursor-grab active:cursor-grabbing" onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />
+        ))}
+      </svg>
+    </div>
+  )
+}
 // ===== BOTTOM SHEET =====
 const BottomSheet = ({
   open,
@@ -351,6 +394,9 @@ const BottomSheet = ({
   onToggleLock,
   greyLineLocked,
   onToggleGreyLine,
+  graphData,
+  onUpdateGraph,
+  yAxisTop,
 }: {
   open: boolean
   onClose: () => void
@@ -359,8 +405,12 @@ const BottomSheet = ({
   onToggleLock: () => void
   greyLineLocked: boolean
   onToggleGreyLine: () => void
+  graphData: GraphPoint[]
+  onUpdateGraph: (d: GraphPoint[]) => void
+  yAxisTop: number
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
+  const [showGreyEditor, setShowGreyEditor] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -407,19 +457,20 @@ const BottomSheet = ({
                 <ChevronRightIcon />
               </button>
               <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onToggleGreyLine(); onClose() }}>
+                            <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => setShowGreyEditor(p => !p)}>
                 <div className="flex items-center gap-3.5">
                   <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    {greyLineLocked ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-                    )}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18M3 6h18M3 18h12" strokeDasharray="4 3"/></svg>
                   </div>
-                  <span className="text-[14px] text-white">{greyLineLocked ? "Unlock typical line" : "Lock typical line"}</span>
+                  <span className="text-[14px] text-white">Edit typical line</span>
                 </div>
                 <ChevronRightIcon />
               </button>
+              {showGreyEditor && (
+                <div className="py-3">
+                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} />
+                </div>
+              )}
               <div className="h-px bg-zinc-800" />
               <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onClose(); onOpenEditor() }}>
                 <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></div><span className="text-[14px] text-white">Edit insights</span></div>
@@ -1036,7 +1087,7 @@ const allThisReel = fullPoints.slice(0, cutoff)
             key={`tr-${i}`}
             cx={getThisReelX(i)}
             cy={getY(d.thisReel)}
-            r={24}
+                        r={30}
             fill="transparent"
             className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
             onPointerDown={e => handlePointerDown(i, "thisReel", e)}
@@ -1044,19 +1095,6 @@ const allThisReel = fullPoints.slice(0, cutoff)
           />
         ))}
 
-        {data.map((d, i) => (
-          <circle
-            key={`typ-${i}`}
-            cx={getX(i)}
-            cy={getY(d.typical)}
-            r={16}
-            fill="transparent"
-            className={locked || greyLineLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
-            onPointerDown={e => handlePointerDown(i, "typical", e)}
-            style={{ touchAction: "none" }}
-          />
-        ))}
-      </svg>
 
       <div className="flex items-center gap-6 mt-3 pl-4">
         <div className="flex items-center gap-2">
@@ -1224,8 +1262,8 @@ export default function ReelInsights() {
   const toggleGreyLineLock = () => { const n = !greyLineLocked; setGreyLineLocked(n); try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
 
-  const mergeGreyTypicalLine = (nextData: GraphPoint[], prevData: GraphPoint[]) => {
-    if (!greyLineLocked || prevData.length === 0) return nextData
+    const mergeGreyTypicalLine = (nextData: GraphPoint[], prevData: GraphPoint[]) => {
+    if (prevData.length === 0) return nextData
     return nextData.map((point, index) => {
       const prevIndex = Math.round((index / Math.max(nextData.length - 1, 1)) * (prevData.length - 1))
       return {
@@ -1739,7 +1777,7 @@ export default function ReelInsights() {
           </main>
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-                              <BottomSheet
+                                        <BottomSheet
             open={bottomSheetOpen}
             onClose={() => setBottomSheetOpen(false)}
             onOpenEditor={() => setEditorOpen(true)}
@@ -1747,6 +1785,9 @@ export default function ReelInsights() {
             onToggleLock={toggleLock}
             greyLineLocked={greyLineLocked}
             onToggleGreyLine={toggleGreyLineLock}
+            graphData={graphData}
+            onUpdateGraph={setGraphData}
+            yAxisTop={getViewsAxisTop(insightsData.views)}
           />
 
 
