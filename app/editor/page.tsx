@@ -1022,47 +1022,74 @@ const DraggableGraph = ({
             {label}
           </text>
         ))}
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
-        {/* Horizontal grid lines */}
-{[0, yAxisTop / 2, yAxisTop].map((val, i) => (
-  <line
-    key={`grid-${i}`}
-    x1={padding.left}
-    x2={padding.left + chartW}
-    y1={getY(val)}
-    y2={getY(val)}
-    stroke="#2a2d33"
-    strokeWidth="1"
-    opacity="0.5"
-  />
-))}
+                {/* Horizontal grid lines */}
+        {[0, yAxisTop / 2, yAxisTop].map((val, i) => (
+          <line
+            key={`grid-${i}`}
+            x1={padding.left}
+            x2={padding.left + chartW}
+            y1={getY(val)}
+            y2={getY(val)}
+            stroke="#2a2d33"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+        ))}
 
-{/* Typical (grey dashed) line */}
-<path
-  d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
-  fill="none"
-  stroke="#8a8a8a"
-  strokeWidth={4}
-  strokeDasharray="6 6"
-  strokeLinecap="round"
-/>
+        {/* Typical (grey dashed) line - dash gap increased to 8 10 */}
+        <path
+          d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
+          fill="none"
+          stroke="#8a8a8a"
+          strokeWidth={3}
+          strokeDasharray="8 10"
+          strokeLinecap="round"
+        />
 
-{/* Main pink line */}
-<path
-  d={pathD}
-  fill="none"
-  stroke={PINK}
-  strokeWidth={5}
-  strokeLinecap="round"
-/>
-            </svg>
+        {/* Main pink line - strokeWidth reduced to 3.75 (3/4 of original 5) */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke={PINK}
+          strokeWidth={3.75}
+          strokeLinecap="round"
+        />
+
+        {/* Draggable points for Pink Line */}
+        {data.map((d, i) => (
+          <circle
+            key={`tr-${i}`}
+            cx={getX(i)}
+            cy={getY(d.thisReel)}
+            r={18}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={e => handlePointerDown(i, "thisReel", e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
+
+        {/* Draggable points for Typical Line */}
+        {data.map((d, i) => (
+          <circle
+            key={`typ-${i}`}
+            cx={getX(i)}
+            cy={getY(d.typical)}
+            r={18}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={e => handlePointerDown(i, "typical", e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
+      </svg>
       <div className="flex items-center gap-6 mt-3 px-1">
         <div className="flex items-center gap-2">
-          <div className="w-2.0 h-2.0 rounded-full" style={{ backgroundColor: PINK }} />
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
           <span className="text-[11px] text-zinc-300">This reel</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2.0 h-2.0 rounded-full bg-[#8a8a8a]" />
+          <div className="w-2 h-2 rounded-full bg-[#8a8a8a]" />
           <span className="text-[11px] text-zinc-300">Your typical reel</span>
         </div>
       </div>
