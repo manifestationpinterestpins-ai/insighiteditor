@@ -374,7 +374,7 @@ const GreyLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onCh
     const nd = [...data]
     nd[dragging] = { ...nd[dragging], typical: val }
     onChange(nd)
-    try { localStorage.setItem("grey-line-values", JSON.stringify(nd.map(p => p.typical))) } catch {}
+    try { localStorage.setItem("permanent-grey-line", JSON.stringify(nd.map(p => p.typical))) } catch {}
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
@@ -1343,28 +1343,24 @@ export default function ReelInsights() {
           const handleGraphChange = (nd: GraphPoint[]) => {
     if (locked) return
     setGraphData(nd)
-    try { localStorage.setItem("grey-line-values", JSON.stringify(nd.map(p => p.typical))) } catch {}
+    try { localStorage.setItem("permanent-grey-line", JSON.stringify(nd.map(p => p.typical))) } catch {}
   }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-        const refreshViewsGraph = () => {
+          const refreshViewsGraph = () => {
     if (locked) return
     const next = generateViewsGraph(insightsData.views)
-    try {
-      const savedGrey = localStorage.getItem("grey-line-values")
-      if (savedGrey) {
-        const greyValues: number[] = JSON.parse(savedGrey)
-        if (Array.isArray(greyValues) && greyValues.length > 0) {
-          setGraphData(next.map((point, index) => {
-            const greyIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(greyValues.length - 1, 1))
-            return { ...point, typical: greyValues[greyIndex] ?? point.typical }
-          }))
-          return
-        }
-      }
-    } catch {}
-    setGraphData(next)
+    const saved = localStorage.getItem("permanent-grey-line");
+    if (saved) {
+      const values = JSON.parse(saved);
+      setGraphData(next.map((p, i) => ({
+        ...p,
+        typical: values[Math.round((i / (next.length - 1)) * (values.length - 1))] ?? p.typical
+      })));
+    } else {
+      setGraphData(next);
+    }
   }
 
   const refreshRetentionGraph = () => {
@@ -1383,27 +1379,20 @@ export default function ReelInsights() {
 
         const next = generateViewsGraph(insightsData.views)
 
-            // PRESERVE GREY LINE: Always read directly from localStorage
-    const applyGreyLine = (newData: GraphPoint[]): GraphPoint[] => {
-      try {
-        const savedGrey = localStorage.getItem("grey-line-values")
-        if (savedGrey) {
-          const greyValues: number[] = JSON.parse(savedGrey)
-          if (Array.isArray(greyValues) && greyValues.length > 0) {
-            return newData.map((point, index) => {
-              const greyIndex = Math.round(
-                (index / Math.max(newData.length - 1, 1)) *
-                Math.max(greyValues.length - 1, 1)
-              )
-              return { ...point, typical: greyValues[greyIndex] ?? point.typical }
-            })
-          }
-        }
-      } catch {}
-      return newData
-    }
+                // FINAL FIX: Force load from permanent-grey-line
+    const forceLoadGreyLine = (newData: GraphPoint[]) => {
+      const saved = localStorage.getItem("permanent-grey-line");
+      if (saved) {
+        const values = JSON.parse(saved);
+        return newData.map((p, i) => ({
+          ...p,
+          typical: values[Math.round((i / (newData.length - 1)) * (values.length - 1))] ?? p.typical
+        }));
+      }
+      return newData;
+    };
 
-    setGraphData(applyGreyLine(next))
+    setGraphData(forceLoadGreyLine(next));
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
