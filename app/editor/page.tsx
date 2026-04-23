@@ -1055,18 +1055,18 @@ const DraggableGraph = ({
   strokeWidth={5}
   strokeLinecap="round"
 />
-      </svg>
+            </svg>
+      <div className="flex items-center gap-6 mt-3 px-1">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PINK }} />
+          <span className="text-[12px] text-zinc-300">This reel</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#8a8a8a]" />
+          <span className="text-[12px] text-zinc-300">Your typical reel</span>
+        </div>
+      </div>
     </div>
-    <div className="flex items-center gap-6 mt-3 px-1">
-  <div className="flex items-center gap-2">
-    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PINK }} />
-    <span className="text-[12px] text-zinc-300">This reel</span>
-  </div>
-  <div className="flex items-center gap-2">
-    <div className="w-2.5 h-2.5 rounded-full bg-[#8a8a8a]" />
-    <span className="text-[12px] text-zinc-300">Your typical reel</span>
-  </div>
-</div>
   )
 }
 
