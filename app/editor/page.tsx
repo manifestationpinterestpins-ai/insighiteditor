@@ -1278,15 +1278,18 @@ export default function ReelInsights() {
   const toggleGreyLineLock = () => { const n = !greyLineLocked; setGreyLineLocked(n); try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
 
-    const mergeGreyTypicalLine = (nextData: GraphPoint[], prevData: GraphPoint[]) => {
-    if (prevData.length === 0) return nextData
-    return nextData.map((point, index) => {
-      const prevIndex = Math.round((index / Math.max(nextData.length - 1, 1)) * (prevData.length - 1))
-      return {
-        ...point,
-        typical: prevData[prevIndex]?.typical ?? point.typical,
-      }
-    })
+      const mergeGreyTypicalLine = (nextData: GraphPoint[], prevData: GraphPoint[]) => {
+    // If locked OR we have previous data, keep the grey values exactly as they were
+    if (greyLineLocked || prevData.length > 0) {
+      return nextData.map((point, index) => {
+        const prevIndex = Math.round((index / Math.max(nextData.length - 1, 1)) * (prevData.length - 1))
+        return {
+          ...point,
+          typical: prevData[prevIndex]?.typical ?? point.typical,
+        }
+      })
+    }
+    return nextData
   }
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
@@ -1364,30 +1367,19 @@ export default function ReelInsights() {
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
 
-    const next = generateViewsGraph(insightsData.views)
+        const next = generateViewsGraph(insightsData.views)
 
-    try {
-      const savedGrey = localStorage.getItem("grey-line-values")
-      if (savedGrey) {
-        const greyValues: number[] = JSON.parse(savedGrey)
-        if (Array.isArray(greyValues) && greyValues.length > 0) {
-          const merged = next.map((point, index) => {
-            const greyIndex = Math.round(
-              (index / Math.max(next.length - 1, 1)) * Math.max(greyValues.length - 1, 1)
-            )
-            return {
-              ...point,
-              typical: greyValues[greyIndex] ?? point.typical,
-            }
-          })
-          setGraphData(merged)
-          setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
-          return
+    // PRESERVE GREY LINE: Use current graph's grey line values instead of generating new ones
+    setGraphData(prev => {
+      if (prev.length === 0) return next;
+      return next.map((point, index) => {
+        const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * (prev.length - 1))
+        return {
+          ...point,
+          typical: prev[prevIndex]?.typical ?? point.typical
         }
-      }
-    } catch {}
-
-    setGraphData(next)
+      })
+    })
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
@@ -1835,18 +1827,18 @@ export default function ReelInsights() {
           </main>
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-                                        <BottomSheet
-            open={bottomSheetOpen}
-            onClose={() => setBottomSheetOpen(false)}
-            onOpenEditor={() => setEditorOpen(true)}
-            locked={locked}
-            onToggleLock={toggleLock}
-            greyLineLocked={greyLineLocked}
-            onToggleGreyLine={toggleGreyLineLock}
-            graphData={graphData}
-            onUpdateGraph={setGraphData}
-            yAxisTop={getViewsAxisTop(insightsData.views)}
-          />
+                                        <BottomSheet 
+  open={bottomSheetOpen} 
+  onClose={() => setBottomSheetOpen(false)} 
+  onOpenEditor={() => setEditorOpen(true)} 
+  locked={locked} 
+  onToggleLock={toggleLock} 
+  greyLineLocked={greyLineLocked} 
+  onToggleGreyLine={toggleGreyLineLock}
+  graphData={graphData}
+  onUpdateGraph={setGraphData}
+  yAxisTop={getViewsAxisTop(insightsData.views)}
+/>
 
 
         </div>
