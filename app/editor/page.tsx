@@ -1498,25 +1498,22 @@ export default function ReelInsights() {
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
+    const hasAutoCalculated = useRef(false)
+
   useEffect(() => {
     if (!isLoaded) return
+    if (hasAutoCalculated.current) return
+    hasAutoCalculated.current = true
 
     const nextAvgWatchTime = getAutoAverageWatchTime(insightsData.videoDuration)
     const nextAccountsReached = getAutoAccountsReached(insightsData.views)
-
-    if (
-      insightsData.avgWatchTime === nextAvgWatchTime &&
-      insightsData.accountsReached === nextAccountsReached
-    ) {
-      return
-    }
 
     saveData({
       ...insightsData,
       avgWatchTime: nextAvgWatchTime,
       accountsReached: nextAccountsReached,
     })
-  }, [isLoaded, insightsData.videoDuration, insightsData.views])
+  }, [isLoaded])
 
 
 
