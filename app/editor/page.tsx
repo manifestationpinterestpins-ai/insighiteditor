@@ -1342,25 +1342,37 @@ export default function ReelInsights() {
 
 
 
-            useEffect(() => {
+              useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
 
-    setGraphData(prev => {
-      const savedTypical = prev.map(p => p.typical)
-      const next = generateViewsGraph(insightsData.views)
-      return next.map((point, index) => {
-        const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * (Math.max(savedTypical.length - 1, 1)))
-        return {
-          ...point,
-          typical: savedTypical[prevIndex] ?? point.typical,
-        }
-      })
-    })
+    const next = generateViewsGraph(insightsData.views)
 
+    try {
+      const saved = localStorage.getItem("graph-data")
+      if (saved) {
+        const parsed: GraphPoint[] = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = next.map((point, index) => {
+            const prevIndex = Math.round(
+              (index / Math.max(next.length - 1, 1)) * Math.max(parsed.length - 1, 1)
+            )
+            return {
+              ...point,
+              typical: parsed[prevIndex]?.typical ?? point.typical,
+            }
+          })
+          setGraphData(merged)
+          setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
+          return
+        }
+      }
+    } catch {}
+
+    setGraphData(next)
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
