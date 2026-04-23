@@ -1509,7 +1509,7 @@ export default function ReelInsights() {
                       <AnimatedNumber value={insightsData.views} className="text-[15px] font-semibold" triggerKey={viewsAnimKey} />
                     </div>
 
-                    <div className="flex gap-2 mb-6">
+                    <div className="flex gap-2 mb-4">
                       {(["All", "Followers", "Non-followers"] as const).map(filter => (
                         <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
                       ))}
