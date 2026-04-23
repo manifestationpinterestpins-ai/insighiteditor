@@ -1468,7 +1468,7 @@ export default function ReelInsights() {
 
 
 
-                  useEffect(() => {
+                    useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
@@ -1481,7 +1481,18 @@ export default function ReelInsights() {
     if (activePattern && activePattern.length > 0) {
       setGraphData(applyGreyPatternToGraph(next, activePattern))
     } else {
-      setGraphData(next)
+      // No saved pattern — keep current grey line, only update pink line
+      setGraphData(prev => {
+        if (prev.length === 0) return next
+        return next.map((point, index) => {
+          const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(prev.length - 1, 1))
+          return {
+            ...point,
+            thisReel: point.thisReel,
+            typical: prev[prevIndex]?.typical ?? point.typical,
+          }
+        })
+      })
     }
 
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
