@@ -446,6 +446,7 @@ const BottomSheet = ({
               </button>
             </div>
             <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
+            </motion.div>
         </>
       )}
     </AnimatePresence>
