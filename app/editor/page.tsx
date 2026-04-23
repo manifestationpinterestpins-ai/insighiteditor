@@ -1383,18 +1383,27 @@ export default function ReelInsights() {
 
         const next = generateViewsGraph(insightsData.views)
 
-        // PRESERVE GREY LINE: Use savedGreyLineRef first (for reload), then fall back to prev state
-    setGraphData(prev => {
-      const greySource = savedGreyLineRef.current ?? prev.map(p => p.typical)
-      if (greySource.length === 0) return next
-      return next.map((point, index) => {
-        const greyIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(greySource.length - 1, 1))
-        return {
-          ...point,
-          typical: greySource[greyIndex] ?? point.typical
+            // PRESERVE GREY LINE: Always read directly from localStorage
+    const applyGreyLine = (newData: GraphPoint[]): GraphPoint[] => {
+      try {
+        const savedGrey = localStorage.getItem("grey-line-values")
+        if (savedGrey) {
+          const greyValues: number[] = JSON.parse(savedGrey)
+          if (Array.isArray(greyValues) && greyValues.length > 0) {
+            return newData.map((point, index) => {
+              const greyIndex = Math.round(
+                (index / Math.max(newData.length - 1, 1)) *
+                Math.max(greyValues.length - 1, 1)
+              )
+              return { ...point, typical: greyValues[greyIndex] ?? point.typical }
+            })
+          }
         }
-      })
-    })
+      } catch {}
+      return newData
+    }
+
+    setGraphData(applyGreyLine(next))
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
