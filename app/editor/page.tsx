@@ -469,11 +469,25 @@ const BottomSheet = ({
                 </div>
                 <ChevronRightIcon />
               </button>
-              {showGreyEditor && (
+                            {showGreyEditor && (
                 <div className="py-3">
                   <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} />
                 </div>
               )}
+              <div className="h-px bg-zinc-800" />
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => onToggleGreyLine()}>
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                    {greyLineLocked ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    )}
+                  </div>
+                  <span className="text-[14px] text-white">{greyLineLocked ? "Unlock typical line" : "Lock typical line"}</span>
+                </div>
+                <ChevronRightIcon />
+              </button>
               <div className="h-px bg-zinc-800" />
               <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onClose(); onOpenEditor() }}>
                 <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></div><span className="text-[14px] text-white">Edit insights</span></div>
