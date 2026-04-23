@@ -922,17 +922,20 @@ for (let i = 0; i < pointCount; i++) {
   const progress = i / Math.max(pointCount - 1, 1);
   const labelIndex = Math.min(2, Math.floor(progress * 3));
 
-  const prevTypical =
-    i === 0 ? raw[rawIndex].value * 0.2 : mapped[i - 1].typical;
+  // STATIC TYPICAL LINE (independent from views)
+const baseTypicalPattern = [
+  20, 35, 60, 90, 120, 150, 180, 210, 240, 270
+];
 
-  const smoothTypical =
-    prevTypical + (raw[rawIndex].value - prevTypical) * 0.12;
+const typicalValue =
+  baseTypicalPattern[i] ??
+  baseTypicalPattern[baseTypicalPattern.length - 1];
 
-    mapped.push({
-    date: labels[labelIndex],
-    thisReel: raw[rawIndex].value,
-    typical: Math.max(10, Math.round(smoothTypical)),
-  });
+mapped.push({
+  date: labels[labelIndex],
+  thisReel: raw[rawIndex].value,
+  typical: typicalValue,
+});
 }
 
   return mapped
