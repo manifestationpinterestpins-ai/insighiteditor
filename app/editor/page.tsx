@@ -1018,7 +1018,7 @@ const allThisReel = fullPoints.slice(0, cutoff)
           fill="none"
           stroke="#8a8a8a"
           strokeWidth={4.25}
-          strokeDasharray="6 5"
+          strokeDasharray="6 6"
           strokeLinecap="round"
         />
 
@@ -1031,12 +1031,12 @@ const allThisReel = fullPoints.slice(0, cutoff)
           strokeLinecap="round"
         />
 
-        {data.map((d, i) => (
+                {data.map((d, i) => (
           <circle
             key={`tr-${i}`}
             cx={getThisReelX(i)}
             cy={getY(d.thisReel)}
-            r={16}
+            r={24}
             fill="transparent"
             className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
             onPointerDown={e => handlePointerDown(i, "thisReel", e)}
@@ -1060,12 +1060,12 @@ const allThisReel = fullPoints.slice(0, cutoff)
 
       <div className="flex items-center gap-6 mt-3 pl-4">
         <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PINK }} />
-          <span className="text-[12px] text-zinc-300">This reel</span>
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
+          <span className="text-[11px] text-zinc-300">This reel</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#8a8a8a]" />
-          <span className="text-[12px] text-zinc-300">Your typical reel</span>
+          <div className="w-2 h-2 rounded-full bg-[#8a8a8a]" />
+          <span className="text-[11px] text-zinc-300">Your typical reel</span>
         </div>
       </div>
     </div>
