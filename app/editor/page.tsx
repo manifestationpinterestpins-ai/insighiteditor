@@ -1561,7 +1561,7 @@ export default function ReelInsights() {
     <h3 className="text-[15px] font-semibold">What affects your views</h3>
     <InfoIcon />
   </div>
-  <span className="text-[12px] text-zinc-300">
+  <span className="text-[11px] text-zinc-300">
     Rates are listed in order of importance to reach.
   </span>
 </div>
