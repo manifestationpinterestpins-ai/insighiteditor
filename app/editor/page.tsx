@@ -472,9 +472,13 @@ const BottomSheet = ({
                 </div>
                 <ChevronRightIcon />
               </button>
-                                          {showGreyEditor && (
+                                                       {showGreyEditor && (
                 <div className="py-3">
-                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} />
+                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} onSaveGrey={values => {
+                    try {
+                      localStorage.setItem("active-grey-pattern", JSON.stringify(values))
+                    } catch {}
+                  }} />
                 </div>
               )}
               <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onSaveCurrentPattern}>
@@ -1416,7 +1420,7 @@ export default function ReelInsights() {
 
 
 
-            c  const handleGraphChange = (nd: GraphPoint[]) => {
+    const handleGraphChange = (nd: GraphPoint[]) => {
     if (locked) return
     setGraphData(nd)
     const pattern = nd.map(p => p.typical)
@@ -1454,8 +1458,7 @@ export default function ReelInsights() {
       return
     }
 
-    setGraphData(next)
-  }
+        setGraphData(next)
   }
 
   const refreshRetentionGraph = () => {
