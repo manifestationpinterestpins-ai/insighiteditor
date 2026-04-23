@@ -1023,20 +1023,50 @@ const DraggableGraph = ({
           </text>
         ))}
         <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
-        {data.map((d, i) => (
-          <circle
-            key={`tr-${i}`}
-            cx={getX(i)}
-            cy={getY(d.thisReel)}
-            r={16}
-            fill="transparent"
-            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
-            onPointerDown={e => handlePointerDown(i, "thisReel", e)}
-            style={{ touchAction: "none" }}
-          />
-        ))}
+        {/* Horizontal grid lines */}
+{[0, yAxisTop / 2, yAxisTop].map((val, i) => (
+  <line
+    key={`grid-${i}`}
+    x1={padding.left}
+    x2={padding.left + chartW}
+    y1={getY(val)}
+    y2={getY(val)}
+    stroke="#2a2d33"
+    strokeWidth="1"
+    opacity="0.5"
+  />
+))}
+
+{/* Typical (grey dashed) line */}
+<path
+  d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
+  fill="none"
+  stroke="#8a8a8a"
+  strokeWidth={4}
+  strokeDasharray="6 6"
+  strokeLinecap="round"
+/>
+
+{/* Main pink line */}
+<path
+  d={pathD}
+  fill="none"
+  stroke={PINK}
+  strokeWidth={5}
+  strokeLinecap="round"
+/>
       </svg>
     </div>
+    <div className="flex items-center gap-6 mt-3 px-1">
+  <div className="flex items-center gap-2">
+    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PINK }} />
+    <span className="text-[12px] text-zinc-300">This reel</span>
+  </div>
+  <div className="flex items-center gap-2">
+    <div className="w-2.5 h-2.5 rounded-full bg-[#8a8a8a]" />
+    <span className="text-[12px] text-zinc-300">Your typical reel</span>
+  </div>
+</div>
   )
 }
 
@@ -1514,17 +1544,27 @@ export default function ReelInsights() {
                         <button key={filter} onClick={() => setViewsFilter(filter)} className={`px-3.5 py-[7px] rounded-full text-[11px] font-medium transition-all duration-200 ${viewsFilter === filter ? "text-white" : "bg-transparent text-white border border-zinc-700"}`} style={viewsFilter === filter ? { backgroundColor: CARD_BG } : {}}>{filter}</button>
                       ))}
                     </div>
-                                        <DraggableGraph
+                    <div className="mt-4">
+                     <DraggableGraph
                       data={graphData}
                       onChange={handleGraphChange}
                       locked={locked}
                       yAxisTop={getViewsAxisTop(insightsData.views)}
                     />
+                    </div>
 
                   </section>
 
                   <section className="px-4 py-5">
-                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">What affects your views</h3><InfoIcon /></div>
+                    <div className="flex flex-col gap-1 mb-4">
+  <div className="flex items-center gap-2">
+    <h3 className="text-[15px] font-semibold">What affects your views</h3>
+    <InfoIcon />
+  </div>
+  <span className="text-[13px] text-zinc-300">
+    Rates are listed in order of importance to reach.
+  </span>
+</div>
                                         <div className="space-y-5">
                       {affectsData.map((item, i) => (
                         <div key={i} className="flex items-center justify-between">
