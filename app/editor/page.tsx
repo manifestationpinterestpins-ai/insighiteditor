@@ -39,6 +39,7 @@ const PINK = "#d939cf"
 const PURPLE = "#7738fb"
 const CARD_BG = "#25282d"
 const BAR_BG = "#2a2d31"
+const MAX_GREY_PATTERNS = 10
 
 const tabContent = {
   initial: { opacity: 0, y: 8 },
@@ -400,7 +401,7 @@ const BottomSheet = ({
   graphData,
   onUpdateGraph,
   yAxisTop,
-  onSaveGrey,
+  onSaveCurrentPattern,
 }: {
   open: boolean
   onClose: () => void
@@ -412,7 +413,7 @@ const BottomSheet = ({
   graphData: GraphPoint[]
   onUpdateGraph: (d: GraphPoint[]) => void
   yAxisTop: number
-  onSaveGrey: (values: number[]) => void
+  onSaveCurrentPattern: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
@@ -471,11 +472,24 @@ const BottomSheet = ({
                 </div>
                 <ChevronRightIcon />
               </button>
-                            {showGreyEditor && (
+                                          {showGreyEditor && (
                 <div className="py-3">
-                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} onSaveGrey={onSaveGrey} />
+                  <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} />
                 </div>
               )}
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onSaveCurrentPattern}>
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                      <polyline points="17 21 17 13 7 13 7 21"/>
+                      <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                  </div>
+                  <span className="text-[14px] text-white">Save current typical pattern</span>
+                </div>
+                <span className="text-[11px] text-zinc-400">Max 10</span>
+              </button>
               <div className="h-px bg-zinc-800" />
               <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => onToggleGreyLine()}>
                 <div className="flex items-center gap-3.5">
@@ -1258,11 +1272,17 @@ export default function ReelInsights() {
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-            useEffect(() => {
+              useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
       const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
+
+      const oldGrey = localStorage.getItem("grey-line-values")
+      const activeGrey = localStorage.getItem("active-grey-pattern")
+      if (oldGrey && !activeGrey) {
+        localStorage.setItem("active-grey-pattern", oldGrey)
+      }
     } catch {}
   }, [])
 
@@ -1291,7 +1311,62 @@ export default function ReelInsights() {
 
     const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const toggleGreyLineLock = () => { const n = !greyLineLocked; setGreyLineLocked(n); try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {} }
-  const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
+   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
+
+  const getSavedGreyPatterns = (): number[][] => {
+    try {
+      const raw = localStorage.getItem("grey-line-patterns")
+      const parsed = raw ? JSON.parse(raw) : []
+      return Array.isArray(parsed)
+        ? parsed.filter((item): item is number[] => Array.isArray(item) && item.every(v => typeof v === "number"))
+        : []
+    } catch {
+      return []
+    }
+  }
+
+  const setSavedGreyPatterns = (patterns: number[][]) => {
+    try {
+      localStorage.setItem("grey-line-patterns", JSON.stringify(patterns.slice(-MAX_GREY_PATTERNS)))
+    } catch {}
+  }
+
+  const getActiveGreyPattern = (): number[] | null => {
+    try {
+      const raw = localStorage.getItem("active-grey-pattern")
+      const parsed = raw ? JSON.parse(raw) : null
+      return Array.isArray(parsed) ? parsed : null
+    } catch {
+      return null
+    }
+  }
+
+  const setActiveGreyPattern = (pattern: number[]) => {
+    try {
+      localStorage.setItem("active-grey-pattern", JSON.stringify(pattern))
+    } catch {}
+  }
+
+  const applyGreyPatternToGraph = (graph: GraphPoint[], pattern: number[]) => {
+    return graph.map((point, index) => {
+      const patternIndex = Math.round(
+        (index / Math.max(graph.length - 1, 1)) * Math.max(pattern.length - 1, 1)
+      )
+      return {
+        ...point,
+        typical: pattern[patternIndex] ?? point.typical,
+      }
+    })
+  }
+
+  const saveCurrentGreyPattern = () => {
+    const currentPattern = graphData.map(p => p.typical)
+    const existing = getSavedGreyPatterns()
+    const deduped = existing.filter(pattern => JSON.stringify(pattern) !== JSON.stringify(currentPattern))
+    const nextPatterns = [...deduped, currentPattern].slice(-MAX_GREY_PATTERNS)
+    setSavedGreyPatterns(nextPatterns)
+    setActiveGreyPattern(currentPattern)
+  }
 
       const mergeGreyTypicalLine = (nextData: GraphPoint[], prevData: GraphPoint[]) => {
     // If locked OR we have previous data, keep the grey values exactly as they were
@@ -1341,27 +1416,46 @@ export default function ReelInsights() {
 
 
 
-            const handleGraphChange = (nd: GraphPoint[]) => {
+            c  const handleGraphChange = (nd: GraphPoint[]) => {
     if (locked) return
-    permanentGreyLine.current = nd.map(p => p.typical)
     setGraphData(nd)
-    try { localStorage.setItem("permanent-grey-line", JSON.stringify(permanentGreyLine.current)) } catch {}
+    const pattern = nd.map(p => p.typical)
+    try {
+      localStorage.setItem("grey-line-values", JSON.stringify(pattern))
+      localStorage.setItem("active-grey-pattern", JSON.stringify(pattern))
+    } catch {}
   }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-            const refreshViewsGraph = () => {
+              const refreshViewsGraph = () => {
     if (locked) return
+
     const next = generateViewsGraph(insightsData.views)
-    if (permanentGreyLine.current.length > 0) {
-      const values = permanentGreyLine.current
-      setGraphData(next.map((p, i) => ({
-        ...p,
-        typical: values[Math.round((i / Math.max(next.length - 1, 1)) * Math.max(values.length - 1, 1))] ?? p.typical
-      })))
-    } else {
-      setGraphData(next)
+    const patterns = getSavedGreyPatterns()
+
+    if (patterns.length > 0) {
+      const active = getActiveGreyPattern()
+      const activeIndex = active
+        ? patterns.findIndex(pattern => JSON.stringify(pattern) === JSON.stringify(active))
+        : -1
+
+      const nextIndex = activeIndex >= 0 ? (activeIndex + 1) % patterns.length : 0
+      const selectedPattern = patterns[nextIndex]
+
+      setActiveGreyPattern(selectedPattern)
+      setGraphData(applyGreyPatternToGraph(next, selectedPattern))
+      return
     }
+
+    const activePattern = getActiveGreyPattern()
+    if (activePattern && activePattern.length > 0) {
+      setGraphData(applyGreyPatternToGraph(next, activePattern))
+      return
+    }
+
+    setGraphData(next)
+  }
   }
 
   const refreshRetentionGraph = () => {
@@ -1371,25 +1465,22 @@ export default function ReelInsights() {
 
 
 
-                useEffect(() => {
+                  useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
 
-        const next = generateViewsGraph(insightsData.views)
+    const next = generateViewsGraph(insightsData.views)
+    const activePattern = getActiveGreyPattern()
 
-                    // Use ref — always available, never stale
-    if (permanentGreyLine.current.length > 0) {
-      const values = permanentGreyLine.current
-      setGraphData(next.map((p, i) => ({
-        ...p,
-        typical: values[Math.round((i / Math.max(next.length - 1, 1)) * Math.max(values.length - 1, 1))] ?? p.typical
-      })))
+    if (activePattern && activePattern.length > 0) {
+      setGraphData(applyGreyPatternToGraph(next, activePattern))
     } else {
       setGraphData(next)
     }
+
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
@@ -1846,15 +1937,9 @@ export default function ReelInsights() {
   greyLineLocked={greyLineLocked} 
   onToggleGreyLine={toggleGreyLineLock}
   graphData={graphData}
-  onUpdateGraph={nd => {
-    permanentGreyLine.current = nd.map(p => p.typical)
-    setGraphData(nd)
-  }}
+  onUpdateGraph={setGraphData}
   yAxisTop={getViewsAxisTop(insightsData.views)}
-  onSaveGrey={values => {
-    permanentGreyLine.current = values
-    try { localStorage.setItem("permanent-grey-line", JSON.stringify(values)) } catch {}
-  }}
+  onSaveCurrentPattern={saveCurrentGreyPattern}
 />
 
         </div>
