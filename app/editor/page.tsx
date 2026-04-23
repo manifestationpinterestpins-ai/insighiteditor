@@ -368,10 +368,13 @@ const GreyLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onCh
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
     setDragging(index)
   }
-  const handlePointerMove = (e: React.PointerEvent) => {
+    const handlePointerMove = (e: React.PointerEvent) => {
     if (dragging === null) return
     const val = getValFromY(e.clientY)
-    const nd = [...data]; nd[dragging] = { ...nd[dragging], typical: val }; onChange(nd)
+    const nd = [...data]
+    nd[dragging] = { ...nd[dragging], typical: val }
+    onChange(nd)
+    try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {}
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
@@ -1238,11 +1241,15 @@ export default function ReelInsights() {
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-        useEffect(() => {
+          useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
       const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
+      const gd = localStorage.getItem("graph-data"); if (gd) {
+        const parsed = JSON.parse(gd)
+        if (Array.isArray(parsed) && parsed.length > 0) setGraphData(parsed)
+      }
     } catch {}
   }, [])
 
@@ -1306,13 +1313,26 @@ export default function ReelInsights() {
 
 
 
-      const handleGraphChange = (nd: GraphPoint[]) => { if (locked) return; setGraphData(nd) }
+        const handleGraphChange = (nd: GraphPoint[]) => {
+    if (locked) return
+    setGraphData(nd)
+    try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {}
+  }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-    const refreshViewsGraph = () => {
+      const refreshViewsGraph = () => {
     if (locked) return
-    setGraphData(prev => mergeGreyTypicalLine(generateViewsGraph(insightsData.views), prev))
+    setGraphData(prev => {
+      const savedTypical = prev.map(p => p.typical)
+      const next = generateViewsGraph(insightsData.views)
+      const merged = next.map((point, index) => {
+        const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(savedTypical.length - 1, 1))
+        return { ...point, typical: savedTypical[prevIndex] ?? point.typical }
+      })
+      try { localStorage.setItem("graph-data", JSON.stringify(merged)) } catch {}
+      return merged
+    })
   }
 
   const refreshRetentionGraph = () => {
@@ -1322,13 +1342,25 @@ export default function ReelInsights() {
 
 
 
-          useEffect(() => {
+            useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
-        setGraphData(prev => mergeGreyTypicalLine(generateViewsGraph(insightsData.views), prev))
+
+    setGraphData(prev => {
+      const savedTypical = prev.map(p => p.typical)
+      const next = generateViewsGraph(insightsData.views)
+      return next.map((point, index) => {
+        const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * (Math.max(savedTypical.length - 1, 1)))
+        return {
+          ...point,
+          typical: savedTypical[prevIndex] ?? point.typical,
+        }
+      })
+    })
+
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
