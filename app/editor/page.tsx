@@ -1255,11 +1255,25 @@ export default function ReelInsights() {
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-          useEffect(() => {
+            useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
       const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
+    } catch {}
+  }, [])
+
+  const savedGreyLineRef = useRef<number[] | null>(null)
+
+  useEffect(() => {
+    try {
+      const savedGrey = localStorage.getItem("grey-line-values")
+      if (savedGrey) {
+        const parsed: number[] = JSON.parse(savedGrey)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          savedGreyLineRef.current = parsed
+        }
+      }
     } catch {}
   }, [])
 
@@ -1369,14 +1383,15 @@ export default function ReelInsights() {
 
         const next = generateViewsGraph(insightsData.views)
 
-    // PRESERVE GREY LINE: Use current graph's grey line values instead of generating new ones
+        // PRESERVE GREY LINE: Use savedGreyLineRef first (for reload), then fall back to prev state
     setGraphData(prev => {
-      if (prev.length === 0) return next;
+      const greySource = savedGreyLineRef.current ?? prev.map(p => p.typical)
+      if (greySource.length === 0) return next
       return next.map((point, index) => {
-        const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * (prev.length - 1))
+        const greyIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(greySource.length - 1, 1))
         return {
           ...point,
-          typical: prev[prevIndex]?.typical ?? point.typical
+          typical: greySource[greyIndex] ?? point.typical
         }
       })
     })
