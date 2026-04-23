@@ -349,12 +349,16 @@ const BottomSheet = ({
   onOpenEditor,
   locked,
   onToggleLock,
+  greyLineLocked,
+  onToggleGreyLine,
 }: {
   open: boolean
   onClose: () => void
   onOpenEditor: () => void
   locked: boolean
   onToggleLock: () => void
+  greyLineLocked: boolean
+  onToggleGreyLine: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
 
@@ -400,14 +404,39 @@ const BottomSheet = ({
 
             <div className="bg-[#1c1c1e] px-4 pb-8">
               <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <BoostIcon />
-                  </div>
-                  <span className="text-[14px] text-white">Boost this reel</span>
-                </div>
-                <ChevronRightIcon />
-              </button>
+  <div className="flex items-center gap-3.5">
+    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    </div>
+    <span className="text-[14px] text-white">View on Edits</span>
+  </div>
+  <ChevronRightIcon />
+</button>
+
+<div className="h-px bg-zinc-800" />
+
+<button
+  className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
+  onClick={() => {
+    onToggleGreyLine()
+    onClose()
+  }}
+>
+  <div className="flex items-center gap-3.5">
+    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 12h18M3 6h18M3 18h12" strokeDasharray="4 2"/>
+      </svg>
+    </div>
+    <span className="text-[14px] text-white">
+      {greyLineLocked ? "Unlock grey line" : "Lock grey line"}
+    </span>
+  </div>
+  <ChevronRightIcon />
+</button>
 
               <div className="h-px bg-zinc-800" />
 
@@ -903,11 +932,13 @@ const DraggableGraph = ({
   onChange,
   locked,
   yAxisTop,
+  greyLineLocked,
 }: {
   data: GraphPoint[]
   onChange: (d: GraphPoint[]) => void
   locked: boolean
   yAxisTop: number
+  greyLineLocked?: boolean
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
@@ -946,7 +977,9 @@ const DraggableGraph = ({
     return d
   }
 
-  const allThisReel = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
+  const fullPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
+const cutoff = Math.ceil(fullPoints.length * 0.75)
+const allThisReel = fullPoints.slice(0, cutoff)
   const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
     e.preventDefault()
@@ -1038,13 +1071,13 @@ const DraggableGraph = ({
 
         {/* Typical (grey dashed) line - dash gap increased to 8 10 */}
         <path
-          d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
-          fill="none"
-          stroke="#8a8a8a"
-          strokeWidth={3}
-          strokeDasharray="8 10"
-          strokeLinecap="round"
-        />
+  d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
+  fill="none"
+  stroke="#8a8a8a"
+  strokeWidth={4.5}
+  strokeDasharray="5 4"
+  strokeLinecap="round"
+/>
 
         {/* Main pink line - strokeWidth reduced to 3.75 (3/4 of original 5) */}
         <path
@@ -1057,17 +1090,29 @@ const DraggableGraph = ({
 
         {/* Draggable points for Pink Line */}
         {data.map((d, i) => (
-          <circle
-            key={`tr-${i}`}
-            cx={getX(i)}
-            cy={getY(d.thisReel)}
-            r={18}
-            fill="transparent"
-            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
-            onPointerDown={e => handlePointerDown(i, "thisReel", e)}
-            style={{ touchAction: "none" }}
-          />
-        ))}
+  <circle
+    key={`tr-${i}`}
+    cx={getX(i)}
+    cy={getY(d.thisReel)}
+    r={16}
+    fill="transparent"
+    className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+    onPointerDown={e => handlePointerDown(i, "thisReel", e)}
+    style={{ touchAction: "none" }}
+  />
+))}
+{!greyLineLocked && data.map((d, i) => (
+  <circle
+    key={`typ-${i}`}
+    cx={getX(i)}
+    cy={getY(d.typical)}
+    r={16}
+    fill="transparent"
+    className="cursor-grab active:cursor-grabbing"
+    onPointerDown={e => handlePointerDown(i, "typical", e)}
+    style={{ touchAction: "none" }}
+  />
+))}
 
         {/* Draggable points for Typical Line */}
         {data.map((d, i) => (
@@ -1083,7 +1128,7 @@ const DraggableGraph = ({
           />
         ))}
       </svg>
-      <div className="flex items-center gap-6 mt-3 px-1">
+      <div className="flex items-center gap-6 mt-3 px-1 justify-end pr-2">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
           <span className="text-[11px] text-zinc-300">This reel</span>
@@ -1193,6 +1238,7 @@ export default function ReelInsights() {
   const [editorOpen, setEditorOpen] = useState(false)
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
   const [locked, setLocked] = useState(false)
+  const [greyLineLocked, setGreyLineLocked] = useState(false)
   const [profileActivity, setProfileActivity] = useState(0)
   const [profileVisits, setProfileVisits] = useState(0)
     const headerInputRef = useRef<HTMLInputElement>(null)
@@ -1228,6 +1274,7 @@ export default function ReelInsights() {
       useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
+const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
     } catch {}
   }, [])
@@ -1573,11 +1620,12 @@ export default function ReelInsights() {
                     </div>
                     <div className="mt-4">
                      <DraggableGraph
-                      data={graphData}
-                      onChange={handleGraphChange}
-                      locked={locked}
-                      yAxisTop={getViewsAxisTop(insightsData.views)}
-                    />
+  data={graphData}
+  onChange={handleGraphChange}
+  locked={locked}
+  yAxisTop={getViewsAxisTop(insightsData.views)}
+  greyLineLocked={greyLineLocked}
+/>
                     </div>
 
                   </section>
@@ -1750,12 +1798,18 @@ export default function ReelInsights() {
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
                     <BottomSheet
-            open={bottomSheetOpen}
-            onClose={() => setBottomSheetOpen(false)}
-            onOpenEditor={() => setEditorOpen(true)}
-            locked={locked}
-            onToggleLock={toggleLock}
-          />
+  open={bottomSheetOpen}
+  onClose={() => setBottomSheetOpen(false)}
+  onOpenEditor={() => setEditorOpen(true)}
+  locked={locked}
+  onToggleLock={toggleLock}
+  greyLineLocked={greyLineLocked}
+  onToggleGreyLine={() => {
+    const n = !greyLineLocked
+    setGreyLineLocked(n)
+    try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {}
+  }}
+/>
 
 
         </div>
