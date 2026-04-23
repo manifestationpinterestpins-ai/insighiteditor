@@ -368,13 +368,13 @@ const GreyLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onCh
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
     setDragging(index)
   }
-    const handlePointerMove = (e: React.PointerEvent) => {
+      const handlePointerMove = (e: React.PointerEvent) => {
     if (dragging === null) return
     const val = getValFromY(e.clientY)
     const nd = [...data]
     nd[dragging] = { ...nd[dragging], typical: val }
     onChange(nd)
-    try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {}
+    try { localStorage.setItem("grey-line-values", JSON.stringify(nd.map(p => p.typical))) } catch {}
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
@@ -1246,10 +1246,6 @@ export default function ReelInsights() {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
       const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
-      const gd = localStorage.getItem("graph-data"); if (gd) {
-        const parsed = JSON.parse(gd)
-        if (Array.isArray(parsed) && parsed.length > 0) setGraphData(parsed)
-      }
     } catch {}
   }, [])
 
@@ -1313,26 +1309,31 @@ export default function ReelInsights() {
 
 
 
-        const handleGraphChange = (nd: GraphPoint[]) => {
+          const handleGraphChange = (nd: GraphPoint[]) => {
     if (locked) return
     setGraphData(nd)
-    try { localStorage.setItem("graph-data", JSON.stringify(nd)) } catch {}
+    try { localStorage.setItem("grey-line-values", JSON.stringify(nd.map(p => p.typical))) } catch {}
   }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-      const refreshViewsGraph = () => {
+        const refreshViewsGraph = () => {
     if (locked) return
-    setGraphData(prev => {
-      const savedTypical = prev.map(p => p.typical)
-      const next = generateViewsGraph(insightsData.views)
-      const merged = next.map((point, index) => {
-        const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(savedTypical.length - 1, 1))
-        return { ...point, typical: savedTypical[prevIndex] ?? point.typical }
-      })
-      try { localStorage.setItem("graph-data", JSON.stringify(merged)) } catch {}
-      return merged
-    })
+    const next = generateViewsGraph(insightsData.views)
+    try {
+      const savedGrey = localStorage.getItem("grey-line-values")
+      if (savedGrey) {
+        const greyValues: number[] = JSON.parse(savedGrey)
+        if (Array.isArray(greyValues) && greyValues.length > 0) {
+          setGraphData(next.map((point, index) => {
+            const greyIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(greyValues.length - 1, 1))
+            return { ...point, typical: greyValues[greyIndex] ?? point.typical }
+          }))
+          return
+        }
+      }
+    } catch {}
+    setGraphData(next)
   }
 
   const refreshRetentionGraph = () => {
@@ -1342,7 +1343,7 @@ export default function ReelInsights() {
 
 
 
-              useEffect(() => {
+                useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
@@ -1352,17 +1353,17 @@ export default function ReelInsights() {
     const next = generateViewsGraph(insightsData.views)
 
     try {
-      const saved = localStorage.getItem("graph-data")
-      if (saved) {
-        const parsed: GraphPoint[] = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) {
+      const savedGrey = localStorage.getItem("grey-line-values")
+      if (savedGrey) {
+        const greyValues: number[] = JSON.parse(savedGrey)
+        if (Array.isArray(greyValues) && greyValues.length > 0) {
           const merged = next.map((point, index) => {
-            const prevIndex = Math.round(
-              (index / Math.max(next.length - 1, 1)) * Math.max(parsed.length - 1, 1)
+            const greyIndex = Math.round(
+              (index / Math.max(next.length - 1, 1)) * Math.max(greyValues.length - 1, 1)
             )
             return {
               ...point,
-              typical: parsed[prevIndex]?.typical ?? point.typical,
+              typical: greyValues[greyIndex] ?? point.typical,
             }
           })
           setGraphData(merged)
