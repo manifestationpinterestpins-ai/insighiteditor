@@ -1082,19 +1082,19 @@ const allThisReel = fullPoints.slice(0, cutoff)
           strokeLinecap="round"
         />
 
-                {data.map((d, i) => (
+                        {data.map((d, i) => (
           <circle
             key={`tr-${i}`}
             cx={getThisReelX(i)}
             cy={getY(d.thisReel)}
-                        r={30}
+            r={30}
             fill="transparent"
             className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
             onPointerDown={e => handlePointerDown(i, "thisReel", e)}
             style={{ touchAction: "none" }}
           />
         ))}
-
+      </svg>
 
       <div className="flex items-center gap-6 mt-3 pl-4">
         <div className="flex items-center gap-2">
@@ -1109,7 +1109,6 @@ const allThisReel = fullPoints.slice(0, cutoff)
     </div>
   )
 }
-
 
 
 // ===== DRAGGABLE ENGAGEMENT GRAPH =====
