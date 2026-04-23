@@ -1116,11 +1116,11 @@ const allThisReel = fullPoints.slice(0, cutoff)
       <div className="flex items-center gap-6 mt-3 pl-4">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
-          <span className="text-[11px] text-zinc-300">This reel</span>
+          <span className="text-[10px] text-zinc-300">This reel</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-[#8a8a8a]" />
-          <span className="text-[11px] text-zinc-300">Your typical reel</span>
+          <span className="text-[10px] text-zinc-300">Your typical reel</span>
         </div>
       </div>
     </div>
