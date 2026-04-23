@@ -1432,33 +1432,21 @@ export default function ReelInsights() {
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-              const refreshViewsGraph = () => {
+                const refreshViewsGraph = () => {
     if (locked) return
-
     const next = generateViewsGraph(insightsData.views)
-    const patterns = getSavedGreyPatterns()
-
-    if (patterns.length > 0) {
-      const active = getActiveGreyPattern()
-      const activeIndex = active
-        ? patterns.findIndex(pattern => JSON.stringify(pattern) === JSON.stringify(active))
-        : -1
-
-      const nextIndex = activeIndex >= 0 ? (activeIndex + 1) % patterns.length : 0
-      const selectedPattern = patterns[nextIndex]
-
-      setActiveGreyPattern(selectedPattern)
-      setGraphData(applyGreyPatternToGraph(next, selectedPattern))
-      return
-    }
-
-    const activePattern = getActiveGreyPattern()
-    if (activePattern && activePattern.length > 0) {
-      setGraphData(applyGreyPatternToGraph(next, activePattern))
-      return
-    }
-
-        setGraphData(next)
+    // Only update pink line, keep grey line exactly as it is
+    setGraphData(prev => {
+      if (prev.length === 0) return next
+      return next.map((point, index) => {
+        const oldIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(prev.length - 1, 1))
+        return {
+          date: point.date,
+          thisReel: point.thisReel,
+          typical: prev[oldIndex]?.typical ?? prev[0]?.typical ?? 100,
+        }
+      })
+    })
   }
 
   const refreshRetentionGraph = () => {
@@ -1468,7 +1456,7 @@ export default function ReelInsights() {
 
 
 
-                    useEffect(() => {
+                      useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
@@ -1476,24 +1464,31 @@ export default function ReelInsights() {
     setProfileVisits(automated.profileVisits)
 
     const next = generateViewsGraph(insightsData.views)
-    const activePattern = getActiveGreyPattern()
 
-    if (activePattern && activePattern.length > 0) {
-      setGraphData(applyGreyPatternToGraph(next, activePattern))
-    } else {
-      // No saved pattern — keep current grey line, only update pink line
-      setGraphData(prev => {
-        if (prev.length === 0) return next
+    // ONLY update pink line (thisReel). NEVER touch grey line (typical).
+    setGraphData(prev => {
+      // Build a map of new pink values
+      const newPinkValues = next.map(p => p.thisReel)
+      const newDates = next.map(p => p.date)
+      
+      // If prev has data, keep its typical values exactly as they are
+      if (prev.length > 0) {
+        // Create new array with same length as next (pink line may have different point count)
         return next.map((point, index) => {
-          const prevIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(prev.length - 1, 1))
+          // Map index from new array to old array
+          const oldIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(prev.length - 1, 1))
           return {
-            ...point,
+            date: point.date,
             thisReel: point.thisReel,
-            typical: prev[prevIndex]?.typical ?? point.typical,
+            // Keep the OLD typical value - never use the new one
+            typical: prev[oldIndex]?.typical ?? prev[0]?.typical ?? 100,
           }
         })
-      })
-    }
+      }
+      
+      // First load - use generated values
+      return next
+    })
 
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
