@@ -402,20 +402,50 @@ const BottomSheet = ({
               <div className="w-10 h-1 bg-zinc-600 rounded-full" />
             </div>
 
-            <div className="bg-[#1c1c1e] px-4 pb-8">
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-  <div className="flex items-center gap-3.5">
-    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-    </div>
-    <span className="text-[14px] text-white">View on Edits</span>
-  </div>
-  <ChevronRightIcon />
-</button>
+                          <div className="h-px bg-zinc-800" />
 
+              <button
+                className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
+                onClick={() => {
+                  onToggleGreyLine()
+                  onClose()
+                }}
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                    {greyLineLocked ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-[14px] text-white">
+                    {greyLineLocked ? "Unlock grey line" : "Lock grey line"}
+                  </span>
+                </div>
+                <ChevronRightIcon />
+              </button>
+
+              <div className="h-px bg-zinc-800" />
+
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                    </svg>
+                  </div>
+                  <span className="text-[14px] text-white">View on Edits</span>
+                </div>
+                <ChevronRightIcon />
+              </button>
 <div className="h-px bg-zinc-800" />
 
 <button
@@ -938,7 +968,7 @@ const DraggableGraph = ({
   onChange: (d: GraphPoint[]) => void
   locked: boolean
   yAxisTop: number
-  greyLineLocked?: boolean
+  greyLineLocked: boolean
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
@@ -961,7 +991,8 @@ const DraggableGraph = ({
   const chartH = height - padding.top - padding.bottom
   const yLabels = ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
-  const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+    const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const getThisReelX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * (chartW * 0.75)
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
   const getValFromY = (clientY: number) => {
     const svg = svgRef.current
@@ -980,8 +1011,9 @@ const DraggableGraph = ({
   const fullPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
 const cutoff = Math.ceil(fullPoints.length * 0.75)
 const allThisReel = fullPoints.slice(0, cutoff)
-  const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
+    const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
+    if (line === "typical" && greyLineLocked) return
     e.preventDefault()
     e.stopPropagation()
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
@@ -1036,7 +1068,7 @@ const allThisReel = fullPoints.slice(0, cutoff)
             {label}
           </text>
         ))}
-        {xLabels.map((label, i) => (
+                {xLabels.map((label, i) => (
           <text
             key={`xt-${i}`}
             x={xPositions[i]}
@@ -1055,7 +1087,8 @@ const allThisReel = fullPoints.slice(0, cutoff)
             {label}
           </text>
         ))}
-                {/* Horizontal grid lines */}
+
+        {/* Horizontal grid lines */}
         {[0, yAxisTop / 2, yAxisTop].map((val, i) => (
           <line
             key={`grid-${i}`}
@@ -1069,73 +1102,60 @@ const allThisReel = fullPoints.slice(0, cutoff)
           />
         ))}
 
-        {/* Typical (grey dashed) line - dash gap increased to 8 10 */}
+        {/* Typical (grey dashed) line */}
         <path
-  d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
-  fill="none"
-  stroke="#8a8a8a"
-  strokeWidth={4.5}
-  strokeDasharray="5 4"
-  strokeLinecap="round"
-/>
+          d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.typical) })))}
+          fill="none"
+          stroke="#8a8a8a"
+          strokeWidth={4.25}
+          strokeDasharray="6 5"
+          strokeLinecap="round"
+        />
 
-        {/* Main pink line - strokeWidth reduced to 3.75 (3/4 of original 5) */}
+        {/* Main pink line - 3/4 length */}
         <path
           d={pathD}
           fill="none"
           stroke={PINK}
-          strokeWidth={3.75}
+          strokeWidth={5}
           strokeLinecap="round"
         />
 
-        {/* Draggable points for Pink Line */}
         {data.map((d, i) => (
-  <circle
-    key={`tr-${i}`}
-    cx={getX(i)}
-    cy={getY(d.thisReel)}
-    r={16}
-    fill="transparent"
-    className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
-    onPointerDown={e => handlePointerDown(i, "thisReel", e)}
-    style={{ touchAction: "none" }}
-  />
-))}
-{!greyLineLocked && data.map((d, i) => (
-  <circle
-    key={`typ-${i}`}
-    cx={getX(i)}
-    cy={getY(d.typical)}
-    r={16}
-    fill="transparent"
-    className="cursor-grab active:cursor-grabbing"
-    onPointerDown={e => handlePointerDown(i, "typical", e)}
-    style={{ touchAction: "none" }}
-  />
-))}
+          <circle
+            key={`tr-${i}`}
+            cx={getThisReelX(i)}
+            cy={getY(d.thisReel)}
+            r={16}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={e => handlePointerDown(i, "thisReel", e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
 
-        {/* Draggable points for Typical Line */}
         {data.map((d, i) => (
           <circle
             key={`typ-${i}`}
             cx={getX(i)}
             cy={getY(d.typical)}
-            r={18}
+            r={16}
             fill="transparent"
-            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            className={locked || greyLineLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
             onPointerDown={e => handlePointerDown(i, "typical", e)}
             style={{ touchAction: "none" }}
           />
         ))}
       </svg>
-      <div className="flex items-center gap-6 mt-3 px-1 justify-end pr-2">
+
+      <div className="flex items-center gap-6 mt-3 pl-4">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
-          <span className="text-[11px] text-zinc-300">This reel</span>
+          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PINK }} />
+          <span className="text-[12px] text-zinc-300">This reel</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#8a8a8a]" />
-          <span className="text-[11px] text-zinc-300">Your typical reel</span>
+          <div className="w-2.5 h-2.5 rounded-full bg-[#8a8a8a]" />
+          <span className="text-[12px] text-zinc-300">Your typical reel</span>
         </div>
       </div>
     </div>
@@ -1271,10 +1291,10 @@ export default function ReelInsights() {
 
   const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-      useEffect(() => {
+        useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
-const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
+      const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(JSON.parse(gl))
       const sh = localStorage.getItem("header-image"); if (sh) setHeaderImage(sh)
     } catch {}
   }, [])
@@ -1290,8 +1310,20 @@ const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(J
     return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
   }, [])
 
-  const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
+    const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
+  const toggleGreyLineLock = () => { const n = !greyLineLocked; setGreyLineLocked(n); try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {} }
   const replayOverviewAnimation = () => { setAnimationKey(p => p + 1) }
+
+  const mergeGreyTypicalLine = (nextData: GraphPoint[], prevData: GraphPoint[]) => {
+    if (!greyLineLocked || prevData.length === 0) return nextData
+    return nextData.map((point, index) => {
+      const prevIndex = Math.round((index / Math.max(nextData.length - 1, 1)) * (prevData.length - 1))
+      return {
+        ...point,
+        typical: prevData[prevIndex]?.typical ?? point.typical,
+      }
+    })
+  }
 
   const DEFAULT_GRAPH_DATA: GraphPoint[] = [
     { date: "28 Jan", thisReel: 80, typical: 60 }, { date: "28 Jan", thisReel: 200, typical: 80 },
@@ -1331,9 +1363,9 @@ const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(J
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-  const refreshViewsGraph = () => {
+    const refreshViewsGraph = () => {
     if (locked) return
-    setGraphData(generateViewsGraph(insightsData.views))
+    setGraphData(prev => mergeGreyTypicalLine(generateViewsGraph(insightsData.views), prev))
   }
 
   const refreshRetentionGraph = () => {
@@ -1349,7 +1381,7 @@ const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(J
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
-    setGraphData(generateViewsGraph(insightsData.views))
+        setGraphData(prev => mergeGreyTypicalLine(generateViewsGraph(insightsData.views), prev))
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
@@ -1619,13 +1651,13 @@ const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(J
                       ))}
                     </div>
                     <div className="mt-4">
-                     <DraggableGraph
-  data={graphData}
-  onChange={handleGraphChange}
-  locked={locked}
-  yAxisTop={getViewsAxisTop(insightsData.views)}
-  greyLineLocked={greyLineLocked}
-/>
+                                         <DraggableGraph
+                      data={graphData}
+                      onChange={handleGraphChange}
+                      locked={locked}
+                      greyLineLocked={greyLineLocked}
+                      yAxisTop={getViewsAxisTop(insightsData.views)}
+                    />
                     </div>
 
                   </section>
@@ -1797,19 +1829,15 @@ const gl = localStorage.getItem("grey-line-locked"); if (gl) setGreyLineLocked(J
           </main>
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-                    <BottomSheet
-  open={bottomSheetOpen}
-  onClose={() => setBottomSheetOpen(false)}
-  onOpenEditor={() => setEditorOpen(true)}
-  locked={locked}
-  onToggleLock={toggleLock}
-  greyLineLocked={greyLineLocked}
-  onToggleGreyLine={() => {
-    const n = !greyLineLocked
-    setGreyLineLocked(n)
-    try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {}
-  }}
-/>
+                              <BottomSheet
+            open={bottomSheetOpen}
+            onClose={() => setBottomSheetOpen(false)}
+            onOpenEditor={() => setEditorOpen(true)}
+            locked={locked}
+            onToggleLock={toggleLock}
+            greyLineLocked={greyLineLocked}
+            onToggleGreyLine={toggleGreyLineLock}
+          />
 
 
         </div>
