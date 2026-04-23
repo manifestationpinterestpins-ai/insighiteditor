@@ -398,145 +398,54 @@ const BottomSheet = ({
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl">
+                        <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl">
               <div className="w-10 h-1 bg-zinc-600 rounded-full" />
             </div>
-
-                          <div className="h-px bg-zinc-800" />
-
-              <button
-                className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
-                onClick={() => {
-                  onToggleGreyLine()
-                  onClose()
-                }}
-              >
+            <div className="bg-[#1c1c1e] px-4 pb-8">
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
+                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><BoostIcon /></div><span className="text-[14px] text-white">Boost this reel</span></div>
+                <ChevronRightIcon />
+              </button>
+              <div className="h-px bg-zinc-800" />
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onToggleGreyLine(); onClose() }}>
                 <div className="flex items-center gap-3.5">
                   <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
                     {greyLineLocked ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-                      </svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                     )}
                   </div>
-                  <span className="text-[14px] text-white">
-                    {greyLineLocked ? "Unlock grey line" : "Lock grey line"}
-                  </span>
+                  <span className="text-[14px] text-white">{greyLineLocked ? "Unlock typical line" : "Lock typical line"}</span>
                 </div>
                 <ChevronRightIcon />
               </button>
-
               <div className="h-px bg-zinc-800" />
-
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                    </svg>
-                  </div>
-                  <span className="text-[14px] text-white">View on Edits</span>
-                </div>
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onClose(); onOpenEditor() }}>
+                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></div><span className="text-[14px] text-white">Edit insights</span></div>
                 <ChevronRightIcon />
               </button>
-<div className="h-px bg-zinc-800" />
-
-<button
-  className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
-  onClick={() => {
-    onToggleGreyLine()
-    onClose()
-  }}
->
-  <div className="flex items-center gap-3.5">
-    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 12h18M3 6h18M3 18h12" strokeDasharray="4 2"/>
-      </svg>
-    </div>
-    <span className="text-[14px] text-white">
-      {greyLineLocked ? "Unlock grey line" : "Lock grey line"}
-    </span>
-  </div>
-  <ChevronRightIcon />
-</button>
-
               <div className="h-px bg-zinc-800" />
-
-              <button
-                className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
-                onClick={() => {
-                  onClose()
-                  onOpenEditor()
-                }}
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </div>
-                  <span className="text-[14px] text-white">Edit insights</span>
-                </div>
-                <ChevronRightIcon />
-              </button>
-
-              <div className="h-px bg-zinc-800" />
-
-              <button
-                className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity"
-                onClick={() => {
-                  onToggleLock()
-                  onClose()
-                }}
-              >
+              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onToggleLock(); onClose() }}>
                 <div className="flex items-center gap-3.5">
                   <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
                     {locked ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-                      </svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                     )}
                   </div>
-                  <span className="text-[14px] text-white">
-                    {locked ? "Unlock editing" : "Lock editing"}
-                  </span>
+                  <span className="text-[14px] text-white">{locked ? "Unlock editing" : "Lock editing"}</span>
                 </div>
                 <ChevronRightIcon />
               </button>
-
               <div className="h-px bg-zinc-800" />
-
               <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                    </svg>
-                  </div>
-                  <span className="text-[14px] text-white">View on Edits</span>
-                </div>
+                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg></div><span className="text-[14px] text-white">View on Edits</span></div>
                 <ChevronRightIcon />
               </button>
             </div>
-
             <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
-          </motion.div>
         </>
       )}
     </AnimatePresence>
