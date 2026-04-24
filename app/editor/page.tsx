@@ -1070,8 +1070,8 @@ const allThisReel = fullPoints.slice(0, cutoff)
       const p1 = points[i + 1];
       const mx = (p0.x + p1.x) / 2;
       // 95% straight, 5% curve blend
-      const cy0 = p0.y * 0.95 + p1.y * 0.05;
-      const cy1 = p1.y * 0.95 + p0.y * 0.05;
+      const cy0 = p0.y * 0.99 + p1.y * 0.01;
+      const cy1 = p1.y * 0.99 + p0.y * 0.01;
       d += ` C ${mx} ${cy0}, ${mx} ${cy1}, ${p1.x} ${p1.y}`;
     }
     return d
