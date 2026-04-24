@@ -1533,32 +1533,7 @@ export default function ReelInsights() {
     })
 
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
-  }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
-      // Build a map of new pink values
-      const newPinkValues = next.map(p => p.thisReel)
-      const newDates = next.map(p => p.date)
-      
-      // If prev has data, keep its typical values exactly as they are
-      if (prev.length > 0) {
-        // Create new array with same length as next (pink line may have different point count)
-        return next.map((point, index) => {
-          // Map index from new array to old array
-          const oldIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(prev.length - 1, 1))
-          return {
-            date: point.date,
-            thisReel: point.thisReel,
-            // Keep the OLD typical value - never use the new one
-            typical: prev[oldIndex]?.typical ?? prev[0]?.typical ?? 100,
-          }
-        })
-      }
-      
-      // First load - use generated values
-      return next
-    })
-
-    setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
-  }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
+  
 
     const hasAutoCalculated = useRef(false)
 
