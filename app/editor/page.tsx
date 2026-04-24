@@ -1061,22 +1061,7 @@ const allThisReel = fullPoints.slice(0, cutoff)
     }
     setEditValue("")
   }
-    // Subtle curve for pink line only
-  const buildPinkPath = (points: { x: number; y: number }[]) => {
-    if (points.length < 2) return ""
-    let d = `M ${points[0].x} ${points[0].y}`
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[i]
-      const p1 = points[i + 1]
-      const mx = (p0.x + p1.x) / 2
-      // Blend 80% straight + 20% curve for subtle effect
-      const cy0 = p0.y * 0.8 + p1.y * 0.2
-      const cy1 = p1.y * 0.8 + p0.y * 0.2
-      d += ` C ${mx} ${cy0}, ${mx} ${cy1}, ${p1.x} ${p1.y}`
-    }
-    return d
-  }
-  const pathD = buildPinkPath(allThisReel)
+  const pathD = buildPath(allThisReel)
 
   return (
     <div className="relative -mx-1">
