@@ -1527,15 +1527,15 @@ export default function ReelInsights() {
         }
       })
 
-      // Save back so it persists
+            // Save back so it persists
       try { localStorage.setItem("saved-graph-data", JSON.stringify(result)) } catch {}
       return result
     })
 
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
-  
+  }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
-    const hasAutoCalculated = useRef(false)
+  const hasAutoCalculated = useRef(false)
 
   useEffect(() => {
     if (!isLoaded) return
@@ -1987,7 +1987,7 @@ export default function ReelInsights() {
   yAxisTop={getViewsAxisTop(insightsData.views)}
 />
         </div>
-      
+      </div>
     </>
   )
 }
