@@ -358,10 +358,15 @@ const GreyLineEditor = ({ data, onChange, yAxisTop, onSaveGrey }: { data: GraphP
     const svgY = ((clientY - rect.top) / rect.height) * height
     return Math.max(0, Math.min(yAxisTop, Math.round(((padding.top + chartH - svgY) / chartH) * yAxisTop)))
   }
-  const buildPath = (points: { x: number; y: number }[]) => {
+    const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
-    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const controlX = (p0.x + p1.x) / 2;
+      d += ` C ${controlX} ${p0.y}, ${controlX} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
     return d
   }
   const handlePointerDown = (index: number, e: React.PointerEvent) => {
@@ -406,10 +411,15 @@ const PinkLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onCh
     const svgY = ((clientY - rect.top) / rect.height) * height
     return Math.max(0, Math.min(yAxisTop, Math.round(((padding.top + chartH - svgY) / chartH) * yAxisTop)))
   }
-  const buildPath = (points: { x: number; y: number }[]) => {
+    const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
-    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const controlX = (p0.x + p1.x) / 2;
+      d += ` C ${controlX} ${p0.y}, ${controlX} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
     return d
   }
   const handlePointerDown = (index: number, e: React.PointerEvent) => {
@@ -1024,10 +1034,15 @@ const DraggableGraph = ({
     const svgY = ((clientY - rect.top) / rect.height) * height
     return Math.max(0, Math.min(yAxisTop, Math.round(((padding.top + chartH - svgY) / chartH) * yAxisTop)))
   }
-  const buildPath = (points: { x: number; y: number }[]) => {
+    const buildPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return ""
     let d = `M ${points[0].x} ${points[0].y}`
-    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const controlX = (p0.x + p1.x) / 2;
+      d += ` C ${controlX} ${p0.y}, ${controlX} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
     return d
   }
 
