@@ -1987,7 +1987,7 @@ export default function ReelInsights() {
   yAxisTop={getViewsAxisTop(insightsData.views)}
 />
         </div>
-      </div>
+      
     </>
   )
 }
