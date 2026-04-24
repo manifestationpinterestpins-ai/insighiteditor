@@ -375,7 +375,7 @@ const GreyLineEditor = ({ data, onChange, yAxisTop, onSaveGrey }: { data: GraphP
     const nd = [...data]
     nd[dragging] = { ...nd[dragging], typical: val }
         onChange(nd)
-    onSaveGrey(nd.map(p => p.typical))
+        try { localStorage.setItem("saved-graph-data", JSON.stringify(nd)) } catch {}
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
@@ -389,6 +389,53 @@ const GreyLineEditor = ({ data, onChange, yAxisTop, onSaveGrey }: { data: GraphP
     </div>
   )
 }
+
+// ===== PINK LINE EDITOR =====
+const PinkLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onChange: (d: GraphPoint[]) => void; yAxisTop: number }) => {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [dragging, setDragging] = useState<number | null>(null)
+  const padding = { top: 10, right: 10, bottom: 10, left: 10 }
+  const width = 340; const height = 120
+  const chartW = width - padding.left - padding.right
+  const chartH = height - padding.top - padding.bottom
+  const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
+  const getValFromY = (clientY: number) => {
+    const svg = svgRef.current; if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * height
+    return Math.max(0, Math.min(yAxisTop, Math.round(((padding.top + chartH - svgY) / chartH) * yAxisTop)))
+  }
+  const buildPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`
+    return d
+  }
+  const handlePointerDown = (index: number, e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+    setDragging(index)
+  }
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (dragging === null) return
+    const val = getValFromY(e.clientY)
+    const nd = [...data]
+    nd[dragging] = { ...nd[dragging], thisReel: val }
+    onChange(nd)
+  }
+  return (
+    <div className="bg-zinc-800/50 rounded-xl p-2">
+      <div className="text-[11px] text-zinc-400 mb-1 pl-1">Drag to edit pink line</div>
+      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full select-none touch-none" onPointerMove={handlePointerMove} onPointerUp={() => setDragging(null)} onPointerLeave={() => setDragging(null)}>
+        <path d={buildPath(data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) })))} fill="none" stroke={PINK} strokeWidth={3} strokeLinecap="round" />
+        {data.map((d, i) => (
+          <circle key={i} cx={getX(i)} cy={getY(d.thisReel)} r={8} fill={PINK} fillOpacity={0.4} stroke={PINK} strokeWidth={1.5} className="cursor-grab active:cursor-grabbing" onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />
+        ))}
+      </svg>
+    </div>
+  )
+}
 // ===== BOTTOM SHEET =====
 const BottomSheet = ({
   open,
@@ -396,27 +443,22 @@ const BottomSheet = ({
   onOpenEditor,
   locked,
   onToggleLock,
-  greyLineLocked,
-  onToggleGreyLine,
   graphData,
   onUpdateGraph,
   yAxisTop,
-  onSaveCurrentPattern,
 }: {
   open: boolean
   onClose: () => void
   onOpenEditor: () => void
   locked: boolean
   onToggleLock: () => void
-  greyLineLocked: boolean
-  onToggleGreyLine: () => void
   graphData: GraphPoint[]
   onUpdateGraph: (d: GraphPoint[]) => void
   yAxisTop: number
-  onSaveCurrentPattern: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
+  const [showPinkEditor, setShowPinkEditor] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -454,93 +496,73 @@ const BottomSheet = ({
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-                        <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl">
+            <div className="flex justify-center pt-3 pb-2 bg-[#1c1c1e] rounded-t-2xl">
               <div className="w-10 h-1 bg-zinc-600 rounded-full" />
             </div>
-            <div className="bg-[#1c1c1e] px-4 pb-8">
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><BoostIcon /></div><span className="text-[14px] text-white">Boost this reel</span></div>
-                <ChevronRightIcon />
-              </button>
-              <div className="h-px bg-zinc-800" />
-                            <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => setShowGreyEditor(p => !p)}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18M3 6h18M3 18h12" strokeDasharray="4 3"/></svg>
+            <div className="bg-[#1c1c1e] px-4 pb-4 max-h-[50vh] overflow-y-auto">
+              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => setShowPinkEditor(p => !p)}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PINK }} />
                   </div>
-                  <span className="text-[14px] text-white">Edit typical line</span>
+                  <span className="text-[13px] text-white">Edit pink line</span>
                 </div>
                 <ChevronRightIcon />
               </button>
-                                                       {showGreyEditor && (
-                <div className="py-3">
+              {showPinkEditor && (
+                <div className="py-2">
+                  <PinkLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} />
+                </div>
+              )}
+              <div className="h-px bg-zinc-800" />
+              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => setShowGreyEditor(p => !p)}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-[#8a8a8a]" />
+                  </div>
+                  <span className="text-[13px] text-white">Edit typical line</span>
+                </div>
+                <ChevronRightIcon />
+              </button>
+              {showGreyEditor && (
+                <div className="py-2">
                   <GreyLineEditor data={graphData} onChange={onUpdateGraph} yAxisTop={yAxisTop} onSaveGrey={values => {
-                    try {
-                      localStorage.setItem("active-grey-pattern", JSON.stringify(values))
-                    } catch {}
+                    try { localStorage.setItem("saved-grey-line", JSON.stringify(values)) } catch {}
                   }} />
                 </div>
               )}
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onSaveCurrentPattern}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                      <polyline points="17 21 17 13 7 13 7 21"/>
-                      <polyline points="7 3 7 8 15 8"/>
-                    </svg>
-                  </div>
-                  <span className="text-[14px] text-white">Save current typical pattern</span>
-                </div>
-                <span className="text-[11px] text-zinc-400">Max 10</span>
-              </button>
               <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => onToggleGreyLine()}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
-                    {greyLineLocked ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-                    )}
+              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => { onClose(); onOpenEditor() }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                   </div>
-                  <span className="text-[14px] text-white">{greyLineLocked ? "Unlock typical line" : "Lock typical line"}</span>
+                  <span className="text-[13px] text-white">Edit insights</span>
                 </div>
                 <ChevronRightIcon />
               </button>
               <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onClose(); onOpenEditor() }}>
-                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></div><span className="text-[14px] text-white">Edit insights</span></div>
-                <ChevronRightIcon />
-              </button>
-              <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={() => { onToggleLock(); onClose() }}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => { onToggleLock(); onClose() }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
                     {locked ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                     )}
                   </div>
-                  <span className="text-[14px] text-white">{locked ? "Unlock editing" : "Lock editing"}</span>
+                  <span className="text-[13px] text-white">{locked ? "Unlock editing" : "Lock editing"}</span>
                 </div>
-                <ChevronRightIcon />
-              </button>
-              <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3.5 active:opacity-60 transition-opacity" onClick={onClose}>
-                <div className="flex items-center gap-3.5"><div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg></div><span className="text-[14px] text-white">View on Edits</span></div>
                 <ChevronRightIcon />
               </button>
             </div>
             <div className="bg-[#1c1c1e] pb-[env(safe-area-inset-bottom)]" />
-            </motion.div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>
   )
 }
-
 
 
 
@@ -1396,7 +1418,16 @@ export default function ReelInsights() {
     { date: "30 Jan", thisReel: 370, typical: 95 }, { date: "30 Jan", thisReel: 460, typical: 80 },
     { date: "30 Jan", thisReel: 481, typical: 110 },
   ]
-  const [graphData, setGraphData] = useState<GraphPoint[]>(DEFAULT_GRAPH_DATA)
+    const [graphData, setGraphData] = useState<GraphPoint[]>(() => {
+    try {
+      const saved = localStorage.getItem("saved-graph-data")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {}
+    return DEFAULT_GRAPH_DATA
+  })
       const [retentionData, setRetentionData] = useState<RetentionPoint[]>(
     generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views)
   )
@@ -1423,32 +1454,32 @@ export default function ReelInsights() {
 
 
 
-    const handleGraphChange = (nd: GraphPoint[]) => {
+      const handleGraphChange = (nd: GraphPoint[]) => {
     if (locked) return
     setGraphData(nd)
-    const pattern = nd.map(p => p.typical)
     try {
-      localStorage.setItem("grey-line-values", JSON.stringify(pattern))
-      localStorage.setItem("active-grey-pattern", JSON.stringify(pattern))
+      localStorage.setItem("saved-graph-data", JSON.stringify(nd))
+      localStorage.setItem("saved-grey-line", JSON.stringify(nd.map(p => p.typical)))
     } catch {}
   }
   const handleRetentionChange = (nd: RetentionPoint[]) => { if (locked) return; setRetentionData(nd) }
   const handleEngagementChange = (nd: EngagementPoint[]) => { if (locked) return; setEngagementData(nd); try { localStorage.setItem("engagement-graph-data", JSON.stringify(nd)) } catch {} }
 
-                const refreshViewsGraph = () => {
+                  const refreshViewsGraph = () => {
     if (locked) return
     const next = generateViewsGraph(insightsData.views)
-    // Only update pink line, keep grey line exactly as it is
     setGraphData(prev => {
-      if (prev.length === 0) return next
-      return next.map((point, index) => {
-        const oldIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(prev.length - 1, 1))
+      const greyValues = prev.map(p => p.typical)
+      const result = next.map((point, index) => {
+        const greyIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(greyValues.length - 1, 1))
         return {
           date: point.date,
           thisReel: point.thisReel,
-          typical: prev[oldIndex]?.typical ?? prev[0]?.typical ?? 100,
+          typical: greyValues[greyIndex] ?? 100,
         }
       })
+      try { localStorage.setItem("saved-graph-data", JSON.stringify(result)) } catch {}
+      return result
     })
   }
 
@@ -1459,17 +1490,50 @@ export default function ReelInsights() {
 
 
 
-                      useEffect(() => {
+                        useEffect(() => {
     if (!isLoaded) return
 
     const automated = getAutomatedActions(insightsData.views)
     setProfileActivity(automated.follows)
     setProfileVisits(automated.profileVisits)
 
+    // Only update pink line. Grey line comes from saved data.
     const next = generateViewsGraph(insightsData.views)
 
-    // ONLY update pink line (thisReel). NEVER touch grey line (typical).
     setGraphData(prev => {
+      // Load grey line from localStorage (most reliable source)
+      let greyValues: number[] = []
+      try {
+        const saved = localStorage.getItem("saved-grey-line")
+        if (saved) greyValues = JSON.parse(saved)
+      } catch {}
+
+      // If no saved grey, use prev state grey
+      if (!greyValues.length && prev.length > 0) {
+        greyValues = prev.map(p => p.typical)
+      }
+
+      // If still no grey, use defaults
+      if (!greyValues.length) {
+        greyValues = DEFAULT_GRAPH_DATA.map(p => p.typical)
+      }
+
+      const result = next.map((point, index) => {
+        const greyIndex = Math.round((index / Math.max(next.length - 1, 1)) * Math.max(greyValues.length - 1, 1))
+        return {
+          date: point.date,
+          thisReel: point.thisReel,
+          typical: greyValues[greyIndex] ?? 100,
+        }
+      })
+
+      // Save back so it persists
+      try { localStorage.setItem("saved-graph-data", JSON.stringify(result)) } catch {}
+      return result
+    })
+
+    setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
+  }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
       // Build a map of new pink values
       const newPinkValues = next.map(p => p.thisReel)
       const newDates = next.map(p => p.date)
@@ -1942,15 +2006,11 @@ export default function ReelInsights() {
   onClose={() => setBottomSheetOpen(false)} 
   onOpenEditor={() => setEditorOpen(true)} 
   locked={locked} 
-  onToggleLock={toggleLock} 
-  greyLineLocked={greyLineLocked} 
-  onToggleGreyLine={toggleGreyLineLock}
+  onToggleLock={toggleLock}
   graphData={graphData}
   onUpdateGraph={setGraphData}
   yAxisTop={getViewsAxisTop(insightsData.views)}
-  onSaveCurrentPattern={saveCurrentGreyPattern}
 />
-
         </div>
       </div>
     </>
