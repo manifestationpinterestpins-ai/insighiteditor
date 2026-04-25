@@ -1016,7 +1016,16 @@ const DraggableGraph = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
-  const [xLabels, setXLabels] = useState(["28 Jan", "29 Jan", "30 Jan"])
+    const [xLabels, setXLabels] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("graph-x-labels")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length === 3) return parsed
+      }
+    } catch {}
+    return ["28 Jan", "29 Jan", "30 Jan"]
+  })
   const [editingX, setEditingX] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
@@ -1073,11 +1082,12 @@ const allThisReel = fullPoints.slice(0, cutoff)
   }
   const handlePointerUp = () => setDragging(null)
     const xPositions = [padding.left + 18, padding.left + chartW / 2, padding.left + chartW - 14]
-  const commitEdit = () => {
+    const commitEdit = () => {
     if (editingX !== null) {
       const updated = [...xLabels]
       updated[editingX] = editValue
       setXLabels(updated)
+      try { localStorage.setItem("graph-x-labels", JSON.stringify(updated)) } catch {}
       setEditingX(null)
     }
     setEditValue("")
