@@ -462,7 +462,6 @@ const BottomSheet = ({
   onToggleSources: () => void
   onRefreshAudience: () => void
 }) => {
-    const { onRefreshAudience: refreshAudience } = { onRefreshAudience: (arguments as any)?.[0]?.onRefreshAudience }
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
   const [showPinkEditor, setShowPinkEditor] = useState(false)
