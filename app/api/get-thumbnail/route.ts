@@ -7,16 +7,23 @@ export async function GET(req: Request) {
   }
 
   try {
-    const res = await fetch(
-      `https://noembed.com/embed?url=${encodeURIComponent(reelUrl)}`
+    const res = await fetch(reelUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+      }
+    })
+
+    const html = await res.text()
+
+    const match = html.match(
+      /<meta property="og:image" content="([^"]+)"/
     )
 
-    const data = await res.json()
+    const thumbnail = match ? match[1] : null
 
-    return Response.json({
-      thumbnail: data.thumbnail_url || null
-    })
+    return Response.json({ thumbnail })
   } catch (err) {
-    return Response.json({ error: "Failed" }, { status: 500 })
+    return Response.json({ error: "Failed to fetch" }, { status: 500 })
   }
 }
