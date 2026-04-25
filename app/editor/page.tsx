@@ -1856,44 +1856,10 @@ export default function ReelInsights() {
         style={{ backgroundColor: "#0c0f14" }}
       >
         <div className="w-[32px] h-[32px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-  <!-- Verified badge (perfect symmetric shape) -->
-  <path
-    d="M12 2.5
-       L14.2 4.2
-       L17 3.8
-       L18 6.5
-       L20.5 8
-       L19.5 10.7
-       L20.5 13.3
-       L18 14.8
-       L17 17.5
-       L14.2 17.1
-       L12 18.8
-       L9.8 17.1
-       L7 17.5
-       L6 14.8
-       L3.5 13.3
-       L4.5 10.7
-       L3.5 8
-       L6 6.5
-       L7 3.8
-       L9.8 4.2
-       Z"
-    stroke="white"
-    stroke-width="2"
-    stroke-linejoin="round"
-  />
-
-  <!-- Check -->
-  <path
-    d="M9.5 12.5l2 2 3.5-4"
-    stroke="white"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.5L14.2 4.2L17 3.8L18 6.5L20.5 8L19.5 10.7L20.5 13.3L18 14.8L17 17.5L14.2 17.1L12 18.8L9.8 17.1L7 17.5L6 14.8L3.5 13.3L4.5 10.7L3.5 8L6 6.5L7 3.8L9.8 4.2Z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M9.5 12.5l2 2 3.5-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
 
         <div className="flex-1">
