@@ -7,13 +7,9 @@ export async function GET(req: Request) {
   }
 
   try {
-    const res = await fetch(reelUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-      }
-    })
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(reelUrl)}`
 
+    const res = await fetch(proxyUrl)
     const html = await res.text()
 
     const match = html.match(
@@ -23,7 +19,8 @@ export async function GET(req: Request) {
     const thumbnail = match ? match[1] : null
 
     return Response.json({ thumbnail })
+
   } catch (err) {
-    return Response.json({ error: "Failed to fetch" }, { status: 500 })
+    return Response.json({ error: "Failed" }, { status: 500 })
   }
 }
