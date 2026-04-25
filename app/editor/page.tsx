@@ -1298,7 +1298,8 @@ export default function ReelInsights() {
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
     const [viewsAnimKey, setViewsAnimKey] = useState(0)
-  const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
+    const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
+  const [animateBanner, setAnimateBanner] = useState(true)
   const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
@@ -1836,13 +1837,20 @@ export default function ReelInsights() {
       transition: "all 0.25s ease",
     }}
   >
-    <div
+        <div
       style={{
         opacity: showMetaVerifiedBanner ? 1 : 0,
         transform: showMetaVerifiedBanner ? "scale(1)" : "scale(0.98)",
         transition: "all 0.25s ease",
       }}
     >
+      <div
+        style={{
+          transform: animateBanner ? "translateY(0px)" : "translateY(20px)",
+          opacity: animateBanner ? 1 : 0,
+          transition: "all 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      >
       <div
         className="flex items-start justify-between gap-[10px] rounded-[14px] border border-[#1f2328] px-[14px] py-[12px] mb-[14px]"
         style={{ backgroundColor: "#0c0f14" }}
@@ -1863,20 +1871,20 @@ export default function ReelInsights() {
           </div>
         </div>
 
-        <button
-          className="text-[#9ca3af] shrink-0 mt-[2px] active:opacity-60 transition-opacity"
-          onClick={() => setShowMetaVerifiedBanner(false)}
-        >
-          <CloseIcon />
-        </button>
-      </div>
+              <button
+        className="text-[#9ca3af] shrink-0 mt-[2px] active:opacity-60 transition-opacity"
+        onClick={() => setShowMetaVerifiedBanner(false)}
+      >
+        <CloseIcon />
+      </button>
+    </div>
+    </div>
     </div>
   </div>
-</div>
-<section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
+</div><section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
-                      <button onClick={() => { setSummaryLoading(true); setViewsAnimKey(k => k + 1); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
+                      <button onClick={() => { setSummaryLoading(true); setViewsAnimKey(k => k + 1); setTimeout(() => setSummaryLoading(false), 800); setAnimateBanner(false); setTimeout(() => setAnimateBanner(true), 50) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
                       {[
