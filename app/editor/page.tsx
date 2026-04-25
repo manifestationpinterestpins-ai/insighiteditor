@@ -1372,27 +1372,23 @@ export default function ReelInsights() {
     } catch {}
   }, [])
 
-    const fetchThumbnail = async (url: string) => {
+      const fetchThumbnail = async (url: string) => {
     try {
       setLoadingThumb(true)
 
-      const response = await fetch(
-        `https://noembed.com/embed?url=${encodeURIComponent(url)}`
-      )
+      const res = await fetch(`/api/get-thumbnail?url=${encodeURIComponent(url)}`)
+      const data = await res.json()
 
-      if (!response.ok) throw new Error("Fetch failed")
+      console.log("THUMBNAIL API RESPONSE:", data)
 
-      const data = await response.json()
-
-      console.log("OEMBED RESPONSE:", data)
-
-      if (data && data.thumbnail_url) {
-        setThumbnailUrl(data.thumbnail_url)
-        setThumbnailImage(data.thumbnail_url)
-        setRetentionThumbnail(data.thumbnail_url)
-        try { localStorage.setItem("reel-thumb-url", data.thumbnail_url) } catch {}
+      if (data.thumbnail) {
+        setThumbnailUrl(data.thumbnail)
+        setThumbnailImage(data.thumbnail)
+        setRetentionThumbnail(data.thumbnail)
+        try { localStorage.setItem("reel-thumb-url", data.thumbnail) } catch {}
       } else {
-        console.error("No thumbnail found in response:", data)
+        console.error("No thumbnail returned:", data)
+        alert("Thumbnail not found. Make sure the reel is public.")
       }
 
     } catch (err) {
@@ -1401,7 +1397,6 @@ export default function ReelInsights() {
       setLoadingThumb(false)
     }
   }
-
               useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
