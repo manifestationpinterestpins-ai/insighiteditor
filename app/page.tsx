@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
@@ -10,6 +10,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  // If this device already has access, redirect immediately
+  useEffect(() => {
+    const savedKey = localStorage.getItem("device-access-key")
+    const accessGranted = localStorage.getItem("access-granted")
+    if (savedKey && accessGranted === "true") {
+      router.replace("/editor")
+    }
+  }, [])
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -31,7 +39,15 @@ export default function LoginPage() {
         return
       }
 
-      if (data.used) {
+            if (data.used) {
+        // Check if this device is the one that used the key
+        const deviceKey = localStorage.getItem("device-access-key")
+        if (deviceKey === trimmedKey) {
+          // This device used this key — allow access
+          localStorage.setItem("access-granted", "true")
+          router.push("/editor")
+          return
+        }
         setError("This key has already been used.")
         setLoading(false)
         return
@@ -43,8 +59,9 @@ export default function LoginPage() {
         .update({ used: true, used_at: new Date().toISOString() })
         .eq("id", data.id)
 
-      // Store session
+            // Store session with the key tied to this device
       localStorage.setItem("access-granted", "true")
+      localStorage.setItem("device-access-key", trimmedKey)
       router.push("/editor")
 
     } catch (err) {
