@@ -1721,7 +1721,9 @@ export default function ReelInsights() {
   const updatedData = {
     ...ud,
     avgWatchTime: getAutoAverageWatchTime(ud.videoDuration),
+    accountsReached: getAutoAccountsReached(ud.views),
   }
+
   saveData(updatedData)
   setAnimateCharts(false)
   setTimeout(() => setAnimateCharts(true), 50)
