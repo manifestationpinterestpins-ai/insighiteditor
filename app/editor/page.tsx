@@ -1345,11 +1345,7 @@ export default function ReelInsights() {
     const [viewsAnimKey, setViewsAnimKey] = useState(0)
     const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
   const [animateBanner, setAnimateBanner] = useState(true)
-  const overviewRef = useRef<HTMLDivElement>(null)
-  const tabsRef = useRef<HTMLDivElement>(null)
-  const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
-  const [tabsSticky, setTabsSticky] = useState(false)
-  const tabsOffsetTop = useRef(0)
+    const overviewRef = useRef<HTMLDivElement>(null)
    const permanentGreyLine = useRef<number[]>([])
 
   const buildEngagementData = (videoDuration: string): EngagementPoint[] => {
@@ -1401,14 +1397,7 @@ export default function ReelInsights() {
 
 
 
-  useEffect(() => {
-    const updateOffset = () => { if (tabsPlaceholderRef.current) tabsOffsetTop.current = tabsPlaceholderRef.current.getBoundingClientRect().top + window.scrollY }
-    updateOffset()
-    window.addEventListener("resize", updateOffset)
-    const handleScroll = () => { updateOffset(); setTabsSticky(window.scrollY >= tabsOffsetTop.current) }
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => { window.removeEventListener("scroll", handleScroll); window.removeEventListener("resize", updateOffset) }
-  }, [])
+  
 
     const toggleLock = () => { const n = !locked; setLocked(n); try { localStorage.setItem("site-locked", JSON.stringify(n)) } catch {} }
   const toggleGreyLineLock = () => { const n = !greyLineLocked; setGreyLineLocked(n); try { localStorage.setItem("grey-line-locked", JSON.stringify(n)) } catch {} }
@@ -1875,7 +1864,6 @@ export default function ReelInsights() {
               )}
             </div>
             <input ref={sharedThumbInputRef} type="file" accept="image/*" className="hidden" onChange={handleSharedImageUpload} />
-        <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 0 : 0 }} />
 <div
   className="flex items-center justify-center gap-7 w-full px-3 overflow-hidden mt-4"
   style={{
@@ -1913,39 +1901,34 @@ export default function ReelInsights() {
 </div>
           </section>
 
-                                        {/* Tabs placeholder */}
-          <div style={{ height: tabsSticky ? 42 : 0 }} />
-<LayoutGroup key={tabsSticky ? "sticky-tabs" : "normal-tabs"}>
+                                       
+<LayoutGroup>
   <div
-    ref={tabsRef}
-    className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
+    className="sticky z-50 flex border-b border-zinc-800/40"
     style={{
-      position: tabsSticky ? "fixed" : "relative",
-      top: tabsSticky ? 48 : undefined,
-      paddingTop: tabsSticky ? 5 : 0,
-      left: tabsSticky ? 0 : undefined,
-      right: tabsSticky ? 0 : undefined,
-      width: tabsSticky ? "100%" : undefined,
-      maxWidth: tabsSticky ? 420 : undefined,
-      margin: tabsSticky ? "0 auto" : undefined,
+      top: 56,
       backgroundColor: BG,
     }}
   >
-              {TABS.map(tab => (
-                <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
-                  {tab}
-                  {mainTab === tab && (
-  <motion.div
-    initial={false}
-    layoutId="activeTabUnderline"
-    className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full"
-    transition={{ type: "spring", stiffness: 500, damping: 40 }}
-  />
-)}
-                </button>
-              ))}
-            </div>
-          </LayoutGroup>
+    {TABS.map(tab => (
+      <button
+        key={tab}
+        onClick={() => setMainTab(tab)}
+        className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}
+      >
+        {tab}
+        {mainTab === tab && (
+          <motion.div
+            layoutId="activeTabUnderline"
+            initial={false}
+            className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full"
+            transition={{ type: "spring", stiffness: 500, damping: 40 }}
+          />
+        )}
+      </button>
+    ))}
+  </div>
+</LayoutGroup>
 
           <main className="pb-12">
             <AnimatePresence mode="wait">
