@@ -1297,7 +1297,8 @@ export default function ReelInsights() {
   const retentionInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
-  const [viewsAnimKey, setViewsAnimKey] = useState(0)
+    const [viewsAnimKey, setViewsAnimKey] = useState(0)
+  const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
   const overviewRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
   const tabsPlaceholderRef = useRef<HTMLDivElement>(null)
@@ -1827,7 +1828,39 @@ export default function ReelInsights() {
               {mainTab === "Overview" && (
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
-                                                                        <section ref={overviewRef} key={animationKey} className="px-4 pt-5 pb-4">
+                         {showMetaVerifiedBanner && (
+  <div className="px-4 pt-4">
+    <div
+      className="flex items-start justify-between gap-3 rounded-[16px] border border-[#1f2328] px-4 py-[14px] mb-[14px]"
+      style={{ backgroundColor: "#111418" }}
+    >
+      <div className="w-[36px] h-[36px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3l2.3 2.1 3.1-.4 1.3 2.8 2.8 1.3-.4 3.1L23 12l-2.1 2.3.4 3.1-2.8 1.3-1.3 2.8-3.1-.4L12 23l-2.3-2.1-3.1.4-1.3-2.8-2.8-1.3.4-3.1L1 12l2.1-2.3-.4-3.1 2.8-1.3 1.3-2.8 3.1.4L12 3z" />
+          <path d="m8.5 12.5 2.2 2.2 4.8-4.8" />
+        </svg>
+      </div>
+
+      <div className="flex-1">
+        <div className="text-[13px] leading-[1.35] text-[#d1d5db]">
+          Content from Meta Verified subscribers get more views, likes and comments on average.
+        </div>
+        <div className="mt-2 text-[13px] font-semibold text-[#4f8cff] cursor-pointer">
+          Try Meta Verified for ₹45
+        </div>
+      </div>
+
+      <button
+        className="text-[#9ca3af] shrink-0 mt-[2px] active:opacity-60 transition-opacity"
+        onClick={() => setShowMetaVerifiedBanner(false)}
+      >
+        <CloseIcon />
+      </button>
+    </div>
+  </div>
+)}
+
+<section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
                       <button onClick={() => { setSummaryLoading(true); setViewsAnimKey(k => k + 1); setTimeout(() => setSummaryLoading(false), 800) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
