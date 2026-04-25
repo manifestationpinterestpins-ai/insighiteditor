@@ -1834,7 +1834,7 @@ export default function ReelInsights() {
           <div className="h-[48px]" />
 
           {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-8 pb-4 px-5">
+          <section className="flex flex-col items-center pt-4 pb-4 px-5">
 
                 
                           <div
@@ -1913,8 +1913,8 @@ export default function ReelInsights() {
     className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
     style={{
       position: tabsSticky ? "fixed" : "relative",
-                  top: tabsSticky ? 48 : undefined,
-
+      top: tabsSticky ? 48 : undefined,
+      paddingTop: tabsSticky ? 10 : 0,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
