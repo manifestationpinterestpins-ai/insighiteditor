@@ -1718,7 +1718,15 @@ export default function ReelInsights() {
 
 
 
-    const handleEditorSave = (ud: InsightsData) => { saveData(ud); setAnimateCharts(false); setTimeout(() => setAnimateCharts(true), 50) }
+    const handleEditorSave = (ud: InsightsData) => {
+  const updatedData = {
+    ...ud,
+    avgWatchTime: getAutoAverageWatchTime(ud.videoDuration),
+  }
+  saveData(updatedData)
+  setAnimateCharts(false)
+  setTimeout(() => setAnimateCharts(true), 50)
+}
   const handleHeaderUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (locked) return
     const f = e.target.files?.[0]
