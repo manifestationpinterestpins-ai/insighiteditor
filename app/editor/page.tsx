@@ -1572,20 +1572,35 @@ export default function ReelInsights() {
     // Only update pink line. Grey line comes from saved data.
     const next = generateViewsGraph(insightsData.views)
 
-    setGraphData(prev => {
-      // Load grey line from localStorage (most reliable source)
+        setGraphData(prev => {
+      // Load saved graph from localStorage (has both pink + grey)
+      let savedGraph: GraphPoint[] = []
+      try {
+        const saved = localStorage.getItem("saved-graph-data")
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            savedGraph = parsed
+          }
+        }
+      } catch {}
+
+      // If we have saved graph, use its pink AND grey values
+      if (savedGraph.length > 0) {
+        return savedGraph
+      }
+
+      // Otherwise use generated pink + saved grey
       let greyValues: number[] = []
       try {
         const saved = localStorage.getItem("saved-grey-line")
         if (saved) greyValues = JSON.parse(saved)
       } catch {}
 
-      // If no saved grey, use prev state grey
       if (!greyValues.length && prev.length > 0) {
         greyValues = prev.map(p => p.typical)
       }
 
-      // If still no grey, use defaults
       if (!greyValues.length) {
         greyValues = DEFAULT_GRAPH_DATA.map(p => p.typical)
       }
@@ -1599,11 +1614,9 @@ export default function ReelInsights() {
         }
       })
 
-            // Save back so it persists
       try { localStorage.setItem("saved-graph-data", JSON.stringify(result)) } catch {}
       return result
     })
-
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
