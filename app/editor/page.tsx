@@ -1919,7 +1919,7 @@ export default function ReelInsights() {
     className="sticky z-50 flex border-b border-zinc-800/40"
     style={{
       top: "48px",
-      paddingTop: "4px",
+      paddingTop: "1px",
       backgroundColor: BG,
     }}
   >
