@@ -1857,22 +1857,35 @@ export default function ReelInsights() {
       >
         <div className="w-[32px] h-[32px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-  <circle
-    cx="12"
-    cy="12"
-    r="9"
+  <!-- Verified badge (perfect symmetric shape) -->
+  <path
+    d="M12 2.5
+       L14.2 4.2
+       L17 3.8
+       L18 6.5
+       L20.5 8
+       L19.5 10.7
+       L20.5 13.3
+       L18 14.8
+       L17 17.5
+       L14.2 17.1
+       L12 18.8
+       L9.8 17.1
+       L7 17.5
+       L6 14.8
+       L3.5 13.3
+       L4.5 10.7
+       L3.5 8
+       L6 6.5
+       L7 3.8
+       L9.8 4.2
+       Z"
     stroke="white"
     stroke-width="2"
+    stroke-linejoin="round"
   />
-  <circle
-    cx="12"
-    cy="12"
-    r="9"
-    stroke="white"
-    stroke-width="2"
-    stroke-dasharray="1.5 3"
-    stroke-linecap="round"
-  />
+
+  <!-- Check -->
   <path
     d="M9.5 12.5l2 2 3.5-4"
     stroke="white"
