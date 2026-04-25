@@ -1570,19 +1570,20 @@ export default function ReelInsights() {
     // Randomize followers
     const fp = parseFloat((Math.random() * 8 + 2).toFixed(1))
 
-    // Randomize sources based on mode
+       // Randomize sources based on mode
     const savedMode = localStorage.getItem("sources-mode")
     const reels = parseFloat((75 + Math.random() * 10).toFixed(1))
-    const explore = parseFloat((5 + Math.random() * 10).toFixed(1))
     let nextSources
     if (savedMode === "three") {
-      const profile = parseFloat((100 - reels - explore).toFixed(1))
+      const profile = parseFloat((Math.random() * 3).toFixed(1))
+      const explore = parseFloat((100 - reels - profile).toFixed(1))
       nextSources = [
         { name: "Reels tab", percentage: reels },
-        { name: "Explore", percentage: explore },
+        { name: "Explore", percentage: Math.max(0, explore) },
         { name: "Profile", percentage: Math.max(0, profile) },
       ]
     } else {
+      const explore = parseFloat((5 + Math.random() * 10).toFixed(1))
       const rem = parseFloat((100 - reels - explore).toFixed(1))
       const stories = parseFloat((rem * 0.55).toFixed(1))
       const prof = parseFloat((rem * 0.28).toFixed(1))
