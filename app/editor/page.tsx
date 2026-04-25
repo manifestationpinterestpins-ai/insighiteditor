@@ -1915,7 +1915,7 @@ export default function ReelInsights() {
 
                                         {/* Tabs placeholder */}
           <div style={{ height: tabsSticky ? 42 : 0 }} />
-<LayoutGroup>
+<LayoutGroup key={tabsSticky ? "sticky-tabs" : "normal-tabs"}>
   <div
     ref={tabsRef}
     className={`flex z-50 ${tabsSticky ? "" : "border-b border-zinc-800/40"}`}
@@ -1936,7 +1936,8 @@ export default function ReelInsights() {
                   {tab}
                   {mainTab === tab && (
   <motion.div
-    layoutId={tabsSticky ? "activeTabUnderlineSticky" : "activeTabUnderline"}
+    initial={false}
+    layoutId="activeTabUnderline"
     className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full"
     transition={{ type: "spring", stiffness: 500, damping: 40 }}
   />
