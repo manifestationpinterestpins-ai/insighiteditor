@@ -1306,8 +1306,11 @@ export default function ReelInsights() {
       }
     }, [isLoaded]);
     const [headerImage, setHeaderImage] = useState<string | null>(null)
-  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
+    const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
+  const [reelUrl, setReelUrl] = useState("")
+  const [thumbnailUrl, setThumbnailUrl] = useState("")
+  const [loadingThumb, setLoadingThumb] = useState(false)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
   const [animateCharts, setAnimateCharts] = useState(false)
@@ -1356,7 +1359,40 @@ export default function ReelInsights() {
     return data
   }
 
-  const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
+    const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
+
+  useEffect(() => {
+    try {
+      const savedThumb = localStorage.getItem("reel-thumb-url")
+      if (savedThumb) {
+        setThumbnailUrl(savedThumb)
+        setThumbnailImage(savedThumb)
+        setRetentionThumbnail(savedThumb)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (!reelUrl) return
+
+    const fetchThumbnail = async () => {
+      setLoadingThumb(true)
+      try {
+        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(reelUrl)}`)
+        const json = await response.json()
+
+        if (json?.thumbnail_url) {
+          setThumbnailUrl(json.thumbnail_url)
+          setThumbnailImage(json.thumbnail_url)
+          setRetentionThumbnail(json.thumbnail_url)
+          try { localStorage.setItem("reel-thumb-url", json.thumbnail_url) } catch {}
+        }
+      } catch {}
+      setLoadingThumb(false)
+    }
+
+    fetchThumbnail()
+  }, [reelUrl])
 
               useEffect(() => {
     try {
@@ -1704,7 +1740,21 @@ export default function ReelInsights() {
       r.readAsDataURL(f)
     }
   }
-  const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setThumbnailImage(ev.target?.result as string); r.readAsDataURL(f) } }
+    const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (locked) return
+    const f = e.target.files?.[0]
+    if (f) {
+      const r = new FileReader()
+      r.onload = ev => {
+        const result = ev.target?.result as string
+        setThumbnailImage(result)
+        setRetentionThumbnail(result)
+        setThumbnailUrl(result)
+        try { localStorage.setItem("reel-thumb-url", result) } catch {}
+      }
+      r.readAsDataURL(f)
+    }
+  }
   const handleRetentionThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => { if (locked) return; const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = ev => setRetentionThumbnail(ev.target?.result as string); r.readAsDataURL(f) } }
 
   const saveGender = (newMen: number) => { const nw = parseFloat((100 - newMen).toFixed(1)); try { localStorage.setItem("gender-data", JSON.stringify({ men: newMen, women: nw })) } catch {}; saveData({ ...insightsData, genderData: { men: newMen, women: nw } }) }
@@ -1780,8 +1830,45 @@ export default function ReelInsights() {
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
 
-            <div className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg" onClick={() => { if (!locked) thumbnailInputRef.current?.click() }}>
-              {thumbnailImage ? (<><img src={thumbnailImage} alt="Reel" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setThumbnailImage(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors"><UploadIcon /><span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span></div>)}
+                        <div
+              className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg"
+              onClick={() => {
+                if (locked) return
+                const pastedUrl = window.prompt("Paste Instagram Reel URL")
+                if (pastedUrl && pastedUrl.trim()) {
+                  setReelUrl(pastedUrl.trim())
+                }
+              }}
+            >
+              {loadingThumb ? (
+                <div className="flex flex-col items-center justify-center h-full text-zinc-400">
+                  <span className="text-[10px]">Loading...</span>
+                </div>
+              ) : (thumbnailUrl || thumbnailImage) ? (
+                <>
+                  <img src={thumbnailUrl || thumbnailImage || ""} alt="Reel" className="w-full h-full object-cover rounded-xl" />
+                  {!locked && (
+                    <button
+                      className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={e => {
+                        e.stopPropagation()
+                        setThumbnailUrl("")
+                        setThumbnailImage(null)
+                        setRetentionThumbnail(null)
+                        setReelUrl("")
+                        try { localStorage.removeItem("reel-thumb-url") } catch {}
+                      }}
+                    >
+                      <CloseIcon />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <UploadIcon />
+                  <span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span>
+                </div>
+              )}
               <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
         <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 0 : 0 }} />
@@ -2020,8 +2107,36 @@ export default function ReelInsights() {
                     </div>
                     <div className="flex justify-center mb-5">
 
-                      <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
-                        {retentionThumbnail ? (<><img src={retentionThumbnail} alt="Retention" className="w-full h-full object-cover" />{!locked && <button className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => { e.stopPropagation(); setRetentionThumbnail(null) }}><CloseIcon /></button>}</>) : (<div className="flex flex-col items-center justify-center h-full text-zinc-500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span className="text-[9px] mt-1.5">Upload</span></div>)}
+                                            <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
+                        {loadingThumb ? (
+                          <div className="flex flex-col items-center justify-center h-full text-zinc-400">
+                            <span className="text-[10px]">Loading...</span>
+                          </div>
+                        ) : (thumbnailUrl || retentionThumbnail) ? (
+                          <>
+                            <img src={thumbnailUrl || retentionThumbnail || ""} alt="Retention" className="w-full h-full object-cover rounded-xl" />
+                            {!locked && (
+                              <button
+                                className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  setThumbnailUrl("")
+                                  setThumbnailImage(null)
+                                  setRetentionThumbnail(null)
+                                  setReelUrl("")
+                                  try { localStorage.removeItem("reel-thumb-url") } catch {}
+                                }}
+                              >
+                                <CloseIcon />
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span className="text-[9px] mt-1.5">Upload</span>
+                          </div>
+                        )}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
                         <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                       </div>
