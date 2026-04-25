@@ -1922,7 +1922,7 @@ export default function ReelInsights() {
     style={{
       position: tabsSticky ? "fixed" : "relative",
       top: tabsSticky ? 48 : undefined,
-      paddingTop: tabsSticky ? 10 : 0,
+      paddingTop: tabsSticky ? 5 : 0,
       left: tabsSticky ? 0 : undefined,
       right: tabsSticky ? 0 : undefined,
       width: tabsSticky ? "100%" : undefined,
