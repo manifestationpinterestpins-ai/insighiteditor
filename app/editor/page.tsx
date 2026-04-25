@@ -1832,12 +1832,12 @@ export default function ReelInsights() {
   <div className="px-4 pt-4">
     <div
       className="flex items-start justify-between gap-3 rounded-[16px] border border-[#1f2328] px-4 py-[14px] mb-[14px]"
-      style={{ backgroundColor: "#111418" }}
+            style={{ backgroundColor: "#0c0f14" }}
     >
       <div className="w-[36px] h-[36px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 3l2.3 2.1 3.1-.4 1.3 2.8 2.8 1.3-.4 3.1L23 12l-2.1 2.3.4 3.1-2.8 1.3-1.3 2.8-3.1-.4L12 23l-2.3-2.1-3.1.4-1.3-2.8-2.8-1.3.4-3.1L1 12l2.1-2.3-.4-3.1 2.8-1.3 1.3-2.8 3.1.4L12 3z" />
-          <path d="m8.5 12.5 2.2 2.2 4.8-4.8" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2l2.5 2 3.5-.5 1 3 3 2-1 3 1 3-3 2-1 3-3.5-.5L12 22l-2.5-2-3.5.5-1-3-3-2 1-3-1-3 3-2 1-3 3.5.5L12 2z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M9.5 12.5l2 2 3.5-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
 
