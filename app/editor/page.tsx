@@ -1857,9 +1857,30 @@ export default function ReelInsights() {
       >
         <div className="w-[32px] h-[32px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2l2.5 2 3.5-.5 1 3 3 2-1 3 1 3-3 2-1 3-3.5-.5L12 22l-2.5-2-3.5.5-1-3-3-2 1-3-1-3 3-2 1-3 3.5.5L12 2z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-            <path d="M9.5 12.5l2 2 3.5-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+  <circle
+    cx="12"
+    cy="12"
+    r="9"
+    stroke="white"
+    stroke-width="2"
+  />
+  <circle
+    cx="12"
+    cy="12"
+    r="9"
+    stroke="white"
+    stroke-width="2"
+    stroke-dasharray="1.5 3"
+    stroke-linecap="round"
+  />
+  <path
+    d="M9.5 12.5l2 2 3.5-4"
+    stroke="white"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
         </div>
 
         <div className="flex-1">
