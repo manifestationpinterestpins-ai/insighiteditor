@@ -1834,7 +1834,7 @@ export default function ReelInsights() {
           <div className="h-[48px]" />
 
           {/* Thumbnail */}
-          <section className="flex flex-col items-center pt-4 pb-4 px-5">
+          <section className="flex flex-col items-center pt-8 pb-4 px-5">
 
                 
                           <div
