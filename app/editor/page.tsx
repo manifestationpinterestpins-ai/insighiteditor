@@ -448,7 +448,6 @@ const BottomSheet = ({
   yAxisTop,
   sourcesMode,
   onToggleSources,
-  onRefreshAudience,
 }: {
   open: boolean
   onClose: () => void
@@ -460,7 +459,6 @@ const BottomSheet = ({
   yAxisTop: number
   sourcesMode: "all" | "three"
   onToggleSources: () => void
-  onRefreshAudience: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
@@ -547,18 +545,7 @@ const BottomSheet = ({
                 </div>
                 <ChevronRightIcon />
               </button>
-
-                           <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={onRefreshAudience}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                  </div>
-                  <span className="text-[13px] text-white">Refresh percentages</span>
-                </div>
-                <ChevronRightIcon />
-              </button>
-
+             
                            <div className="h-px bg-zinc-800" />
               <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={onToggleSources}>
                 <div className="flex items-center gap-3">
@@ -2080,7 +2067,7 @@ export default function ReelInsights() {
           </main>
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-                                                           <BottomSheet 
+                        <BottomSheet 
             open={bottomSheetOpen} 
             onClose={() => setBottomSheetOpen(false)} 
             onOpenEditor={() => setEditorOpen(true)} 
@@ -2094,69 +2081,39 @@ export default function ReelInsights() {
               const next = sourcesMode === "all" ? "three" : "all"
               setSourcesMode(next)
               try { localStorage.setItem("sources-mode", next) } catch {}
-            }}
-            onRefreshAudience={() => {
-              // 1. Randomize Followers
-              const fp = parseFloat((Math.random() * 8 + 2).toFixed(1));
 
-              // 2. Randomize Sources based on mode
-              let nextSources = [];
-              const reels = parseFloat((75 + Math.random() * 10).toFixed(1));
-              const explore = parseFloat((5 + Math.random() * 10).toFixed(1));
-              
-              if (sourcesMode === "three") {
-                const profile = parseFloat((100 - reels - explore).toFixed(1));
-                nextSources = [
-                  { name: "Reels tab", percentage: reels },
-                  { name: "Explore", percentage: explore },
-                  { name: "Profile", percentage: Math.max(0, profile) }
-                ];
+              if (next === "three") {
+                const reels = parseFloat((75 + Math.random() * 10).toFixed(1))
+                const profile = parseFloat((Math.random() * 3).toFixed(1))
+                const explore = parseFloat((100 - reels - profile).toFixed(1))
+
+                saveData({
+                  ...insightsData,
+                  sourcesData: [
+                    { name: "Reels tab", percentage: reels },
+                    { name: "Explore", percentage: Math.max(0, explore) },
+                    { name: "Profile", percentage: Math.max(0, profile) }
+                  ]
+                })
               } else {
-                const rem = parseFloat((100 - reels - explore).toFixed(1));
-                const stories = parseFloat((rem * 0.55).toFixed(1));
-                const prof = parseFloat((rem * 0.28).toFixed(1));
-                const feed = parseFloat((rem - stories - prof).toFixed(1));
-                nextSources = [
-                  { name: "Reels tab", percentage: reels },
-                  { name: "Explore", percentage: explore },
-                  { name: "Stories", percentage: stories },
-                  { name: "Profile", percentage: prof },
-                  { name: "Feed", percentage: Math.max(0, feed) }
-                ];
+                const reels = parseFloat((75 + Math.random() * 10).toFixed(1))
+                const explore = parseFloat((5 + Math.random() * 10).toFixed(1))
+                const rem = parseFloat((100 - reels - explore).toFixed(1))
+                const stories = parseFloat((rem * 0.55).toFixed(1))
+                const prof = parseFloat((rem * 0.28).toFixed(1))
+                const feed = parseFloat((rem - stories - prof).toFixed(1))
+
+                saveData({
+                  ...insightsData,
+                  sourcesData: [
+                    { name: "Reels tab", percentage: reels },
+                    { name: "Explore", percentage: explore },
+                    { name: "Stories", percentage: stories },
+                    { name: "Profile", percentage: prof },
+                    { name: "Feed", percentage: Math.max(0, feed) }
+                  ]
+                })
               }
-
-              // 3. Randomize Countries
-              const us = parseFloat((35 + Math.random() * 10).toFixed(1));
-              const uk = parseFloat((20 + Math.random() * 8).toFixed(1));
-              const ca = parseFloat((12 + Math.random() * 6).toFixed(1));
-              const ot = parseFloat((100 - us - uk - ca).toFixed(1));
-
-              // 4. Randomize Age
-              const a18 = parseFloat((35 + Math.random() * 13).toFixed(1));
-              const a25 = parseFloat((30 + Math.random() * 12).toFixed(1));
-              const remAge = parseFloat((100 - a18 - a25).toFixed(1));
-
-              // 5. Randomize Gender
-              const men = parseFloat((45 + Math.random() * 10).toFixed(1));
-
-              saveData({
-                ...insightsData,
-                followerPercentage: fp,
-                sourcesData: nextSources,
-                countryData: [
-                  { name: insightsData.countryData[0]?.name || "United States", percentage: us },
-                  { name: insightsData.countryData[1]?.name || "United Kingdom", percentage: uk },
-                  { name: insightsData.countryData[2]?.name || "Canada", percentage: ca },
-                  { name: "Others", percentage: Math.max(0, ot) }
-                ],
-                ageData: [
-                  { name: "18-24", percentage: a18 },
-                  { name: "25-34", percentage: a25 },
-                  { name: "35-44", percentage: Math.max(0, remAge) }
-                ],
-                genderData: { men: men, women: parseFloat((100 - men).toFixed(1)) }
-              });
-              setBottomSheetOpen(false);
             }}
           />
         </div>
