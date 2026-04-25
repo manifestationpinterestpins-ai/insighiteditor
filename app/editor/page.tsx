@@ -1372,27 +1372,35 @@ export default function ReelInsights() {
     } catch {}
   }, [])
 
-  useEffect(() => {
-    if (!reelUrl) return
-
-    const fetchThumbnail = async () => {
+    const fetchThumbnail = async (url: string) => {
+    try {
       setLoadingThumb(true)
-      try {
-        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(reelUrl)}`)
-        const json = await response.json()
 
-        if (json?.thumbnail_url) {
-          setThumbnailUrl(json.thumbnail_url)
-          setThumbnailImage(json.thumbnail_url)
-          setRetentionThumbnail(json.thumbnail_url)
-          try { localStorage.setItem("reel-thumb-url", json.thumbnail_url) } catch {}
-        }
-      } catch {}
+      const response = await fetch(
+        `https://noembed.com/embed?url=${encodeURIComponent(url)}`
+      )
+
+      if (!response.ok) throw new Error("Fetch failed")
+
+      const data = await response.json()
+
+      console.log("OEMBED RESPONSE:", data)
+
+      if (data && data.thumbnail_url) {
+        setThumbnailUrl(data.thumbnail_url)
+        setThumbnailImage(data.thumbnail_url)
+        setRetentionThumbnail(data.thumbnail_url)
+        try { localStorage.setItem("reel-thumb-url", data.thumbnail_url) } catch {}
+      } else {
+        console.error("No thumbnail found in response:", data)
+      }
+
+    } catch (err) {
+      console.error("Thumbnail fetch error:", err)
+    } finally {
       setLoadingThumb(false)
     }
-
-    fetchThumbnail()
-  }, [reelUrl])
+  }
 
               useEffect(() => {
     try {
@@ -1832,12 +1840,12 @@ export default function ReelInsights() {
 
                         <div
               className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg"
-              onClick={() => {
+                            onClick={async () => {
                 if (locked) return
-                const pastedUrl = window.prompt("Paste Instagram Reel URL")
-                if (pastedUrl && pastedUrl.trim()) {
-                  setReelUrl(pastedUrl.trim())
-                }
+                const url = window.prompt("Paste Instagram Reel URL")
+                if (!url || !url.trim()) return
+                setReelUrl(url.trim())
+                await fetchThumbnail(url.trim())
               }}
             >
               {loadingThumb ? (
