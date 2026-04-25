@@ -1306,11 +1306,9 @@ export default function ReelInsights() {
       }
     }, [isLoaded]);
     const [headerImage, setHeaderImage] = useState<string | null>(null)
-    const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
+      const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
-  const [reelUrl, setReelUrl] = useState("")
   const [thumbnailUrl, setThumbnailUrl] = useState("")
-  const [loadingThumb, setLoadingThumb] = useState(false)
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
   const [animateCharts, setAnimateCharts] = useState(false)
@@ -1328,9 +1326,10 @@ export default function ReelInsights() {
   })
   const [profileActivity, setProfileActivity] = useState(0)
   const [profileVisits, setProfileVisits] = useState(0)
-    const headerInputRef = useRef<HTMLInputElement>(null)
+      const headerInputRef = useRef<HTMLInputElement>(null)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
   const retentionInputRef = useRef<HTMLInputElement>(null)
+  const sharedThumbInputRef = useRef<HTMLInputElement>(null)
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
     const [viewsAnimKey, setViewsAnimKey] = useState(0)
@@ -1361,42 +1360,9 @@ export default function ReelInsights() {
 
     const [engagementData, setEngagementData] = useState<EngagementPoint[]>([])
 
-  useEffect(() => {
-    try {
-      const savedThumb = localStorage.getItem("reel-thumb-url")
-      if (savedThumb) {
-        setThumbnailUrl(savedThumb)
-        setThumbnailImage(savedThumb)
-        setRetentionThumbnail(savedThumb)
-      }
-    } catch {}
-  }, [])
+  
 
-      const fetchThumbnail = async (url: string) => {
-    try {
-      setLoadingThumb(true)
-
-      const res = await fetch(`/api/get-thumbnail?url=${encodeURIComponent(url)}`)
-      const data = await res.json()
-
-      console.log("THUMBNAIL API RESPONSE:", data)
-
-      if (data.thumbnail) {
-        setThumbnailUrl(data.thumbnail)
-        setThumbnailImage(data.thumbnail)
-        setRetentionThumbnail(data.thumbnail)
-        try { localStorage.setItem("reel-thumb-url", data.thumbnail) } catch {}
-      } else {
-        console.error("No thumbnail returned:", data)
-        alert("Thumbnail not found. Make sure the reel is public.")
-      }
-
-    } catch (err) {
-      console.error("Thumbnail fetch error:", err)
-    } finally {
-      setLoadingThumb(false)
-    }
-  }
+      
               useEffect(() => {
     try {
       const sl = localStorage.getItem("site-locked"); if (sl) setLocked(JSON.parse(sl))
@@ -1743,6 +1709,19 @@ export default function ReelInsights() {
       r.readAsDataURL(f)
     }
   }
+
+   const handleSharedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setThumbnailUrl(result)
+      setThumbnailImage(result)
+      setRetentionThumbnail(result)
+    }
+    reader.readAsDataURL(file)
+  }
     const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (locked) return
     const f = e.target.files?.[0]
@@ -1834,22 +1813,13 @@ export default function ReelInsights() {
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
 
                         <div
+                          <div
               className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg"
-                            onClick={async () => {
-                if (locked) return
-                const url = window.prompt("Paste Instagram Reel URL")
-                if (!url || !url.trim()) return
-                setReelUrl(url.trim())
-                await fetchThumbnail(url.trim())
-              }}
+              onClick={() => { if (!locked) sharedThumbInputRef.current?.click() }}
             >
-              {loadingThumb ? (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-400">
-                  <span className="text-[10px]">Loading...</span>
-                </div>
-              ) : (thumbnailUrl || thumbnailImage) ? (
+              {(thumbnailUrl || thumbnailImage) ? (
                 <>
-                  <img src={thumbnailUrl || thumbnailImage || ""} alt="Reel" className="w-full h-full object-cover rounded-xl" />
+                  <img src={thumbnailUrl || thumbnailImage || ""} alt="Reel" className="w-full h-full object-cover" />
                   {!locked && (
                     <button
                       className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1858,8 +1828,6 @@ export default function ReelInsights() {
                         setThumbnailUrl("")
                         setThumbnailImage(null)
                         setRetentionThumbnail(null)
-                        setReelUrl("")
-                        try { localStorage.removeItem("reel-thumb-url") } catch {}
                       }}
                     >
                       <CloseIcon />
@@ -1872,8 +1840,8 @@ export default function ReelInsights() {
                   <span className="text-[9px] mt-1.5 font-medium">Upload thumbnail</span>
                 </div>
               )}
-              <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
             </div>
+            <input ref={sharedThumbInputRef} type="file" accept="image/*" className="hidden" onChange={handleSharedImageUpload} />
         <div ref={tabsPlaceholderRef} style={{ height: tabsSticky ? 0 : 0 }} />
 <div
   className="flex items-center justify-center gap-7 w-full px-3 overflow-hidden mt-4"
@@ -2110,14 +2078,10 @@ export default function ReelInsights() {
                     </div>
                     <div className="flex justify-center mb-5">
 
-                                            <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) retentionInputRef.current?.click() }}>
-                        {loadingThumb ? (
-                          <div className="flex flex-col items-center justify-center h-full text-zinc-400">
-                            <span className="text-[10px]">Loading...</span>
-                          </div>
-                        ) : (thumbnailUrl || retentionThumbnail) ? (
+                                                                  <div className="relative w-[100px] h-[170px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-xl" onClick={() => { if (!locked) sharedThumbInputRef.current?.click() }}>
+                        {(thumbnailUrl || retentionThumbnail) ? (
                           <>
-                            <img src={thumbnailUrl || retentionThumbnail || ""} alt="Retention" className="w-full h-full object-cover rounded-xl" />
+                            <img src={thumbnailUrl || retentionThumbnail || ""} alt="Retention" className="w-full h-full object-cover" />
                             {!locked && (
                               <button
                                 className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -2126,8 +2090,6 @@ export default function ReelInsights() {
                                   setThumbnailUrl("")
                                   setThumbnailImage(null)
                                   setRetentionThumbnail(null)
-                                  setReelUrl("")
-                                  try { localStorage.removeItem("reel-thumb-url") } catch {}
                                 }}
                               >
                                 <CloseIcon />
@@ -2141,7 +2103,6 @@ export default function ReelInsights() {
                           </div>
                         )}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg></div>
-                        <input ref={retentionInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetentionThumbnailUpload} />
                       </div>
                     </div>
                     <DraggableRetentionGraph data={retentionData} onChange={handleRetentionChange} locked={locked} videoDuration={insightsData.videoDuration} />
