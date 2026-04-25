@@ -1856,10 +1856,52 @@ export default function ReelInsights() {
         style={{ backgroundColor: "#0c0f14" }}
       >
         <div className="w-[32px] h-[32px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2l2.5 2 3.5-.5 1 3 3 2-1 3 1 3-3 2-1 3-3.5-.5L12 22l-2.5-2-3.5.5-1-3-3-2 1-3-1-3 3-2 1-3 3.5.5L12 2z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-          <path d="M9.5 12.5l2 2 3.5-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- More circular, evenly distributed spikes -->
+  <path
+    d="M12 2.5
+       L13.6 3.6
+       L15.8 3.2
+       L16.8 5.2
+       L19 6
+       L19.2 8.2
+       L20.8 9.6
+       L20 11.6
+       L20.8 13.6
+       L19.2 15
+       L19 17.2
+       L16.8 18
+       L15.8 20
+       L13.6 19.6
+       L12 20.7
+       L10.4 19.6
+       L8.2 20
+       L7.2 18
+       L5 17.2
+       L4.8 15
+       L3.2 13.6
+       L4 11.6
+       L3.2 9.6
+       L4.8 8.2
+       L5 6
+       L7.2 5.2
+       L8.2 3.2
+       L10.4 3.6
+       Z"
+    stroke="white"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+
+  <!-- Better centered tick -->
+  <path
+    d="M8.8 12.6L11.3 15.1L15.8 10.6"
+    stroke="white"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
         </div>
 
         <div className="flex-1">
