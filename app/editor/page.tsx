@@ -1828,38 +1828,51 @@ export default function ReelInsights() {
               {mainTab === "Overview" && (
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
-                         {showMetaVerifiedBanner && (
-  <div className="px-4 pt-4">
+                        <div className="px-4 pt-4">
+  <div
+    style={{
+      height: showMetaVerifiedBanner ? "auto" : "0px",
+      overflow: "hidden",
+      transition: "all 0.25s ease",
+    }}
+  >
     <div
-      className="flex items-start justify-between gap-3 rounded-[16px] border border-[#1f2328] px-4 py-[14px] mb-[14px]"
-            style={{ backgroundColor: "#0c0f14" }}
+      style={{
+        opacity: showMetaVerifiedBanner ? 1 : 0,
+        transform: showMetaVerifiedBanner ? "scale(1)" : "scale(0.98)",
+        transition: "all 0.25s ease",
+      }}
     >
-      <div className="w-[36px] h-[36px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2l2.5 2 3.5-.5 1 3 3 2-1 3 1 3-3 2-1 3-3.5-.5L12 22l-2.5-2-3.5.5-1-3-3-2 1-3-1-3 3-2 1-3 3.5.5L12 2z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-          <path d="M9.5 12.5l2 2 3.5-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-
-      <div className="flex-1">
-        <div className="text-[13px] leading-[1.35] text-[#d1d5db]">
-          Content from Meta Verified subscribers get more views, likes and comments on average.
-        </div>
-        <div className="mt-2 text-[13px] font-semibold text-[#4f8cff] cursor-pointer">
-          Try Meta Verified for ₹45
-        </div>
-      </div>
-
-      <button
-        className="text-[#9ca3af] shrink-0 mt-[2px] active:opacity-60 transition-opacity"
-        onClick={() => setShowMetaVerifiedBanner(false)}
+      <div
+        className="flex items-start justify-between gap-[10px] rounded-[14px] border border-[#1f2328] px-[14px] py-[12px] mb-[14px]"
+        style={{ backgroundColor: "#0c0f14" }}
       >
-        <CloseIcon />
-      </button>
+        <div className="w-[32px] h-[32px] rounded-full bg-[#1c1f24] flex items-center justify-center shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l2.5 2 3.5-.5 1 3 3 2-1 3 1 3-3 2-1 3-3.5-.5L12 22l-2.5-2-3.5.5-1-3-3-2 1-3-1-3 3-2 1-3 3.5.5L12 2z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M9.5 12.5l2 2 3.5-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+
+        <div className="flex-1">
+          <div className="text-[13px] leading-[1.35] text-[#d1d5db]">
+            Content from Meta Verified subscribers get more views, likes and comments on average.
+          </div>
+          <div className="mt-2 text-[13px] font-semibold text-[#4f8cff] cursor-pointer">
+            Try Meta Verified for ₹45
+          </div>
+        </div>
+
+        <button
+          className="text-[#9ca3af] shrink-0 mt-[2px] active:opacity-60 transition-opacity"
+          onClick={() => setShowMetaVerifiedBanner(false)}
+        >
+          <CloseIcon />
+        </button>
+      </div>
     </div>
   </div>
-)}
-
+</div>
 <section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
