@@ -1570,7 +1570,7 @@ export default function ReelInsights() {
     setRetentionData(generateRetentionGraph(insightsData.videoDuration, insightsData.avgWatchTime, insightsData.views))
   }, [isLoaded, insightsData.views, insightsData.videoDuration, insightsData.avgWatchTime])
 
-  const hasAutoCalculated = useRef(false)
+    const hasAutoCalculated = useRef(false)
 
   useEffect(() => {
     if (!isLoaded) return
@@ -1580,10 +1580,79 @@ export default function ReelInsights() {
     const nextAvgWatchTime = getAutoAverageWatchTime(insightsData.videoDuration)
     const nextAccountsReached = getAutoAccountsReached(insightsData.views)
 
+    // Randomize followers
+    const fp = parseFloat((Math.random() * 8 + 2).toFixed(1))
+
+    // Randomize sources based on mode
+    const savedMode = localStorage.getItem("sources-mode")
+    const reels = parseFloat((75 + Math.random() * 10).toFixed(1))
+    const explore = parseFloat((5 + Math.random() * 10).toFixed(1))
+    let nextSources
+    if (savedMode === "three") {
+      const profile = parseFloat((100 - reels - explore).toFixed(1))
+      nextSources = [
+        { name: "Reels tab", percentage: reels },
+        { name: "Explore", percentage: explore },
+        { name: "Profile", percentage: Math.max(0, profile) },
+      ]
+    } else {
+      const rem = parseFloat((100 - reels - explore).toFixed(1))
+      const stories = parseFloat((rem * 0.55).toFixed(1))
+      const prof = parseFloat((rem * 0.28).toFixed(1))
+      const feed = parseFloat((rem - stories - prof).toFixed(1))
+      nextSources = [
+        { name: "Reels tab", percentage: reels },
+        { name: "Explore", percentage: explore },
+        { name: "Stories", percentage: stories },
+        { name: "Profile", percentage: prof },
+        { name: "Feed", percentage: Math.max(0, feed) },
+      ]
+    }
+
+    // Randomize countries
+    const us = parseFloat((35 + Math.random() * 10).toFixed(1))
+    const uk = parseFloat((20 + Math.random() * 8).toFixed(1))
+    const ca = parseFloat((12 + Math.random() * 6).toFixed(1))
+    const au = parseFloat((8 + Math.random() * 5).toFixed(1))
+    const de = parseFloat((4 + Math.random() * 3).toFixed(1))
+    const ot = parseFloat((100 - us - uk - ca - au - de).toFixed(1))
+
+    // Randomize age
+    const a13 = parseFloat((5 + Math.random() * 8).toFixed(1))
+    const a18 = parseFloat((35 + Math.random() * 13).toFixed(1))
+    const a25 = parseFloat((30 + Math.random() * 12).toFixed(1))
+    const a35 = parseFloat((5 + Math.random() * 5).toFixed(1))
+    const a45 = parseFloat((1 + Math.random() * 3).toFixed(1))
+    const a55 = parseFloat((0.3 + Math.random() * 1.2).toFixed(1))
+    const a65 = parseFloat((100 - a13 - a18 - a25 - a35 - a45 - a55).toFixed(1))
+
+    // Randomize gender
+    const men = parseFloat((45 + Math.random() * 10).toFixed(1))
+
     saveData({
       ...insightsData,
       avgWatchTime: nextAvgWatchTime,
       accountsReached: nextAccountsReached,
+      followerPercentage: fp,
+      sourcesData: nextSources,
+      countryData: [
+        { name: insightsData.countryData[0]?.name ?? "United States", percentage: us },
+        { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk },
+        { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca },
+        { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au },
+        { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de },
+        { name: insightsData.countryData[5]?.name ?? "Others", percentage: Math.max(0, ot) },
+      ],
+      ageData: [
+        { name: "13-17", percentage: Math.max(0, a13) },
+        { name: "18-24", percentage: a18 },
+        { name: "25-34", percentage: a25 },
+        { name: "35-44", percentage: a35 },
+        { name: "45-54", percentage: a45 },
+        { name: "55-64", percentage: a55 },
+        { name: "65+", percentage: Math.max(0, a65) },
+      ],
+      genderData: { men, women: parseFloat((100 - men).toFixed(1)) },
     })
   }, [isLoaded])
 
