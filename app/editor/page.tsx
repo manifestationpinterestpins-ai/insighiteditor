@@ -371,13 +371,16 @@ const GreyLineEditor = ({ data, onChange, yAxisTop, onSaveGrey }: { data: GraphP
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
     setDragging(index)
   }
-      const handlePointerMove = (e: React.PointerEvent) => {
+        const handlePointerMove = (e: React.PointerEvent) => {
     if (dragging === null) return
     const val = getValFromY(e.clientY)
     const nd = [...data]
     nd[dragging] = { ...nd[dragging], typical: val }
-        onChange(nd)
-        try { localStorage.setItem("saved-graph-data", JSON.stringify(nd)) } catch {}
+    onChange(nd)
+    try {
+      localStorage.setItem("saved-graph-data", JSON.stringify(nd))
+      localStorage.setItem("saved-grey-line", JSON.stringify(nd.map(p => p.typical)))
+    } catch {}
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
@@ -419,12 +422,13 @@ const PinkLineEditor = ({ data, onChange, yAxisTop }: { data: GraphPoint[]; onCh
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
     setDragging(index)
   }
-  const handlePointerMove = (e: React.PointerEvent) => {
+    const handlePointerMove = (e: React.PointerEvent) => {
     if (dragging === null) return
     const val = getValFromY(e.clientY)
     const nd = [...data]
     nd[dragging] = { ...nd[dragging], thisReel: val }
     onChange(nd)
+    try { localStorage.setItem("saved-graph-data", JSON.stringify(nd)) } catch {}
   }
   return (
     <div className="bg-zinc-800/50 rounded-xl p-2">
