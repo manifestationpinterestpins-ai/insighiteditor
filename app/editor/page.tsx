@@ -448,6 +448,7 @@ const BottomSheet = ({
   yAxisTop,
   sourcesMode,
   onToggleSources,
+  onRefreshAudience,
 }: {
   open: boolean
   onClose: () => void
@@ -457,10 +458,11 @@ const BottomSheet = ({
   graphData: GraphPoint[]
   onUpdateGraph: (d: GraphPoint[]) => void
   yAxisTop: number
-    sourcesMode: "all" | "three"
+  sourcesMode: "all" | "three"
   onToggleSources: () => void
   onRefreshAudience: () => void
 }) => {
+    const { onRefreshAudience: refreshAudience } = { onRefreshAudience: (arguments as any)?.[0]?.onRefreshAudience }
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
   const [showPinkEditor, setShowPinkEditor] = useState(false)
