@@ -1935,12 +1935,12 @@ export default function ReelInsights() {
                 <button key={tab} onClick={() => setMainTab(tab)} className={`flex-1 py-2.5 text-[13px] font-medium text-center relative transition-colors ${mainTab === tab ? "text-white" : "text-gray-300"}`}>
                   {tab}
                   {mainTab === tab && (
-                    <motion.div
-                      layoutId="activeTabUnderline"
-                      className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full"
-                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                    />
-                  )}
+  <motion.div
+    layoutId={tabsSticky ? "activeTabUnderlineSticky" : "activeTabUnderline"}
+    className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-white rounded-full"
+    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+  />
+)}
                 </button>
               ))}
             </div>
