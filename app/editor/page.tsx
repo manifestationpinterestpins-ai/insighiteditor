@@ -1863,10 +1863,10 @@ export default function ReelInsights() {
         </div>
 
         <div className="flex-1">
-          <div className="text-[13px] leading-[1.35] text-[#d1d5db]">
+          <div className="text-[11px] leading-[1.35] text-[#d1d5db]">
             Content from Meta Verified subscribers get more views, likes and comments on average.
           </div>
-          <div className="mt-2 text-[13px] font-semibold text-[#4f8cff] cursor-pointer">
+          <div className="mt-2 text-[11px] font-semibold text-[#4f8cff] cursor-pointer">
             Try Meta Verified for ₹45
           </div>
         </div>
