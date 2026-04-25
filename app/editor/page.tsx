@@ -1777,9 +1777,9 @@ export default function ReelInsights() {
       <style>{shimmerKeyframes}</style>
 
       <div
-        className="min-h-screen text-white font-sans antialiased overflow-x-hidden flex justify-center"
-        style={{ backgroundColor: BG }}
-      >
+  className="min-h-screen text-white font-sans antialiased flex justify-center"
+  style={{ backgroundColor: BG, overflowX: "clip" }}
+>
         <div className="w-full max-w-[420px]">
 
                     {/* Header Image */}
@@ -1906,7 +1906,8 @@ export default function ReelInsights() {
   <div
     className="sticky z-50 flex border-b border-zinc-800/40"
     style={{
-      top: 56,
+      top: "48px",
+      paddingTop: "8px",
       backgroundColor: BG,
     }}
   >
