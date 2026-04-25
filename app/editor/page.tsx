@@ -1838,7 +1838,7 @@ export default function ReelInsights() {
 
                 
                           <div
-              className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg"
+              className="relative w-[130px] h-[230px] bg-zinc-900 rounded-lg overflow-hidden cursor-pointer group shadow-lg"
               onClick={() => { if (!locked) sharedThumbInputRef.current?.click() }}
             >
               {(thumbnailUrl || thumbnailImage) ? (
