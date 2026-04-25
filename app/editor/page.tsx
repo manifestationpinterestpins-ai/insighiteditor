@@ -5,6 +5,8 @@ import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { InsightEditorModal } from "@/components/InsightEditorModal"
 import { useInsightsStorage } from "@/hooks/useInsightsStorage"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
 import { InsightsData } from "@/lib/insights-state"
 
 const shimmerStyle = {
@@ -1272,6 +1274,37 @@ const TABS = ["Overview", "Engagement", "Audience"] as const
 
 export default function ReelInsights() {
     const { data: insightsData, saveData, isLoaded } = useInsightsStorage()
+    const router = useRouter()
+
+        useEffect(() => {
+      async function verifyAccess() {
+        const savedKey = localStorage.getItem("device-access-key");
+        
+        // If there's no key in storage, they shouldn't be here anyway
+        if (!savedKey) {
+          window.location.href = "/";
+          return;
+        }
+
+        // Ask Supabase if this specific key still exists in your table
+        const { data, error } = await supabase
+          .from("keys")
+          .select("key")
+          .eq("key", savedKey);
+
+        // If data is empty, the row was deleted
+        if (error || !data || data.length === 0) {
+          console.log("Access Revoked: Key not found in database.");
+          localStorage.removeItem("access-granted");
+          localStorage.removeItem("device-access-key");
+          window.location.href = "/"; 
+        }
+      }
+
+      if (isLoaded) {
+        verifyAccess();
+      }
+    }, [isLoaded]);
     const [headerImage, setHeaderImage] = useState<string | null>(null)
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
