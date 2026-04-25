@@ -1812,7 +1812,7 @@ export default function ReelInsights() {
           {/* Thumbnail */}
           <section className="flex flex-col items-center pt-4 pb-4 px-5">
 
-                        <div
+                
                           <div
               className="relative w-[130px] h-[230px] bg-zinc-900 rounded-xl overflow-hidden cursor-pointer group shadow-lg"
               onClick={() => { if (!locked) sharedThumbInputRef.current?.click() }}
