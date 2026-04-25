@@ -446,6 +446,8 @@ const BottomSheet = ({
   graphData,
   onUpdateGraph,
   yAxisTop,
+  sourcesMode,
+  onToggleSources,
 }: {
   open: boolean
   onClose: () => void
@@ -455,6 +457,8 @@ const BottomSheet = ({
   graphData: GraphPoint[]
   onUpdateGraph: (d: GraphPoint[]) => void
   yAxisTop: number
+  sourcesMode: "all" | "three"
+  onToggleSources: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
@@ -538,6 +542,17 @@ const BottomSheet = ({
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                   </div>
                   <span className="text-[13px] text-white">Edit insights</span>
+                </div>
+                <ChevronRightIcon />
+              </button>
+
+                           <div className="h-px bg-zinc-800" />
+              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={onToggleSources}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                  </div>
+                  <span className="text-[13px] text-white">{sourcesMode === "all" ? "Show 3 sources only" : "Show all sources"}</span>
                 </div>
                 <ChevronRightIcon />
               </button>
@@ -1268,6 +1283,13 @@ export default function ReelInsights() {
   const [bottomSheetOpen, setBottomSheetOpen] = useState(false)
   const [locked, setLocked] = useState(false)
   const [greyLineLocked, setGreyLineLocked] = useState(false)
+   const [sourcesMode, setSourcesMode] = useState<"all" | "three">(() => {
+    try {
+      const saved = localStorage.getItem("sources-mode")
+      if (saved === "three") return "three"
+    } catch {}
+    return "all"
+  })
   const [profileActivity, setProfileActivity] = useState(0)
   const [profileVisits, setProfileVisits] = useState(0)
     const headerInputRef = useRef<HTMLInputElement>(null)
@@ -1976,7 +1998,7 @@ export default function ReelInsights() {
           </main>
 
           <InsightEditorModal open={editorOpen} onOpenChange={setEditorOpen} data={insightsData} onSave={handleEditorSave} />
-                                                  <BottomSheet 
+                                                 <BottomSheet 
   open={bottomSheetOpen} 
   onClose={() => setBottomSheetOpen(false)} 
   onOpenEditor={() => setEditorOpen(true)} 
@@ -1985,6 +2007,42 @@ export default function ReelInsights() {
   graphData={graphData}
   onUpdateGraph={setGraphData}
   yAxisTop={getViewsAxisTop(insightsData.views)}
+  sourcesMode={sourcesMode}
+  onToggleSources={() => {
+    const next = sourcesMode === "all" ? "three" : "all"
+    setSourcesMode(next)
+    try { localStorage.setItem("sources-mode", next) } catch {}
+    if (next === "three") {
+      const reels = parseFloat((randomInRange(75, 85) + Math.random()).toFixed(1))
+      const explore = parseFloat((randomInRange(5, 15) + Math.random()).toFixed(1))
+      const profile = parseFloat((100 - reels - explore).toFixed(1))
+      saveData({
+        ...insightsData,
+        sourcesData: [
+          { name: "Reels tab", percentage: reels },
+          { name: "Explore", percentage: explore },
+          { name: "Profile", percentage: Math.max(0, profile) },
+        ],
+      })
+    } else {
+      const reels = parseFloat((randomInRange(75, 85) + Math.random()).toFixed(1))
+      const explore = parseFloat((randomInRange(5, 10) + Math.random()).toFixed(1))
+      const rem = parseFloat((100 - reels - explore).toFixed(1))
+      const stories = parseFloat((rem * 0.55).toFixed(1))
+      const prof = parseFloat((rem * 0.28).toFixed(1))
+      const feed = parseFloat((rem - stories - prof).toFixed(1))
+      saveData({
+        ...insightsData,
+        sourcesData: [
+          { name: "Reels tab", percentage: reels },
+          { name: "Explore", percentage: explore },
+          { name: "Stories", percentage: stories },
+          { name: "Profile", percentage: prof },
+          { name: "Feed", percentage: Math.max(0, feed) },
+        ],
+      })
+    }
+  }}
 />
         </div>
       </div>
