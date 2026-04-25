@@ -1306,9 +1306,15 @@ export default function ReelInsights() {
       }
     }, [isLoaded]);
     const [headerImage, setHeaderImage] = useState<string | null>(null)
-      const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
-  const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(null)
-  const [thumbnailUrl, setThumbnailUrl] = useState("")
+        const [thumbnailImage, setThumbnailImage] = useState<string | null>(() => {
+    try { return localStorage.getItem("shared-thumbnail") } catch { return null }
+  })
+  const [retentionThumbnail, setRetentionThumbnail] = useState<string | null>(() => {
+    try { return localStorage.getItem("shared-thumbnail") } catch { return null }
+  })
+    const [thumbnailUrl, setThumbnailUrl] = useState(() => {
+    try { return localStorage.getItem("shared-thumbnail") || "" } catch { return "" }
+  })
   const [viewsFilter, setViewsFilter] = useState<"All" | "Followers" | "Non-followers">("All")
   const [audienceTab, setAudienceTab] = useState<"Gender" | "Country" | "Age">("Age")
   const [animateCharts, setAnimateCharts] = useState(false)
@@ -1710,7 +1716,7 @@ export default function ReelInsights() {
     }
   }
 
-   const handleSharedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+     const handleSharedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
@@ -1719,6 +1725,7 @@ export default function ReelInsights() {
       setThumbnailUrl(result)
       setThumbnailImage(result)
       setRetentionThumbnail(result)
+      try { localStorage.setItem("shared-thumbnail", result) } catch {}
     }
     reader.readAsDataURL(file)
   }
@@ -1824,11 +1831,12 @@ export default function ReelInsights() {
                     <button
                       className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={e => {
-                        e.stopPropagation()
-                        setThumbnailUrl("")
-                        setThumbnailImage(null)
-                        setRetentionThumbnail(null)
-                      }}
+  e.stopPropagation()
+  setThumbnailUrl("")
+  setThumbnailImage(null)
+  setRetentionThumbnail(null)
+  try { localStorage.removeItem("shared-thumbnail") } catch {}
+}}
                     >
                       <CloseIcon />
                     </button>
@@ -2086,11 +2094,12 @@ export default function ReelInsights() {
                               <button
                                 className="absolute top-1.5 right-1.5 p-1 bg-black/70 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={e => {
-                                  e.stopPropagation()
-                                  setThumbnailUrl("")
-                                  setThumbnailImage(null)
-                                  setRetentionThumbnail(null)
-                                }}
+  e.stopPropagation()
+  setThumbnailUrl("")
+  setThumbnailImage(null)
+  setRetentionThumbnail(null)
+  try { localStorage.removeItem("shared-thumbnail") } catch {}
+}}
                               >
                                 <CloseIcon />
                               </button>
