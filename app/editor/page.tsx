@@ -1245,9 +1245,11 @@ const DraggableGraph = ({
   const [yLabelOverrides, setYLabelOverrides] = useState<(string | null)[]>([null, null, null])
   const displayYLabels = yLabels.map((label, i) => yLabelOverrides[i] ?? label)
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
-    const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
-      const [pinkLineEnd, setPinkLineEnd] = useState(0.75)
- 
+      const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const [pinkLineEnd, setPinkLineEnd] = useState(0.75)
+  const getThisReelX = (i: number, total: number) =>
+    padding.left + (i / Math.max(total - 1, 1)) * (chartW * pinkLineEnd)
+
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
   const getValFromY = (clientY: number) => {
     const svg = svgRef.current
@@ -1522,31 +1524,24 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
   const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.retention) }))
   const pathD = buildPath(points)
-  const handlePointerDown = (index: number, e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging(index) }
-    const [draggingEnd, setDraggingEnd] = useState(false)
+    const handlePointerDown = (index: number, e: React.PointerEvent) => {
+    if (locked) return
+    e.preventDefault()
+    e.stopPropagation()
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+    setDragging(index)
+  }
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (locked) return
-
-    if (draggingEnd) {
-      e.preventDefault()
-      const svg = svgRef.current
-      if (!svg) return
-      const rect = svg.getBoundingClientRect()
-      const svgX = ((e.clientX - rect.left) / rect.width) * width
-      const newEnd = clamp((svgX - padding.left) / chartW, 0.4, 1.0)
-      setPinkLineEnd(newEnd)
-      return
-    }
-
-    if (!dragging) return
+    if (dragging === null || locked) return
     e.preventDefault()
     const val = getValFromY(e.clientY)
     const nd = [...data]
-    nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }
+    nd[dragging] = { ...nd[dragging], retention: val }
     onChange(nd)
   }
-    const handlePointerUp = () => { setDragging(null); setDraggingEnd(false) }
+
+  const handlePointerUp = () => setDragging(null)
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -1574,30 +1569,7 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
         ))}
              <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
-              {/* Draggable endpoint */}
-        {cutoff > 0 && (
-          <circle
-            cx={getThisReelX(cutoff - 1, cutoff)}
-            cy={getY(data[cutoff - 1]?.thisReel ?? 0)}
-            r={6}
-            fill={PINK}
-            stroke="white"
-            strokeWidth={2}
-            className={locked ? "cursor-default" : "cursor-ew-resize"}
-            onPointerDown={e => {
-              if (locked) return
-              e.preventDefault()
-              e.stopPropagation()
-              ;(e.target as Element).setPointerCapture?.(e.pointerId)
-              setDraggingEnd(true)
-            }}
-            style={{ touchAction: "none" }}
-          />
-        )}
-            </svg>
-    </div>
-  )
-}
+             
 
 const TABS = ["Overview", "Engagement", "Audience"] as const
 
