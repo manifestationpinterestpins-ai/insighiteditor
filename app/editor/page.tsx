@@ -1233,16 +1233,9 @@ const DraggableGraph = ({
   const height = 170
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
-    const yLabels = (() => {
-    try {
-      const saved = localStorage.getItem("graph-y-labels")
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length === 3) return parsed
-      }
-    } catch {}
-    return ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
-  })()
+      const yLabels = ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
+  const [yLabelOverrides, setYLabelOverrides] = useState<(string | null)[]>([null, null, null])
+  const displayYLabels = yLabels.map((label, i) => yLabelOverrides[i] ?? label)
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
     const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getThisReelX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * (chartW * 0.75)
@@ -1302,11 +1295,11 @@ const allThisReel = fullPoints.slice(0, cutoff)
             ref={yInputRef}
             value={editYValue}
             onChange={e => setEditYValue(e.target.value)}
-            onBlur={() => {
+                        onBlur={() => {
               if (editingY !== null && editYValue.trim()) {
-                const updated = [...yLabels]
+                const updated = [...yLabelOverrides]
                 updated[editingY] = editYValue.trim()
-                try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
+                setYLabelOverrides(updated)
               }
               setEditingY(null)
               setEditYValue("")
@@ -1314,9 +1307,9 @@ const allThisReel = fullPoints.slice(0, cutoff)
             onKeyDown={e => {
               if (e.key === "Enter") {
                 if (editingY !== null && editYValue.trim()) {
-                  const updated = [...yLabels]
+                  const updated = [...yLabelOverrides]
                   updated[editingY] = editYValue.trim()
-                  try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
+                  setYLabelOverrides(updated)
                 }
                 setEditingY(null)
                 setEditYValue("")
@@ -1348,7 +1341,7 @@ const allThisReel = fullPoints.slice(0, cutoff)
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-                {yLabels.map((label, i) => (
+                       {displayYLabels.map((label, i) => (
           <text
             key={`yt-${i}`}
             x={padding.left - 8}
@@ -2166,27 +2159,57 @@ export default function ReelInsights() {
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
-    <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
+    <InlineEditor
+      value={insightsData.likes}
+      isNumber={true}
+      locked={locked}
+      className="text-[12px] text-white leading-none font-bold"
+      onSave={(val: number) => saveData({ ...insightsData, likes: val })}
+    />
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <CommentIcon />
-    <span className="text-[12px] text-white leading-none font-bold">{insightsData.comments}</span>
+    <InlineEditor
+      value={insightsData.comments}
+      isNumber={true}
+      locked={locked}
+      className="text-[12px] text-white leading-none font-bold"
+      onSave={(val: number) => saveData({ ...insightsData, comments: val })}
+    />
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <RepostIcon />
-    <span className="text-[12px] text-white leading-none font-bold">{insightsData.reposts}</span>
+    <InlineEditor
+      value={insightsData.reposts}
+      isNumber={true}
+      locked={locked}
+      className="text-[12px] text-white leading-none font-bold"
+      onSave={(val: number) => saveData({ ...insightsData, reposts: val })}
+    />
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <SendIcon />
-    <span className="text-[12px] text-white leading-none font-bold">{insightsData.shares}</span>
+    <InlineEditor
+      value={insightsData.shares}
+      isNumber={true}
+      locked={locked}
+      className="text-[12px] text-white leading-none font-bold"
+      onSave={(val: number) => saveData({ ...insightsData, shares: val })}
+    />
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <BookmarkIcon />
-    <span className="text-[12px] text-white leading-none font-bold">{insightsData.bookmarks}</span>
+    <InlineEditor
+      value={insightsData.bookmarks}
+      isNumber={true}
+      locked={locked}
+      className="text-[12px] text-white leading-none font-bold"
+      onSave={(val: number) => saveData({ ...insightsData, bookmarks: val })}
+    />
   </div>
 </div>
           </section>
