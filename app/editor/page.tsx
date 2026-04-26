@@ -2147,7 +2147,7 @@ export default function ReelInsights() {
               )}
             </div>
             <input ref={sharedThumbInputRef} type="file" accept="image/*" className="hidden" onChange={handleSharedImageUpload} />
-<div
+
   <div
   className="flex items-center justify-center gap-7 w-full px-3 overflow-hidden mt-4"
   style={{
