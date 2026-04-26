@@ -1162,9 +1162,17 @@ mapped.push({
 });
 }
 
+   const visibleEndIndex = Math.ceil(mapped.length * 0.75) - 1
+
+  if (visibleEndIndex >= 0 && visibleEndIndex < mapped.length) {
+    mapped[visibleEndIndex] = {
+      ...mapped[visibleEndIndex],
+      thisReel: views,
+    }
+  }
+
   return mapped
 }
-
 const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
   const totalSec = Math.max(parseTimeToSeconds(videoDuration), 6)
   const reelType = pickReelType(views)
