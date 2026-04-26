@@ -654,16 +654,24 @@ const getAutomatedActions = (views: number) => {
 }
 
 const getViewsAxisTop = (views: number) => {
-  return Math.max(250, Math.ceil(views / 250) * 250)
+  if (views <= 500) return 500
+  if (views <= 1000) return 1000
+  if (views <= 2000) return 2000
+  if (views <= 3000) return 3000
+  if (views <= 5000) return 5000
+  if (views <= 10000) return 10000
+  if (views <= 20000) return 20000
+  if (views <= 50000) return 50000
+  if (views <= 100000) return 100000
+  return Math.ceil(views / 50000) * 50000
 }
-
 
 const formatViewsAxisLabel = (value: number) => {
   if (value >= 1000) {
     const k = value / 1000
-    return Number.isInteger(k) ? `${k}k` : `${k.toFixed(1)}k`
+    return Number.isInteger(k) ? `${k}K` : `${k.toFixed(1)}K`
   }
-  return value.toLocaleString("en-IN")
+  return value.toString()
 }
 
 const randomInRange = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
