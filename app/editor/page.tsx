@@ -1246,8 +1246,8 @@ const DraggableGraph = ({
   const displayYLabels = yLabels.map((label, i) => yLabelOverrides[i] ?? label)
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
     const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
-    const [pinkLineEnd, setPinkLineEnd] = useState(0.75)
-  const getThisReelX = (i: number, total: number) => padding.left + (i / Math.max(total - 1, 1)) * (chartW * pinkLineEnd)
+      const [pinkLineEnd, setPinkLineEnd] = useState(0.75)
+ 
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
   const getValFromY = (clientY: number) => {
     const svg = svgRef.current
