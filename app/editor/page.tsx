@@ -1426,7 +1426,7 @@ const DraggableGraph = ({
           strokeLinecap="round"
         />
 
-           {data.slice(0, cutoff).map((d, i) => (
+                  {data.slice(0, cutoff).map((d, i) => (
           <circle
             key={`tr-${i}`}
             cx={getThisReelX(i, cutoff)}
@@ -1438,6 +1438,26 @@ const DraggableGraph = ({
             style={{ touchAction: "none" }}
           />
         ))}
+        {/* Draggable endpoint */}
+        {cutoff > 0 && data[cutoff - 1] && (
+          <circle
+            cx={getThisReelX(cutoff - 1, cutoff)}
+            cy={getY(data[cutoff - 1].thisReel)}
+            r={6}
+            fill={PINK}
+            stroke="white"
+            strokeWidth={2}
+            className={locked ? "cursor-default" : "cursor-ew-resize"}
+            onPointerDown={e => {
+              if (locked) return
+              e.preventDefault()
+              e.stopPropagation()
+              ;(e.target as Element).setPointerCapture?.(e.pointerId)
+              setDraggingEnd(true)
+            }}
+            style={{ touchAction: "none" }}
+          />
+        )}
       </svg>
 
       <div className="flex items-center gap-6 mt-3 pl-4">
@@ -1453,6 +1473,22 @@ const DraggableGraph = ({
     </div>
   )
 }
+
+            <div className="flex items-center gap-6 mt-3 pl-4">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
+          <span className="text-[10px] text-zinc-300">This reel</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[#8a8a8a]" />
+          <span className="text-[10px] text-zinc-300">Your typical reel</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ===== DRAGGABLE ENGAGEMENT GRAPH =====
 
 
 // ===== DRAGGABLE ENGAGEMENT GRAPH =====
@@ -1532,16 +1568,34 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
     setDragging(index)
   }
 
+    const [draggingEnd, setDraggingEnd] = useState(false)
+
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (dragging === null || locked) return
+    if (locked) return
+
+    if (draggingEnd) {
+      e.preventDefault()
+      const svg = svgRef.current
+      if (!svg) return
+      const rect = svg.getBoundingClientRect()
+      const svgX = ((e.clientX - rect.left) / rect.width) * width
+      const newEnd = clamp((svgX - padding.left) / chartW, 0.3, 1.0)
+      setPinkLineEnd(newEnd)
+      return
+    }
+
+    if (!dragging) return
     e.preventDefault()
     const val = getValFromY(e.clientY)
     const nd = [...data]
-    nd[dragging] = { ...nd[dragging], retention: val }
+    nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }
     onChange(nd)
   }
 
-  const handlePointerUp = () => setDragging(null)
+  const handlePointerUp = () => {
+    setDragging(null)
+    setDraggingEnd(false)
+  }
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
