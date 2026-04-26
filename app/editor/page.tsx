@@ -1026,23 +1026,42 @@ const DraggableGraph = ({
     } catch {}
     return ["28 Jan", "29 Jan", "30 Jan"]
   })
-  const [editingX, setEditingX] = useState<number | null>(null)
+    const [editingX, setEditingX] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [editingY, setEditingY] = useState<number | null>(null)
+  const [editYValue, setEditYValue] = useState("")
+  const yInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
+    useEffect(() => {
     if (editingX !== null && inputRef.current) {
       inputRef.current.focus()
       inputRef.current.select()
     }
   }, [editingX])
 
+  useEffect(() => {
+    if (editingY !== null && yInputRef.current) {
+      yInputRef.current.focus()
+      yInputRef.current.select()
+    }
+  }, [editingY])
+
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380
   const height = 170
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
-  const yLabels = ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
+    const yLabels = (() => {
+    try {
+      const saved = localStorage.getItem("graph-y-labels")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length === 3) return parsed
+      }
+    } catch {}
+    return ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
+  })()
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
     const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getThisReelX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * (chartW * 0.75)
@@ -1096,6 +1115,37 @@ const allThisReel = fullPoints.slice(0, cutoff)
 
   return (
     <div className="relative -mx-1">
+           {editingY !== null && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={yInputRef}
+            value={editYValue}
+            onChange={e => setEditYValue(e.target.value)}
+            onBlur={() => {
+              if (editingY !== null && editYValue.trim()) {
+                const updated = [...yLabels]
+                updated[editingY] = editYValue.trim()
+                try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
+              }
+              setEditingY(null)
+              setEditYValue("")
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                if (editingY !== null && editYValue.trim()) {
+                  const updated = [...yLabels]
+                  updated[editingY] = editYValue.trim()
+                  try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
+                }
+                setEditingY(null)
+                setEditYValue("")
+              }
+            }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: PINK }}
+          />
+        </div>
+      )}
       {editingX !== null && (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
           <input
@@ -1117,8 +1167,22 @@ const allThisReel = fullPoints.slice(0, cutoff)
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {yLabels.map((label, i) => (
-          <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">
+                {yLabels.map((label, i) => (
+          <text
+            key={`yt-${i}`}
+            x={padding.left - 8}
+            y={yPositions[i] + 5}
+            textAnchor="end"
+            fill={editingY === i ? PINK : "#d1d5db"}
+            fontSize="13"
+            fontFamily="sans-serif"
+            className={i === 0 || locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked || i === 0) return
+              setEditingY(i)
+              setEditYValue(label)
+            }}
+          >
             {label}
           </text>
         ))}
@@ -1277,7 +1341,19 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
                 <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
+                {[0, 50, 100].map((val, i) => (
+          <line
+            key={`grid-${i}`}
+            x1={padding.left}
+            x2={padding.left + chartW}
+            y1={getY(val)}
+            y2={getY(val)}
+            stroke="#2a2d33"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+        ))}
+             <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -1786,7 +1862,16 @@ export default function ReelInsights() {
 
   return (
     <>
-      <style>{shimmerKeyframes}</style>
+      <style>{shimmerKeyframes}{`
+  html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+`}</style>
 
       <div
   className="min-h-screen text-white font-sans antialiased flex justify-center"
@@ -2033,7 +2118,19 @@ export default function ReelInsights() {
                                 <span className="text-[17px] font-bold text-white">{profileActivity}</span>
                               ) : (
 
-                                <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
+                                                                {card.label === "Accounts reached" ? (
+                                  <InlineEditor
+                                    value={(card.value as number).toLocaleString("en-IN")}
+                                    isNumber={true}
+                                    locked={locked}
+                                    className="text-[17px] font-bold text-white"
+                                    onSave={(val: number) => {
+                                      saveData({ ...insightsData, accountsReached: val })
+                                    }}
+                                  />
+                                ) : (
+                                  <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
+                                )}
                               )}
                             </div>
                           </div>
