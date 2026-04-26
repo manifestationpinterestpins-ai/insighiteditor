@@ -1736,7 +1736,7 @@ export default function ReelInsights() {
     }
 
     // Randomize countries
-    const us = parseFloat((35 + Math.random() * 10).toFixed(1))
+        const us = parseFloat((40 + Math.random() * 15).toFixed(1))
     const uk = parseFloat((20 + Math.random() * 8).toFixed(1))
     const ca = parseFloat((12 + Math.random() * 6).toFixed(1))
     const au = parseFloat((8 + Math.random() * 5).toFixed(1))
@@ -2116,9 +2116,9 @@ export default function ReelInsights() {
                                 <span className="text-[17px] font-bold text-white">{card.value}</span>
                               ) : card.label === "Follows" ? (
                                 <span className="text-[17px] font-bold text-white">{profileActivity}</span>
-                              ) : card.label === "Accounts reached" ? (
+                                                            ) : card.label === "Accounts reached" ? (
                                 <InlineEditor
-                                  value={card.value as number}
+                                  value={(card.value as number).toLocaleString("en-IN")}
                                   isNumber={true}
                                   locked={locked}
                                   className="text-[17px] font-bold text-white"
@@ -2309,7 +2309,28 @@ export default function ReelInsights() {
                   </section>
 
                   <section className="px-4 pt-3 pb-5">
-                    <div className="flex items-center gap-2 mb-3"><h3 className="text-[15px] font-semibold">Audience details</h3><InfoIcon /></div>
+                                        <div className="flex items-center gap-2 mb-3">
+                      <h3 className="text-[15px] font-semibold">Audience details</h3>
+                      <button className="focus:outline-none active:opacity-60 transition-opacity" onClick={() => {
+                        const us = parseFloat((40 + Math.random() * 15).toFixed(1))
+                        const uk = parseFloat((15 + Math.random() * 10).toFixed(1))
+                        const ca = parseFloat((8 + Math.random() * 8).toFixed(1))
+                        const au = parseFloat((5 + Math.random() * 6).toFixed(1))
+                        const de = parseFloat((3 + Math.random() * 4).toFixed(1))
+                        const ot = parseFloat(Math.max(0, 100 - us - uk - ca - au - de).toFixed(1))
+                        saveData({
+                          ...insightsData,
+                          countryData: [
+                            { name: insightsData.countryData[0]?.name ?? "United States", percentage: us },
+                            { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk },
+                            { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca },
+                            { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au },
+                            { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de },
+                            { name: insightsData.countryData[5]?.name ?? "Others", percentage: ot },
+                          ],
+                        })
+                      }}><InfoIcon /></button>
+                    </div>
                     <div className="flex gap-2 mb-5">
                       {(["Age", "Country", "Gender"] as const).map(tab => (
                         <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
@@ -2322,10 +2343,33 @@ export default function ReelInsights() {
                           {insightsData.ageData.map((age, index) => <AudienceRow key={age.name} labelNode={<span>{age.name}</span>} percentage={age.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 60} />)}
                         </motion.div>
                       )}
-                      {audienceTab === "Country" && (
+                                            {audienceTab === "Country" && (
                         <motion.div key="country" variants={tabContent} initial="initial" animate="animate" exit="exit">
                           {insightsData.countryData.map((country, index) => (
-                            <AudienceRow key={index} labelNode={<CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />} percentage={country.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 80} />
+                            <div key={index} className="mb-3.5">
+                              <div className="mb-1 text-[13px] text-white">
+                                <CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
+                                  <div className="absolute left-0 top-0 h-full" style={{ width: `${country.percentage}%`, backgroundColor: PINK, borderRadius: 6 }} />
+                                </div>
+                                {index === 0 ? (
+                                  <GenderPercentEditor value={country.percentage} locked={locked} onSave={(newVal: number) => {
+                                    const clamped = Math.max(40, Math.min(100, newVal))
+                                    const remaining = 100 - clamped
+                                    const otherTotal = insightsData.countryData.slice(1).reduce((s, c) => s + c.percentage, 0) || 1
+                                    const updated = insightsData.countryData.map((c, i) => {
+                                      if (i === 0) return { ...c, percentage: clamped }
+                                      return { ...c, percentage: parseFloat((c.percentage / otherTotal * remaining).toFixed(1)) }
+                                    })
+                                    saveData({ ...insightsData, countryData: updated })
+                                  }} />
+                                ) : (
+                                  <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{country.percentage.toFixed(1)}%</span>
+                                )}
+                              </div>
+                            </div>
                           ))}
                         </motion.div>
                       )}
