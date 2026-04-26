@@ -2111,7 +2111,7 @@ export default function ReelInsights() {
                             <div className="h-[14px] mb-1 flex items-center">
                               <span className="text-[11px] text-gray-400">{card.label}</span>
                             </div>
-                                                        <div className="h-[24px] flex items-center">
+                                                                                    <div className="h-[24px] flex items-center">
                               {card.label === "Average watch time" ? (
                                 <span className="text-[17px] font-bold text-white">{card.value}</span>
                               ) : card.label === "Follows" ? (
@@ -2128,20 +2128,6 @@ export default function ReelInsights() {
                                 />
                               ) : (
                                 <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
-                              )}
-                            </div>
-                                  <InlineEditor
-                                    value={(card.value as number).toLocaleString("en-IN")}
-                                    isNumber={true}
-                                    locked={locked}
-                                    className="text-[17px] font-bold text-white"
-                                    onSave={(val: number) => {
-                                      saveData({ ...insightsData, accountsReached: val })
-                                    }}
-                                  />
-                                ) : (
-                                  <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
-                                )}
                               )}
                             </div>
                           </div>
