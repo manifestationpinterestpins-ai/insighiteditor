@@ -766,30 +766,46 @@ const generateOrganicViews = (
     reelType === "dead" ? 0.45 :
     1
 
+  // Add realistic time-of-day multiplier
+  const getTimeMultiplier = (pointIdx: number) => {
+    const hourOfDay = (pointIdx * 0.4) % 24
+    if (hourOfDay >= 0 && hourOfDay < 6) return 0.3 + Math.random() * 0.2
+    if (hourOfDay >= 6 && hourOfDay < 9) return 0.6 + Math.random() * 0.3
+    if (hourOfDay >= 9 && hourOfDay < 12) return 0.85 + Math.random() * 0.2
+    if (hourOfDay >= 12 && hourOfDay < 14) return 0.75 + Math.random() * 0.2
+    if (hourOfDay >= 14 && hourOfDay < 18) return 0.9 + Math.random() * 0.2
+    if (hourOfDay >= 18 && hourOfDay < 22) return 1.1 + Math.random() * 0.3
+    return 0.5 + Math.random() * 0.25
+  }
+
   while (increments.length < points) {
     const phase = phases[Math.min(phaseIndex, phases.length - 1)]
     const progress = increments.length / Math.max(points - 1, 1)
+    
     const sinusoidal =
-  1 +
-  Math.sin(progress * Math.PI * 3.1) * 0.08 +
-  Math.sin(progress * Math.PI * 11.2) * 0.02;
+      1 +
+      Math.sin(progress * Math.PI * 2.7) * 0.12 +
+      Math.sin(progress * Math.PI * 7.3) * 0.04 +
+      Math.sin(progress * Math.PI * 13.1) * 0.02
 
     let clusterBoost = 1
     const isBurstPhase = phase.name === "push" || phase.name === "re-push"
 
-    if (isBurstPhase && previousIncrement > phase.base * 1.2 && Math.random() < 0.35) {
-      const clusterLength = randomInRange(3, 6)
-      clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.18
+    // Organic burst clusters
+    if (isBurstPhase && previousIncrement > phase.base * 1.1 && Math.random() < 0.3) {
+      const clusterLength = randomInRange(2, 5)
+      clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.22
 
       for (let burstOffset = 0; burstOffset < clusterLength && increments.length < points; burstOffset++) {
-        const burstWave = 1 + Math.sin((burstOffset / Math.max(clusterLength - 1, 1)) * Math.PI) * 0.22
-        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
+        const burstWave = 1 + Math.sin((burstOffset / Math.max(clusterLength - 1, 1)) * Math.PI) * 0.28
+        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter * 1.2
+        const timeMult = getTimeMultiplier(increments.length)
         let burstIncrement =
-          previousIncrement * (phase.momentum + 0.03 * scaleProfile.momentumBonus) +
-          phase.base * clusterBoost * burstWave * sinusoidal * burstNoise
+          previousIncrement * (phase.momentum + 0.04 * scaleProfile.momentumBonus) +
+          phase.base * clusterBoost * burstWave * sinusoidal * burstNoise * timeMult
 
         if (total < 1000 && Math.random() < scaleProfile.dipChance) {
-          burstIncrement *= 0.72 + Math.random() * 0.18
+          burstIncrement *= 0.65 + Math.random() * 0.2
         }
 
         burstIncrement = Math.max(0.05, burstIncrement)
@@ -802,53 +818,57 @@ const generateOrganicViews = (
           phasePoint = 0
         }
       }
-
       continue
     }
 
     const noise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
-    const hour = increments.length % 24;
-let hourBoost = 1;
+    const timeMult = getTimeMultiplier(increments.length)
 
-if (hour < 8) hourBoost = 0.65;       // night slow
-else if (hour < 18) hourBoost = 1.0;  // normal
-else hourBoost = 1.35;                // evening boost
+    let increment =
+      previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
+      phase.base * sinusoidal * noise
 
-let increment =
-  previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
-  phase.base * sinusoidal * noise;
+    // Organic micro-pauses
+    if (Math.random() < scaleProfile.flatChance) {
+      increment *= 0.15 + Math.random() * 0.3
+    }
 
-    // micro pause (realistic stagnation)
-if (Math.random() < scaleProfile.flatChance) {
-  increment *= 0.25 + Math.random() * 0.25;
-}
-increment *= hourBoost;
+    // Occasional organic spikes
+    if (isBurstPhase && Math.random() < 0.08) {
+      increment *= 1.5 + Math.random() * 0.8
+    }
+
+    increment *= timeMult
 
     if (total < 1000) {
       if (Math.random() < scaleProfile.dipChance) {
-        increment *= 0.62 + Math.random() * 0.22
+        increment *= 0.55 + Math.random() * 0.25
       }
       if (Math.random() < scaleProfile.chaos) {
-        increment += phase.base * (Math.random() - 0.35)
+        increment += phase.base * (Math.random() - 0.4)
       }
     } else if (total < 5000) {
-      if (Math.random() < scaleProfile.flatChance) {
-        increment *= 0.74 + Math.random() * 0.12
+      if (Math.random() < scaleProfile.flatChance * 0.7) {
+        increment *= 0.7 + Math.random() * 0.15
       }
     } else {
-      increment = previousIncrement * 0.84 + increment * 0.16
+      increment = previousIncrement * 0.82 + increment * 0.18
     }
 
     if (phase.name === "dead") {
-      increment *= 0.7 + Math.random() * 0.1
+      increment *= 0.6 + Math.random() * 0.15
     }
 
-    const saturation = cumulative / total;
-increment *= (1 - Math.pow(saturation, 1.4));
+    if (phase.name === "cooldown") {
+      increment *= 0.75 + Math.random() * 0.15
+    }
 
-increment = Math.max(0.05, increment);
-    increments.push(increment);
-cumulative += increment;
+    const saturation = cumulative / total
+    increment *= (1 - Math.pow(saturation, 1.3))
+
+    increment = Math.max(0.03, increment)
+    increments.push(increment)
+    cumulative += increment
     previousIncrement = increment
     phasePoint++
 
@@ -858,14 +878,21 @@ cumulative += increment;
     }
   }
 
-  const smoothedIncrements =
-    total > 5000
-      ? weightedSmooth(weightedSmooth(increments))
-      : total > 1000
-        ? weightedSmooth(increments)
-        : increments.map((value, index, arr) =>
-            index === 0 || index === arr.length - 1 ? value : value * 0.72 + arr[index - 1] * 0.14 + arr[index + 1] * 0.14
-          )
+  // Adaptive smoothing
+  let smoothedIncrements: number[]
+  if (total > 8000) {
+    smoothedIncrements = weightedSmooth(weightedSmooth(weightedSmooth(increments)))
+  } else if (total > 3000) {
+    smoothedIncrements = weightedSmooth(weightedSmooth(increments))
+  } else if (total > 800) {
+    smoothedIncrements = weightedSmooth(increments)
+  } else {
+    smoothedIncrements = increments.map((value, index, arr) =>
+      index === 0 || index === arr.length - 1
+        ? value
+        : value * 0.65 + arr[index - 1] * 0.18 + arr[index + 1] * 0.17
+    )
+  }
 
   const rawTotal = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
   const scale = total / rawTotal
@@ -879,7 +906,7 @@ cumulative += increment;
     }
   })
 
-  result[0].value = Math.max(1, Math.round(total * 0.003))
+  result[0].value = Math.max(1, Math.round(total * (0.002 + Math.random() * 0.003)))
   for (let i = 1; i < result.length; i++) {
     result[i].value = Math.max(result[i].value, result[i - 1].value + 1)
   }
@@ -888,7 +915,6 @@ cumulative += increment;
   return result
 }
 
-
 const generateRetention = (
   duration = 20,
   reelType: ReelType = "normal"
@@ -896,41 +922,58 @@ const generateRetention = (
   const totalSeconds = clamp(duration, 6, 45)
 
   const decayK =
-    reelType === "viral" ? 0.085 :
-    reelType === "dead" ? 0.14 :
-    0.11
+    reelType === "viral" ? 0.065 + Math.random() * 0.03 :
+    reelType === "dead" ? 0.12 + Math.random() * 0.04 :
+    0.08 + Math.random() * 0.04
 
-  const earlyReplayCenter = clamp(randomInRange(2, 4), 2, totalSeconds - 2)
-  const midReplayCenter = clamp(Math.round(totalSeconds * (0.4 + Math.random() * 0.2)), 4, totalSeconds - 2)
+  // Hook quality affects early retention
+  const hookStrength = Math.random()
+  const hookQuality = hookStrength > 0.7 ? "strong" : hookStrength > 0.3 ? "medium" : "weak"
+
+  // Multiple replay bumps at natural points
+  const replayPoints = [
+    { center: clamp(randomInRange(1, 3), 1, totalSeconds - 2), strength: hookQuality === "strong" ? 10 : hookQuality === "medium" ? 7 : 4, width: 0.7 },
+    { center: clamp(Math.round(totalSeconds * (0.3 + Math.random() * 0.15)), 3, totalSeconds - 2), strength: randomInRange(3, 7), width: 1.1 },
+    { center: clamp(Math.round(totalSeconds * (0.55 + Math.random() * 0.15)), 4, totalSeconds - 2), strength: randomInRange(2, 5), width: 1.3 },
+    { center: clamp(Math.round(totalSeconds * (0.8 + Math.random() * 0.1)), 5, totalSeconds - 1), strength: randomInRange(3, 8), width: 0.9 },
+  ]
 
   const gaussian = (x: number, center: number, width: number) =>
     Math.exp(-Math.pow(x - center, 2) / (2 * width * width))
 
-  const hookStrength = Math.random(); // 0–1
   const raw: number[] = []
 
   for (let t = 0; t <= totalSeconds; t++) {
+    // Base exponential decay
     const base = 100 * Math.exp(-decayK * t)
-    const earlyDropPenalty = t <= 3 ? t * (reelType === "dead" ? 8 : 6) : 0
 
-    const earlyReplay =
-  (reelType === "viral" ? 8 : reelType === "dead" ? 4 : 6) *
-  gaussian(t, earlyReplayCenter, 0.8) *
-  (0.6 + hookStrength);
+    // Early drop — steeper for dead reels, gentler for viral
+    let earlyDrop = 0
+    if (t <= 3) {
+      const dropRate = hookQuality === "strong" ? 4 : hookQuality === "medium" ? 6 : 9
+      earlyDrop = t * dropRate * (reelType === "dead" ? 1.3 : reelType === "viral" ? 0.7 : 1)
+    }
 
-    const midReplay =
-      (reelType === "viral" ? 7 : reelType === "dead" ? 3 : 5) *
-      gaussian(t, midReplayCenter, 1.3)
+    // Replay bumps
+    let replayBoost = 0
+    for (const rp of replayPoints) {
+      replayBoost += rp.strength * gaussian(t, rp.center, rp.width) * (reelType === "viral" ? 1.3 : reelType === "dead" ? 0.6 : 1)
+    }
 
-    const shaped =
-      base -
-      earlyDropPenalty +
-      earlyReplay +
-      midReplay
+    // End-of-reel replay bump (people rewatching)
+    const endReplay = t >= totalSeconds - 2
+      ? (reelType === "viral" ? 6 : reelType === "dead" ? 1 : 3) * gaussian(t, totalSeconds, 1.2)
+      : 0
 
-    raw.push(clamp(shaped, 5, 100))
+    // Micro-noise for organic feel
+    const microNoise = (Math.random() - 0.5) * 2.5
+
+    const shaped = base - earlyDrop + replayBoost + endReplay + microNoise
+
+    raw.push(clamp(shaped, 3, 100))
   }
 
+  // Light smoothing
   const smoothed = weightedSmooth(raw)
   const result: { second: number; retention: number }[] = []
   let previous = 100
@@ -939,19 +982,33 @@ const generateRetention = (
     let value = i === 0 ? 100 : Math.round(smoothed[i])
 
     if (i > 0) {
-      const allowedRise = i <= 4 ? 4 : 2
+      // Allow small rises (replay effect) but cap them
+      const allowedRise = i <= 3 ? 3 : i <= 6 ? 4 : 3
       value = Math.min(value, previous + allowedRise)
     }
 
-    value = clamp(value, 5, 100)
+    // Ensure monotonic-ish with organic feel
+    if (i > 5 && value > previous + 1) {
+      value = previous + randomInRange(0, 2)
+    }
+
+    value = clamp(value, 3, 100)
     result.push({ second: i, retention: value })
     previous = value
   }
 
   result[0].retention = 100
+
+  // Ensure end doesn't go too low for viral reels
+  if (reelType === "viral") {
+    const lastVal = result[result.length - 1].retention
+    if (lastVal < 15) {
+      result[result.length - 1].retention = randomInRange(15, 25)
+    }
+  }
+
   return result
 }
-
 const generateViewsGraph = (views: number): GraphPoint[] => {
   const pointCount = getViewsPointCount(views)
   const reelType = pickReelType(views)
