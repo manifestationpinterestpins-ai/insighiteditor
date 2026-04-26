@@ -1278,7 +1278,7 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
           const padding = { top: 15, right: 10, bottom: 38, left: 44 };
-  const width = 380; const height = 160;
+  const width = 380; const height = 200;
   const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
   const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12);
   const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH;
@@ -1300,7 +1300,19 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 15} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{rightLabel}</text>
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+                {[0, 50, 100].map((val, i) => (
+          <line
+            key={`grid-${i}`}
+            x1={padding.left}
+            x2={padding.left + chartW}
+            y1={getY(val)}
+            y2={getY(val)}
+            stroke="#2a2d33"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+        ))}
+             <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -2266,7 +2278,7 @@ export default function ReelInsights() {
               {mainTab === "Engagement" && (
                 <motion.div key="engagement" variants={tabContent} initial="initial" animate="animate" exit="exit">
                   <section className="px-4 py-5">
-                    <div className="flex items-center gap-2 mb-5"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
+                                       <div className="flex items-center gap-2 mb-8"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
                     {engagementData.length > 0 && <DraggableEngagementGraph data={engagementData} onChange={handleEngagementChange} locked={locked} videoDuration={insightsData.videoDuration} />}
                   </section>
 
