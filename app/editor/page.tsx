@@ -654,24 +654,16 @@ const getAutomatedActions = (views: number) => {
 }
 
 const getViewsAxisTop = (views: number) => {
-  if (views <= 500) return 500
-  if (views <= 1000) return 1000
-  if (views <= 2000) return 2000
-  if (views <= 3000) return 3000
-  if (views <= 5000) return 5000
-  if (views <= 10000) return 10000
-  if (views <= 20000) return 20000
-  if (views <= 50000) return 50000
-  if (views <= 100000) return 100000
-  return Math.ceil(views / 50000) * 50000
+  return Math.max(250, Math.ceil(views / 250) * 250)
 }
+
 
 const formatViewsAxisLabel = (value: number) => {
   if (value >= 1000) {
     const k = value / 1000
-    return Number.isInteger(k) ? `${k}K` : `${k.toFixed(1)}K`
+    return Number.isInteger(k) ? `${k}k` : `${k.toFixed(1)}k`
   }
-  return value.toString()
+  return value.toLocaleString("en-IN")
 }
 
 const randomInRange = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
@@ -715,22 +707,14 @@ const lerp = (start: number, end: number, t: number) => start + (end - start) * 
 
 const getViewScaleProfile = (totalViews: number) => {
   const settle = clamp((totalViews - 300) / 6700, 0, 1)
-  const viral = clamp((totalViews - 8000) / 12000, 0, 1)
 
   return {
-    jitter: lerp(0.38, 0.05, settle),
-    chaos: lerp(0.32, 0.02, settle),
-    flatChance: lerp(0.26, 0.04, settle),
-    dipChance: lerp(0.24, 0.03, settle),
-    clusterBoost: lerp(1.55, 1.08, settle),
-    momentumBonus: lerp(0.85, 1.06, settle),
-    spikeChance: lerp(0.03, 0.1, viral),
-    plateauChance: lerp(0.15, 0.04, settle),
-    nightDropFactor: 0.2 + Math.random() * 0.15,
-    eveningBoostFactor: 1.2 + Math.random() * 0.4,
-    morningRampFactor: 0.55 + Math.random() * 0.2,
-    lunchDipFactor: 0.7 + Math.random() * 0.15,
-    weekendBoost: 1.05 + Math.random() * 0.15,
+    jitter: lerp(0.34, 0.06, settle),
+    chaos: lerp(0.28, 0.03, settle),
+    flatChance: lerp(0.22, 0.05, settle),
+    dipChance: lerp(0.2, 0.04, settle),
+    clusterBoost: lerp(1.45, 1.12, settle),
+    momentumBonus: lerp(0.88, 1.03, settle),
   }
 }
 
@@ -778,79 +762,56 @@ const generateOrganicViews = (
   let cumulative = 0
   let phasePoint = 0
   let previousIncrement =
-    reelType === "viral" ? 1.6 + Math.random() * 0.6 :
-    reelType === "dead" ? 0.3 + Math.random() * 0.3 :
-    0.8 + Math.random() * 0.4
+    reelType === "viral" ? 1.8 :
+    reelType === "dead" ? 0.45 :
+    1
 
-  // Simulate realistic hour-by-hour pattern
+  // Add realistic time-of-day multiplier
   const getTimeMultiplier = (pointIdx: number) => {
     const hourOfDay = (pointIdx * 0.4) % 24
-    const isWeekend = Math.random() < 0.28
-
-    let mult = 1
-    if (hourOfDay >= 0 && hourOfDay < 5) mult = scaleProfile.nightDropFactor
-    else if (hourOfDay >= 5 && hourOfDay < 7) mult = scaleProfile.morningRampFactor
-    else if (hourOfDay >= 7 && hourOfDay < 9) mult = 0.7 + Math.random() * 0.25
-    else if (hourOfDay >= 9 && hourOfDay < 12) mult = 0.9 + Math.random() * 0.2
-    else if (hourOfDay >= 12 && hourOfDay < 14) mult = scaleProfile.lunchDipFactor
-    else if (hourOfDay >= 14 && hourOfDay < 17) mult = 0.85 + Math.random() * 0.2
-    else if (hourOfDay >= 17 && hourOfDay < 21) mult = scaleProfile.eveningBoostFactor
-    else if (hourOfDay >= 21 && hourOfDay < 23) mult = 0.65 + Math.random() * 0.2
-    else mult = 0.4 + Math.random() * 0.2
-
-    if (isWeekend) mult *= scaleProfile.weekendBoost
-
-    return mult
+    if (hourOfDay >= 0 && hourOfDay < 6) return 0.3 + Math.random() * 0.2
+    if (hourOfDay >= 6 && hourOfDay < 9) return 0.6 + Math.random() * 0.3
+    if (hourOfDay >= 9 && hourOfDay < 12) return 0.85 + Math.random() * 0.2
+    if (hourOfDay >= 12 && hourOfDay < 14) return 0.75 + Math.random() * 0.2
+    if (hourOfDay >= 14 && hourOfDay < 18) return 0.9 + Math.random() * 0.2
+    if (hourOfDay >= 18 && hourOfDay < 22) return 1.1 + Math.random() * 0.3
+    return 0.5 + Math.random() * 0.25
   }
-
-  // Track momentum for realistic acceleration/deceleration
-  let momentum = 1
-  let consecutiveGrowth = 0
-  let consecutiveFlat = 0
 
   while (increments.length < points) {
     const phase = phases[Math.min(phaseIndex, phases.length - 1)]
     const progress = increments.length / Math.max(points - 1, 1)
-
-    // Multi-frequency wave for organic feel
-    const wave =
+    
+    const sinusoidal =
       1 +
-      Math.sin(progress * Math.PI * 2.3) * 0.14 +
-      Math.sin(progress * Math.PI * 5.7) * 0.06 +
-      Math.sin(progress * Math.PI * 11.3) * 0.03 +
-      Math.sin(progress * Math.PI * 19.7) * 0.015
+      Math.sin(progress * Math.PI * 2.7) * 0.12 +
+      Math.sin(progress * Math.PI * 7.3) * 0.04 +
+      Math.sin(progress * Math.PI * 13.1) * 0.02
 
+    let clusterBoost = 1
     const isBurstPhase = phase.name === "push" || phase.name === "re-push"
-    const timeMult = getTimeMultiplier(increments.length)
 
-    // === ORGANIC BURST CLUSTERS ===
-    if (isBurstPhase && previousIncrement > phase.base * 0.9 && Math.random() < 0.25) {
-      const clusterLength = randomInRange(2, 7)
-      const clusterIntensity = scaleProfile.clusterBoost + Math.random() * 0.25
+    // Organic burst clusters
+    if (isBurstPhase && previousIncrement > phase.base * 1.1 && Math.random() < 0.3) {
+      const clusterLength = randomInRange(2, 5)
+      clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.22
 
       for (let burstOffset = 0; burstOffset < clusterLength && increments.length < points; burstOffset++) {
-        const burstProgress = burstOffset / Math.max(clusterLength - 1, 1)
-        // Bell curve shape for burst
-        const burstShape = Math.sin(burstProgress * Math.PI) * 0.35 + 0.65
-        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter * 1.3
-        const burstTime = getTimeMultiplier(increments.length)
-
+        const burstWave = 1 + Math.sin((burstOffset / Math.max(clusterLength - 1, 1)) * Math.PI) * 0.28
+        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter * 1.2
+        const timeMult = getTimeMultiplier(increments.length)
         let burstIncrement =
-          previousIncrement * (phase.momentum + 0.05 * scaleProfile.momentumBonus) +
-          phase.base * clusterIntensity * burstShape * wave * burstNoise * burstTime
+          previousIncrement * (phase.momentum + 0.04 * scaleProfile.momentumBonus) +
+          phase.base * clusterBoost * burstWave * sinusoidal * burstNoise * timeMult
 
-        // Smaller views have more erratic bursts
-        if (total < 1500 && Math.random() < scaleProfile.dipChance) {
-          burstIncrement *= 0.55 + Math.random() * 0.3
+        if (total < 1000 && Math.random() < scaleProfile.dipChance) {
+          burstIncrement *= 0.65 + Math.random() * 0.2
         }
 
-        burstIncrement = Math.max(0.03, burstIncrement)
+        burstIncrement = Math.max(0.05, burstIncrement)
         increments.push(burstIncrement)
-        cumulative += burstIncrement
         previousIncrement = burstIncrement
         phasePoint++
-        consecutiveGrowth++
-        consecutiveFlat = 0
 
         if (phasePoint >= phase.length) {
           phaseIndex++
@@ -860,148 +821,79 @@ const generateOrganicViews = (
       continue
     }
 
-    // === MAIN INCREMENT CALCULATION ===
     const noise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
+    const timeMult = getTimeMultiplier(increments.length)
 
     let increment =
-      previousIncrement * (phase.momentum * scaleProfile.momentumBonus * momentum) +
-      phase.base * wave * noise
+      previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
+      phase.base * sinusoidal * noise
 
-    // === ORGANIC PATTERNS ===
-
-    // 1. Micro-pauses (content getting less distribution temporarily)
+    // Organic micro-pauses
     if (Math.random() < scaleProfile.flatChance) {
-      increment *= 0.1 + Math.random() * 0.25
-      consecutiveFlat++
-      consecutiveGrowth = 0
+      increment *= 0.15 + Math.random() * 0.3
     }
 
-    // 2. Recovery after flat period
-    if (consecutiveFlat > 2 && Math.random() < 0.4) {
-      increment *= 1.3 + Math.random() * 0.5
-      consecutiveFlat = 0
+    // Occasional organic spikes
+    if (isBurstPhase && Math.random() < 0.08) {
+      increment *= 1.5 + Math.random() * 0.8
     }
 
-    // 3. Organic viral spikes (shares/saves causing sudden push)
-    if (isBurstPhase && Math.random() < scaleProfile.spikeChance) {
-      increment *= 2.0 + Math.random() * 1.5
-      consecutiveGrowth = 0
-    }
-
-    // 4. Plateau effect (algorithm testing engagement)
-    if (Math.random() < scaleProfile.plateauChance && phase.name !== "dead") {
-      increment = previousIncrement * (0.95 + Math.random() * 0.1)
-      consecutiveFlat++
-    }
-
-    // 5. Natural momentum decay after sustained growth
-    if (consecutiveGrowth > 4) {
-      momentum *= 0.97
-      if (Math.random() < 0.3) {
-        increment *= 0.8 + Math.random() * 0.15
-        consecutiveGrowth = 0
-      }
-    } else {
-      momentum = Math.min(1.1, momentum * 1.01)
-    }
-
-    // Apply time-of-day
     increment *= timeMult
 
-    // === VIEW-COUNT SPECIFIC BEHAVIORS ===
-    if (total < 500) {
-      // Very small reels: erratic, lots of flat periods
-      if (Math.random() < 0.35) {
-        increment *= 0.3 + Math.random() * 0.4
-      }
-      if (Math.random() < scaleProfile.chaos * 1.2) {
-        increment += phase.base * (Math.random() - 0.45) * 1.5
-      }
-      // Occasional friend/follower bump
-      if (Math.random() < 0.06) {
-        increment *= 2.5 + Math.random() * 2
-      }
-    } else if (total < 2000) {
-      if (Math.random() < scaleProfile.dipChance * 1.1) {
-        increment *= 0.5 + Math.random() * 0.3
+    if (total < 1000) {
+      if (Math.random() < scaleProfile.dipChance) {
+        increment *= 0.55 + Math.random() * 0.25
       }
       if (Math.random() < scaleProfile.chaos) {
         increment += phase.base * (Math.random() - 0.4)
       }
-    } else if (total < 8000) {
-      if (Math.random() < scaleProfile.flatChance * 0.6) {
-        increment *= 0.72 + Math.random() * 0.15
+    } else if (total < 5000) {
+      if (Math.random() < scaleProfile.flatChance * 0.7) {
+        increment *= 0.7 + Math.random() * 0.15
       }
-      // Smoother but still organic
-      increment = previousIncrement * 0.7 + increment * 0.3
     } else {
-      // High-view reels: very smooth with gentle waves
-      increment = previousIncrement * 0.8 + increment * 0.2
-      // Occasional algorithm re-push
-      if (Math.random() < 0.04 && phase.name !== "dead") {
-        increment *= 1.3 + Math.random() * 0.4
-      }
+      increment = previousIncrement * 0.82 + increment * 0.18
     }
 
-    // === PHASE-SPECIFIC ADJUSTMENTS ===
     if (phase.name === "dead") {
-      increment *= 0.5 + Math.random() * 0.2
-      // Occasional small bumps even in dead phase (explore page pickup)
-      if (Math.random() < 0.05) {
-        increment *= 1.8 + Math.random() * 1.2
-      }
+      increment *= 0.6 + Math.random() * 0.15
     }
 
     if (phase.name === "cooldown") {
-      increment *= 0.7 + Math.random() * 0.2
+      increment *= 0.75 + Math.random() * 0.15
     }
 
-    if (phase.name === "test") {
-      // Instagram testing phase — small but growing
-      increment *= 0.6 + progress * 0.8
-    }
-
-    // === SATURATION CURVE ===
     const saturation = cumulative / total
-    const saturationCurve = 1 - Math.pow(saturation, 1.2 + (reelType === "viral" ? 0.3 : 0))
-    increment *= saturationCurve
+    increment *= (1 - Math.pow(saturation, 1.3))
 
-    // Ensure non-negative
-    increment = Math.max(0.02, increment)
+    increment = Math.max(0.03, increment)
     increments.push(increment)
     cumulative += increment
     previousIncrement = increment
-
-    if (increment > previousIncrement * 0.9) {
-      consecutiveGrowth++
-    } else {
-      consecutiveGrowth = Math.max(0, consecutiveGrowth - 1)
-    }
-
     phasePoint++
+
     if (phasePoint >= phase.length) {
       phaseIndex++
       phasePoint = 0
     }
   }
 
-  // === ADAPTIVE SMOOTHING ===
+  // Adaptive smoothing
   let smoothedIncrements: number[]
-  if (total > 10000) {
+  if (total > 8000) {
     smoothedIncrements = weightedSmooth(weightedSmooth(weightedSmooth(increments)))
-  } else if (total > 4000) {
+  } else if (total > 3000) {
     smoothedIncrements = weightedSmooth(weightedSmooth(increments))
-  } else if (total > 1000) {
+  } else if (total > 800) {
     smoothedIncrements = weightedSmooth(increments)
   } else {
-    // Light smoothing for small reels — keep the organic roughness
-    smoothedIncrements = increments.map((value, index, arr) => {
-      if (index === 0 || index === arr.length - 1) return value
-      return value * 0.6 + arr[index - 1] * 0.22 + arr[index + 1] * 0.18
-    })
+    smoothedIncrements = increments.map((value, index, arr) =>
+      index === 0 || index === arr.length - 1
+        ? value
+        : value * 0.65 + arr[index - 1] * 0.18 + arr[index + 1] * 0.17
+    )
   }
 
-  // === FINAL SCALING ===
   const rawTotal = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
   const scale = total / rawTotal
 
@@ -1014,31 +906,15 @@ const generateOrganicViews = (
     }
   })
 
-  // Ensure realistic start
-  result[0].value = Math.max(1, Math.round(total * (0.001 + Math.random() * 0.004)))
-
-  // Ensure strictly increasing
+  result[0].value = Math.max(1, Math.round(total * (0.002 + Math.random() * 0.003)))
   for (let i = 1; i < result.length; i++) {
     result[i].value = Math.max(result[i].value, result[i - 1].value + 1)
   }
-
-  // Ensure exact total
   result[result.length - 1].value = total
-
-  // Final pass: prevent any unnatural jumps
-  for (let i = 1; i < result.length - 1; i++) {
-    const prev = result[i - 1].value
-    const curr = result[i].value
-    const next = result[i + 1].value
-    const avgNeighbor = (prev + next) / 2
-    // If current point is way off from neighbors, pull it closer
-    if (Math.abs(curr - avgNeighbor) > avgNeighbor * 0.4 && total > 500) {
-      result[i].value = Math.round(prev * 0.3 + curr * 0.4 + next * 0.3)
-    }
-  }
 
   return result
 }
+
 const generateRetention = (
   duration = 20,
   reelType: ReelType = "normal"
@@ -1162,7 +1038,7 @@ mapped.push({
 });
 }
 
-     return mapped
+  return mapped
 }
 
 const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
@@ -1171,21 +1047,13 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
   const raw = generateRetention(totalSec, reelType)
   const pointCount = getRetentionPointCount(views)
 
-    const result = Array.from({ length: pointCount }, (_, i) => {
+  return Array.from({ length: pointCount }, (_, i) => {
     const rawIndex = Math.round((i / Math.max(pointCount - 1, 1)) * (raw.length - 1))
     return {
       time: formatSeconds(raw[rawIndex].second),
       retention: raw[rawIndex].retention,
     }
   })
-
-  // Force last 2 points to touch x-axis
-  if (result.length >= 2) {
-    result[result.length - 1].retention = 0
-    result[result.length - 2].retention = Math.min(result[result.length - 2].retention, randomInRange(3, 8))
-  }
-
-  return result
 }
 
 
@@ -1241,15 +1109,19 @@ const DraggableGraph = ({
   const height = 170
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
-      const yLabels = ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
-  const [yLabelOverrides, setYLabelOverrides] = useState<(string | null)[]>([null, null, null])
-  const displayYLabels = yLabels.map((label, i) => yLabelOverrides[i] ?? label)
+    const yLabels = (() => {
+    try {
+      const saved = localStorage.getItem("graph-y-labels")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length === 3) return parsed
+      }
+    } catch {}
+    return ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
+  })()
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
-      const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
-  const [pinkLineEnd, setPinkLineEnd] = useState(0.75)
-  const getThisReelX = (i: number, total: number) =>
-    padding.left + (i / Math.max(total - 1, 1)) * (chartW * pinkLineEnd)
-
+    const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
+  const getThisReelX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * (chartW * 0.75)
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
   const getValFromY = (clientY: number) => {
     const svg = svgRef.current
@@ -1265,11 +1137,9 @@ const DraggableGraph = ({
     return d
   }
 
-        const cutoff = Math.ceil(data.length * pinkLineEnd)
-  const allThisReel = data.slice(0, cutoff).map((d, i) => ({
-    x: getThisReelX(i, cutoff),
-    y: getY(d.thisReel),
-  }))
+  const fullPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
+const cutoff = Math.ceil(fullPoints.length * 0.75)
+const allThisReel = fullPoints.slice(0, cutoff)
     const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
     if (line === "typical" && greyLineLocked) return
@@ -1308,11 +1178,11 @@ const DraggableGraph = ({
             ref={yInputRef}
             value={editYValue}
             onChange={e => setEditYValue(e.target.value)}
-                        onBlur={() => {
+            onBlur={() => {
               if (editingY !== null && editYValue.trim()) {
-                const updated = [...yLabelOverrides]
+                const updated = [...yLabels]
                 updated[editingY] = editYValue.trim()
-                setYLabelOverrides(updated)
+                try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
               }
               setEditingY(null)
               setEditYValue("")
@@ -1320,9 +1190,9 @@ const DraggableGraph = ({
             onKeyDown={e => {
               if (e.key === "Enter") {
                 if (editingY !== null && editYValue.trim()) {
-                  const updated = [...yLabelOverrides]
+                  const updated = [...yLabels]
                   updated[editingY] = editYValue.trim()
-                  setYLabelOverrides(updated)
+                  try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
                 }
                 setEditingY(null)
                 setEditYValue("")
@@ -1354,7 +1224,7 @@ const DraggableGraph = ({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-                       {displayYLabels.map((label, i) => (
+                {yLabels.map((label, i) => (
           <text
             key={`yt-${i}`}
             x={padding.left - 8}
@@ -1426,10 +1296,10 @@ const DraggableGraph = ({
           strokeLinecap="round"
         />
 
-                  {data.slice(0, cutoff).map((d, i) => (
+                        {data.map((d, i) => (
           <circle
             key={`tr-${i}`}
-            cx={getThisReelX(i, cutoff)}
+            cx={getThisReelX(i)}
             cy={getY(d.thisReel)}
             r={30}
             fill="transparent"
@@ -1438,26 +1308,6 @@ const DraggableGraph = ({
             style={{ touchAction: "none" }}
           />
         ))}
-        {/* Draggable endpoint */}
-        {cutoff > 0 && data[cutoff - 1] && (
-          <circle
-            cx={getThisReelX(cutoff - 1, cutoff)}
-            cy={getY(data[cutoff - 1].thisReel)}
-            r={6}
-            fill={PINK}
-            stroke="white"
-            strokeWidth={2}
-            className={locked ? "cursor-default" : "cursor-ew-resize"}
-            onPointerDown={e => {
-              if (locked) return
-              e.preventDefault()
-              e.stopPropagation()
-              ;(e.target as Element).setPointerCapture?.(e.pointerId)
-              setDraggingEnd(true)
-            }}
-            style={{ touchAction: "none" }}
-          />
-        )}
       </svg>
 
       <div className="flex items-center gap-6 mt-3 pl-4">
@@ -1473,22 +1323,6 @@ const DraggableGraph = ({
     </div>
   )
 }
-
-            <div className="flex items-center gap-6 mt-3 pl-4">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PINK }} />
-          <span className="text-[10px] text-zinc-300">This reel</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#8a8a8a]" />
-          <span className="text-[10px] text-zinc-300">Your typical reel</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ===== DRAGGABLE ENGAGEMENT GRAPH =====
 
 
 // ===== DRAGGABLE ENGAGEMENT GRAPH =====
@@ -1560,42 +1394,9 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
   const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.retention) }))
   const pathD = buildPath(points)
-    const handlePointerDown = (index: number, e: React.PointerEvent) => {
-    if (locked) return
-    e.preventDefault()
-    e.stopPropagation()
-    ;(e.target as Element).setPointerCapture?.(e.pointerId)
-    setDragging(index)
-  }
-
-    const [draggingEnd, setDraggingEnd] = useState(false)
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (locked) return
-
-    if (draggingEnd) {
-      e.preventDefault()
-      const svg = svgRef.current
-      if (!svg) return
-      const rect = svg.getBoundingClientRect()
-      const svgX = ((e.clientX - rect.left) / rect.width) * width
-      const newEnd = clamp((svgX - padding.left) / chartW, 0.3, 1.0)
-      setPinkLineEnd(newEnd)
-      return
-    }
-
-    if (!dragging) return
-    e.preventDefault()
-    const val = getValFromY(e.clientY)
-    const nd = [...data]
-    nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }
-    onChange(nd)
-  }
-
-  const handlePointerUp = () => {
-    setDragging(null)
-    setDraggingEnd(false)
-  }
+  const handlePointerDown = (index: number, e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging(index) }
+  const handlePointerMove = (e: React.PointerEvent) => { if (dragging === null || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging] = { ...nd[dragging], retention: val }; onChange(nd) }
+  const handlePointerUp = () => setDragging(null)
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -1623,7 +1424,10 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
         ))}
              <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
-             
+      </svg>
+    </div>
+  )
+}
 
 const TABS = ["Overview", "Engagement", "Audience"] as const
 
@@ -2238,57 +2042,27 @@ export default function ReelInsights() {
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <HeartIcon />
-    <InlineEditor
-      value={insightsData.likes}
-      isNumber={true}
-      locked={locked}
-      className="text-[12px] text-white leading-none font-bold"
-      onSave={(val: number) => saveData({ ...insightsData, likes: val })}
-    />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.likes}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <CommentIcon />
-    <InlineEditor
-      value={insightsData.comments}
-      isNumber={true}
-      locked={locked}
-      className="text-[12px] text-white leading-none font-bold"
-      onSave={(val: number) => saveData({ ...insightsData, comments: val })}
-    />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.comments}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <RepostIcon />
-    <InlineEditor
-      value={insightsData.reposts}
-      isNumber={true}
-      locked={locked}
-      className="text-[12px] text-white leading-none font-bold"
-      onSave={(val: number) => saveData({ ...insightsData, reposts: val })}
-    />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.reposts}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <SendIcon />
-    <InlineEditor
-      value={insightsData.shares}
-      isNumber={true}
-      locked={locked}
-      className="text-[12px] text-white leading-none font-bold"
-      onSave={(val: number) => saveData({ ...insightsData, shares: val })}
-    />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.shares}</span>
   </div>
 
   <div className="flex flex-col items-center gap-1 min-w-[38px]" style={{ lineHeight: 0 }}>
     <BookmarkIcon />
-    <InlineEditor
-      value={insightsData.bookmarks}
-      isNumber={true}
-      locked={locked}
-      className="text-[12px] text-white leading-none font-bold"
-      onSave={(val: number) => saveData({ ...insightsData, bookmarks: val })}
-    />
+    <span className="text-[12px] text-white leading-none font-bold">{insightsData.bookmarks}</span>
   </div>
 </div>
           </section>
@@ -2409,14 +2183,8 @@ export default function ReelInsights() {
                                                                                     <div className="h-[24px] flex items-center">
                               {card.label === "Average watch time" ? (
                                 <span className="text-[17px] font-bold text-white">{card.value}</span>
-                                                            ) : card.label === "Follows" ? (
-                                <InlineEditor
-                                  value={profileActivity}
-                                  isNumber={true}
-                                  locked={locked}
-                                  className="text-[17px] font-bold text-white"
-                                  onSave={(val: number) => setProfileActivity(val)}
-                                />
+                              ) : card.label === "Follows" ? (
+                                <span className="text-[17px] font-bold text-white">{profileActivity}</span>
                                                             ) : card.label === "Accounts reached" ? (
                                 <InlineEditor
                                   value={(card.value as number).toLocaleString("en-IN")}
