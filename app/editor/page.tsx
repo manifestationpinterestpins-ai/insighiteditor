@@ -1162,6 +1162,12 @@ mapped.push({
 });
 }
 
+    // Make the point at ~75% equal to total views
+  const cutoffIndex = Math.ceil(mapped.length * 0.75) - 1
+  if (cutoffIndex > 0 && cutoffIndex < mapped.length) {
+    mapped[cutoffIndex].thisReel = views
+  }
+
   return mapped
 }
 
@@ -1262,9 +1268,9 @@ const DraggableGraph = ({
     return d
   }
 
-  const fullPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
-const cutoff = Math.ceil(fullPoints.length * 0.75)
-const allThisReel = fullPoints.slice(0, cutoff)
+    const fullPoints = data.map((d, i) => ({ x: getThisReelX(i), y: getY(d.thisReel) }))
+  const cutoff = Math.ceil(fullPoints.length * 0.75)
+  const allThisReel = fullPoints.slice(0, cutoff)
     const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
     if (line === "typical" && greyLineLocked) return
