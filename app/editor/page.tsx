@@ -1163,13 +1163,21 @@ const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, vie
   const raw = generateRetention(totalSec, reelType)
   const pointCount = getRetentionPointCount(views)
 
-  return Array.from({ length: pointCount }, (_, i) => {
+    const result = Array.from({ length: pointCount }, (_, i) => {
     const rawIndex = Math.round((i / Math.max(pointCount - 1, 1)) * (raw.length - 1))
     return {
       time: formatSeconds(raw[rawIndex].second),
       retention: raw[rawIndex].retention,
     }
   })
+
+  // Force last 2 points to touch x-axis
+  if (result.length >= 2) {
+    result[result.length - 1].retention = 0
+    result[result.length - 2].retention = Math.min(result[result.length - 2].retention, randomInRange(3, 8))
+  }
+
+  return result
 }
 
 
