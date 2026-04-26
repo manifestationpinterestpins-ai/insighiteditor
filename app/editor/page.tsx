@@ -2330,8 +2330,14 @@ export default function ReelInsights() {
                                                                                     <div className="h-[24px] flex items-center">
                               {card.label === "Average watch time" ? (
                                 <span className="text-[17px] font-bold text-white">{card.value}</span>
-                              ) : card.label === "Follows" ? (
-                                <span className="text-[17px] font-bold text-white">{profileActivity}</span>
+                                                            ) : card.label === "Follows" ? (
+                                <InlineEditor
+                                  value={profileActivity}
+                                  isNumber={true}
+                                  locked={locked}
+                                  className="text-[17px] font-bold text-white"
+                                  onSave={(val: number) => setProfileActivity(val)}
+                                />
                                                             ) : card.label === "Accounts reached" ? (
                                 <InlineEditor
                                   value={(card.value as number).toLocaleString("en-IN")}
