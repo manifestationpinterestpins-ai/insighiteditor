@@ -1162,13 +1162,7 @@ mapped.push({
 });
 }
 
-    // Make the point at ~75% equal to total views
-  const cutoffIndex = Math.ceil(mapped.length * 0.75) - 1
-  if (cutoffIndex > 0 && cutoffIndex < mapped.length) {
-    mapped[cutoffIndex].thisReel = views
-  }
-
-  return mapped
+     return mapped
 }
 
 const generateRetentionGraph = (videoDuration: string, avgWatchTime: string, views: number): RetentionPoint[] => {
@@ -1252,7 +1246,8 @@ const DraggableGraph = ({
   const displayYLabels = yLabels.map((label, i) => yLabelOverrides[i] ?? label)
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
     const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
-  const getThisReelX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * (chartW * 0.75)
+    const [pinkLineEnd, setPinkLineEnd] = useState(0.75)
+  const getThisReelX = (i: number, total: number) => padding.left + (i / Math.max(total - 1, 1)) * (chartW * pinkLineEnd)
   const getY = (val: number) => padding.top + chartH - (Math.min(val, yAxisTop) / yAxisTop) * chartH
   const getValFromY = (clientY: number) => {
     const svg = svgRef.current
@@ -1268,11 +1263,10 @@ const DraggableGraph = ({
     return d
   }
 
-      const fullPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
-  const cutoff = Math.ceil(fullPoints.length * 0.75)
-  const allThisReel = fullPoints.slice(0, cutoff).map((p, i, arr) => ({
-    x: getThisReelX(i),
-    y: p.y,
+        const cutoff = Math.ceil(data.length * pinkLineEnd)
+  const allThisReel = data.slice(0, cutoff).map((d, i) => ({
+    x: getThisReelX(i, cutoff),
+    y: getY(d.thisReel),
   }))
     const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
@@ -1430,10 +1424,10 @@ const DraggableGraph = ({
           strokeLinecap="round"
         />
 
-                        {data.map((d, i) => (
+           {data.slice(0, cutoff).map((d, i) => (
           <circle
             key={`tr-${i}`}
-            cx={getThisReelX(i)}
+            cx={getThisReelX(i, cutoff)}
             cy={getY(d.thisReel)}
             r={30}
             fill="transparent"
@@ -1529,8 +1523,30 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.retention) }))
   const pathD = buildPath(points)
   const handlePointerDown = (index: number, e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging(index) }
-  const handlePointerMove = (e: React.PointerEvent) => { if (dragging === null || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging] = { ...nd[dragging], retention: val }; onChange(nd) }
-  const handlePointerUp = () => setDragging(null)
+    const [draggingEnd, setDraggingEnd] = useState(false)
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (locked) return
+
+    if (draggingEnd) {
+      e.preventDefault()
+      const svg = svgRef.current
+      if (!svg) return
+      const rect = svg.getBoundingClientRect()
+      const svgX = ((e.clientX - rect.left) / rect.width) * width
+      const newEnd = clamp((svgX - padding.left) / chartW, 0.4, 1.0)
+      setPinkLineEnd(newEnd)
+      return
+    }
+
+    if (!dragging) return
+    e.preventDefault()
+    const val = getValFromY(e.clientY)
+    const nd = [...data]
+    nd[dragging.index] = { ...nd[dragging.index], [dragging.line]: val }
+    onChange(nd)
+  }
+    const handlePointerUp = () => { setDragging(null); setDraggingEnd(false) }
   const lastIdx = data.length - 1
   const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
   const totalSec = (() => { const parts = videoDuration.split(":").map(Number); return parts.length === 2 ? parts[0] * 60 + parts[1] : 31 })()
@@ -1558,7 +1574,27 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
         ))}
              <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
-      </svg>
+              {/* Draggable endpoint */}
+        {cutoff > 0 && (
+          <circle
+            cx={getThisReelX(cutoff - 1, cutoff)}
+            cy={getY(data[cutoff - 1]?.thisReel ?? 0)}
+            r={6}
+            fill={PINK}
+            stroke="white"
+            strokeWidth={2}
+            className={locked ? "cursor-default" : "cursor-ew-resize"}
+            onPointerDown={e => {
+              if (locked) return
+              e.preventDefault()
+              e.stopPropagation()
+              ;(e.target as Element).setPointerCapture?.(e.pointerId)
+              setDraggingEnd(true)
+            }}
+            style={{ touchAction: "none" }}
+          />
+        )}
+            </svg>
     </div>
   )
 }
