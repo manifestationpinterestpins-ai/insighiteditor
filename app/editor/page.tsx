@@ -562,31 +562,6 @@ const BottomSheet = ({
                 </div>
                 <ChevronRightIcon />
               </button>
-
-             <div className="h-px bg-zinc-800" />
-<button
-  className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity"
-  onClick={() => {
-    setShowMetaVerifiedBanner(prev => {
-      const next = !prev
-      try { localStorage.setItem("meta-banner-visible", JSON.stringify(next)) } catch {}
-      return next
-    })
-    onClose()
-  }}
->
-  <div className="flex items-center gap-3">
-    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-        <rect x="3" y="3" width="18" height="18" rx="3"/>
-      </svg>
-    </div>
-    <span className="text-[13px] text-white">
-      {showMetaVerifiedBanner ? "Hide Meta Verified block" : "Show Meta Verified block"}
-    </span>
-  </div>
-  <ChevronRightIcon />
-</button>
               <div className="h-px bg-zinc-800" />
               <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => { onToggleLock(); onClose() }}>
                 <div className="flex items-center gap-3">
@@ -1656,13 +1631,7 @@ export default function ReelInsights() {
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
     const [viewsAnimKey, setViewsAnimKey] = useState(0)
-    const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(() => {
-  try {
-    const saved = localStorage.getItem("meta-banner-visible")
-    if (saved !== null) return JSON.parse(saved)
-  } catch {}
-  return true
-})
+    const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
   const [animateBanner, setAnimateBanner] = useState(true)
     const overviewRef = useRef<HTMLDivElement>(null)
    const permanentGreyLine = useRef<number[]>([])
@@ -2340,10 +2309,7 @@ export default function ReelInsights() {
 
               <button
         className="text-[#9ca3af] shrink-0 mt-[2px] active:opacity-60 transition-opacity"
-        onClick={() => {
-  setShowMetaVerifiedBanner(false)
-  try { localStorage.setItem("meta-banner-visible", JSON.stringify(false)) } catch {}
-}}
+        onClick={() => setShowMetaVerifiedBanner(false)}
       >
         <CloseIcon />
       </button>
