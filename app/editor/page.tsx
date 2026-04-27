@@ -452,8 +452,10 @@ const BottomSheet = ({
   graphData,
   onUpdateGraph,
   yAxisTop,
-  sourcesMode,
+    sourcesMode,
   onToggleSources,
+  activeBannerType,
+  onToggleBanner,
 }: {
   open: boolean
   onClose: () => void
@@ -463,8 +465,10 @@ const BottomSheet = ({
   graphData: GraphPoint[]
   onUpdateGraph: (d: GraphPoint[]) => void
   yAxisTop: number
-  sourcesMode: "all" | "three"
+    sourcesMode: "all" | "three"
   onToggleSources: () => void
+  activeBannerType: "meta" | "edits"
+  onToggleBanner: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
@@ -559,6 +563,21 @@ const BottomSheet = ({
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                   </div>
                   <span className="text-[13px] text-white">{sourcesMode === "all" ? "Show 3 sources only" : "Show all sources"}</span>
+                </div>
+                <ChevronRightIcon />
+              </button>
+
+                           <div className="h-px bg-zinc-800" />
+              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => { onToggleBanner(); onClose() }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    </svg>
+                  </div>
+                  <span className="text-[13px] text-white">
+                    {activeBannerType === "meta" ? "Switch to Get Edits banner" : "Switch to Meta Verified banner"}
+                  </span>
                 </div>
                 <ChevronRightIcon />
               </button>
@@ -1270,9 +1289,12 @@ const DraggableGraph = ({
     return d
   }
 
-  const fullPoints = data.map((d, i) => ({ x: getX(i), y: getY(d.thisReel) }))
-const cutoff = Math.ceil(fullPoints.length * 0.75)
-const allThisReel = fullPoints.slice(0, cutoff)
+    const cutoff = Math.ceil(data.length * 0.75)
+  const visiblePinkData = data.slice(0, cutoff)
+  const allThisReel = visiblePinkData.map((d, i) => ({
+    x: getThisReelX(i),
+    y: getY(d.thisReel),
+  }))
     const handlePointerDown = (index: number, line: "thisReel" | "typical", e: React.PointerEvent) => {
     if (locked) return
     if (line === "typical" && greyLineLocked) return
@@ -1429,7 +1451,7 @@ const allThisReel = fullPoints.slice(0, cutoff)
           strokeLinecap="round"
         />
 
-                        {data.map((d, i) => (
+                                                {visiblePinkData.map((d, i) => (
           <circle
             key={`tr-${i}`}
             cx={getThisReelX(i)}
@@ -1631,8 +1653,16 @@ export default function ReelInsights() {
   const [mainTab, setMainTab] = useState<"Overview" | "Engagement" | "Audience">("Overview")
     const [animationKey, setAnimationKey] = useState(0)
     const [viewsAnimKey, setViewsAnimKey] = useState(0)
-    const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
+      const [showMetaVerifiedBanner, setShowMetaVerifiedBanner] = useState(true)
   const [animateBanner, setAnimateBanner] = useState(true)
+  const [activeBannerType, setActiveBannerType] = useState<"meta" | "edits">(() => {
+    try {
+      const saved = localStorage.getItem("active-banner-type")
+      if (saved === "edits") return "edits"
+    } catch {}
+    return "meta"
+  })
+  const [showGetEditsBanner, setShowGetEditsBanner] = useState(true)
     const overviewRef = useRef<HTMLDivElement>(null)
    const permanentGreyLine = useRef<number[]>([])
 
@@ -2269,6 +2299,63 @@ export default function ReelInsights() {
                 <motion.div key="overview" variants={tabContent} initial="initial" animate="animate" exit="exit">
 
                         <div className="px-4 pt-4">
+
+  {/* ===== GET EDITS BANNER ===== */}
+  {activeBannerType === "edits" && (
+    <div
+      style={{
+        opacity: showGetEditsBanner ? 1 : 0,
+        height: showGetEditsBanner ? "auto" : "0px",
+        overflow: "hidden",
+        transition: "opacity 0.2s ease, height 0.25s ease",
+        marginBottom: showGetEditsBanner ? 14 : 0,
+      }}
+    >
+      <div
+        className="relative flex items-center gap-3 rounded-2xl px-4 py-4"
+        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        {/* Close button */}
+        <button
+          className="absolute top-3 right-3 text-[#9aa0a6] active:opacity-60"
+          onClick={() => setShowGetEditsBanner(false)}
+        >
+          <CloseIcon />
+        </button>
+
+        {/* Left icon */}
+        <div
+          className="shrink-0 flex items-center justify-center rounded-full"
+          style={{ width: 44, height: 44, backgroundColor: "#1a1d22" }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M7 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2M17 3h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* Text */}
+        <div className="flex-1 pr-4">
+          <div className="text-[15px] font-semibold text-white leading-snug">
+            Get Edits to download your reel's insights
+          </div>
+          <div className="text-[13px] text-[#9aa0a6] mt-1">
+            You can now download your reel's insights and share them with others.
+          </div>
+          <div className="text-[14px] text-[#4f8cff] mt-1.5 font-medium">
+            Get Edits
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ===== META VERIFIED BANNER ===== */}
+  {activeBannerType === "meta" && (
   <div
     style={{
       height: showMetaVerifiedBanner ? "auto" : "0px",
@@ -2312,11 +2399,13 @@ export default function ReelInsights() {
         onClick={() => setShowMetaVerifiedBanner(false)}
       >
         <CloseIcon />
-      </button>
+            </button>
     </div>
     </div>
     </div>
   </div>
+  )}
+</div>
 </div><section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
@@ -2648,7 +2737,15 @@ export default function ReelInsights() {
             graphData={graphData}
             onUpdateGraph={setGraphData}
             yAxisTop={getViewsAxisTop(insightsData.views)}
-            sourcesMode={sourcesMode}
+                        sourcesMode={sourcesMode}
+            activeBannerType={activeBannerType}
+            onToggleBanner={() => {
+              const next = activeBannerType === "meta" ? "edits" : "meta"
+              setActiveBannerType(next)
+              setShowGetEditsBanner(true)
+              setShowMetaVerifiedBanner(true)
+              try { localStorage.setItem("active-banner-type", next) } catch {}
+            }}
             onToggleSources={() => {
               const next = sourcesMode === "all" ? "three" : "all"
               setSourcesMode(next)
