@@ -2406,7 +2406,7 @@ export default function ReelInsights() {
   </div>
   )}
 </div>
-</div><section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
+<section ref={overviewRef} key={animationKey} className="px-4 pt-0 pb-4">
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-[15px] font-semibold">Summary</h3>
                       <button onClick={() => { setSummaryLoading(true); setViewsAnimKey(k => k + 1); setTimeout(() => setSummaryLoading(false), 800); setAnimateBanner(false); setTimeout(() => setAnimateBanner(true), 400) }} className="focus:outline-none active:opacity-60 transition-opacity"><InfoIcon /></button>
