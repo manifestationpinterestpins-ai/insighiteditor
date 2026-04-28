@@ -2337,13 +2337,13 @@ export default function ReelInsights() {
 
         {/* Text */}
         <div className="flex-1 pr-4">
-          <div className="text-[15px] font-semibold text-white leading-snug">
+          <div className="text-[13px] font-semibold text-white leading-snug">
             Get Edits to download your reel's insights
           </div>
-          <div className="text-[13px] text-[#9aa0a6] mt-1">
+          <div className="text-[10px] text-white mt-1">
             You can now download your reel's insights and share them with others.
           </div>
-          <div className="text-[14px] text-[#4f8cff] mt-1.5 font-medium">
+          <div className="text-[11px] text-[#8c9edd] mt-1.5 font-medium">
             Get Edits
           </div>
         </div>
