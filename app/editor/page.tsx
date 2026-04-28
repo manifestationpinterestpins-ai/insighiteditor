@@ -1482,55 +1482,283 @@ const DraggableGraph = ({
 
 // ===== DRAGGABLE ENGAGEMENT GRAPH =====
 type EngagementPoint = { time: string; value: number }
-const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { data: EngagementPoint[]; onChange: (d: EngagementPoint[]) => void; locked: boolean; videoDuration: string }) => {
+const DraggableEngagementGraph = ({
+  data,
+  onChange,
+  locked,
+  videoDuration,
+}: {
+  data: EngagementPoint[]
+  onChange: (d: EngagementPoint[]) => void
+  locked: boolean
+  videoDuration: string
+}) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<number | null>(null)
   const [editingRightX, setEditingRightX] = useState(false)
   const [rightXValue, setRightXValue] = useState("")
+  const [editingY, setEditingY] = useState<number | null>(null)
+  const [editYValue, setEditYValue] = useState("")
+  const [yAxisValues, setYAxisValues] = useState<number[]>([0, 50, 100])
+
   const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-          const padding = { top: 15, right: 10, bottom: 38, left: 44 };
-  const width = 380; const height = 200;
-  const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
-  const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12);
-  const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH;
-  const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(100, Math.round(((padding.top + chartH - svgY) / chartH) * 100))) }
-  const buildPath = (points: { x: number; y: number }[]) => { if (points.length < 2) return ""; let d = `M ${points[0].x} ${points[0].y}`; for (let i = 1; i < points.length; i++) d += ` L ${points[i].x} ${points[i].y}`; return d }
+  const yInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingRightX && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingRightX])
+
+  useEffect(() => {
+    if (editingY !== null && yInputRef.current) {
+      yInputRef.current.focus()
+      yInputRef.current.select()
+    }
+  }, [editingY])
+
+  const padding = { top: 18, right: 10, bottom: 42, left: 34 }
+  const width = 380
+  const height = 200
+  const chartW = width - padding.left - padding.right
+  const chartH = height - padding.top - padding.bottom
+
+  const maxY = Math.max(...yAxisValues, 1)
+
+  const getX = (i: number) =>
+    (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12)
+
+  const getY = (val: number) =>
+    padding.top + chartH - (Math.min(val, maxY) / maxY) * chartH
+
+  const getValFromY = (clientY: number) => {
+    const svg = svgRef.current
+    if (!svg) return 0
+    const rect = svg.getBoundingClientRect()
+    const svgY = ((clientY - rect.top) / rect.height) * height
+    return Math.max(
+      0,
+      Math.min(maxY, Math.round(((padding.top + chartH - svgY) / chartH) * maxY))
+    )
+  }
+
+  const buildPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) {
+      d += ` L ${points[i].x} ${points[i].y}`
+    }
+    return d
+  }
+
   const points = data.map((d, i) => ({ x: getX(i), y: getY(d.value) }))
   const pathD = buildPath(points)
-  const handlePointerDown = (index: number, e: React.PointerEvent) => { if (locked) return; e.preventDefault(); e.stopPropagation(); (e.target as Element).setPointerCapture?.(e.pointerId); setDragging(index) }
-  const handlePointerMove = (e: React.PointerEvent) => { if (dragging === null || locked) return; e.preventDefault(); const val = getValFromY(e.clientY); const nd = [...data]; nd[dragging] = { ...nd[dragging], value: val }; onChange(nd) }
+
+  const handlePointerDown = (index: number, e: React.PointerEvent) => {
+    if (locked) return
+    e.preventDefault()
+    e.stopPropagation()
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+    setDragging(index)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (dragging === null || locked) return
+    e.preventDefault()
+    const val = getValFromY(e.clientY)
+    const nd = [...data]
+    nd[dragging] = { ...nd[dragging], value: val }
+    onChange(nd)
+  }
+
   const handlePointerUp = () => setDragging(null)
+
   const lastIdx = data.length - 1
-  const commitRightX = () => { if (rightXValue.trim()) { const nd = [...data]; nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }; onChange(nd) }; setEditingRightX(false) }
-    // Right side label is always current video duration
-  const rightLabel = videoDuration;
+
+  const commitRightX = () => {
+    if (rightXValue.trim()) {
+      const nd = [...data]
+      nd[lastIdx] = { ...nd[lastIdx], time: rightXValue.trim() }
+      onChange(nd)
+    }
+    setEditingRightX(false)
+  }
+
+  const commitYEdit = () => {
+    if (editingY === null) return
+
+    const parsed = parseFloat(editYValue)
+    if (!isNaN(parsed)) {
+      const updated = [...yAxisValues]
+      updated[editingY] = Math.max(0, parsed)
+
+      updated[0] = 0
+      for (let i = 1; i < updated.length; i++) {
+        if (updated[i] <= updated[i - 1]) {
+          updated[i] = updated[i - 1] + 1
+        }
+      }
+
+      setYAxisValues(updated)
+    }
+
+    setEditingY(null)
+    setEditYValue("")
+  }
+
+  const totalSec = Math.max(parseTimeToSeconds(videoDuration), 0)
+  const fallbackRightLabel = `${Math.floor(totalSec / 60)}:${String(totalSec % 60).padStart(2, "0")}`
+  const rightLabel = data[lastIdx]?.time || fallbackRightLabel
 
   return (
     <div className="relative -mx-1">
-            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-        {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
-        <text x={padding.left + 15} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
-        <text x={getX(lastIdx) - 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{rightLabel}</text>
-                {[0, 50, 100].map((val, i) => (
+      {editingY !== null && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={yInputRef}
+            value={editYValue}
+            onChange={e => setEditYValue(e.target.value)}
+            onBlur={commitYEdit}
+            onKeyDown={e => {
+              if (e.key === "Enter") commitYEdit()
+            }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: PINK }}
+          />
+        </div>
+      )}
+
+      {editingRightX && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={inputRef}
+            value={rightXValue}
+            onChange={e => setRightXValue(e.target.value)}
+            onBlur={commitRightX}
+            onKeyDown={e => {
+              if (e.key === "Enter") commitRightX()
+            }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: PINK }}
+          />
+        </div>
+      )}
+
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${width} ${height}`}
+        className={`w-full select-none ${locked ? "" : "touch-none"}`}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        <defs>
+          <filter id="engagementGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.2" />
+          </filter>
+        </defs>
+
+        {yAxisValues.map((val, i) => (
+          <text
+            key={`yt-${i}`}
+            x={padding.left - 8}
+            y={getY(val) + 4}
+            textAnchor="end"
+            fill={editingY === i ? PINK : "#8e8e93"}
+            fontSize="12.5"
+            fontFamily="sans-serif"
+            className={i === 0 || locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked || i === 0) return
+              setEditingY(i)
+              setEditYValue(String(val))
+            }}
+          >
+            {val}
+          </text>
+        ))}
+
+        <text
+          x={padding.left + 15}
+          y={height - 8}
+          textAnchor="middle"
+          fill="#8e8e93"
+          fontSize="12"
+          fontFamily="sans-serif"
+        >
+          0:00
+        </text>
+
+        <text
+          x={getX(lastIdx) - 8}
+          y={height - 8}
+          textAnchor="middle"
+          fill={editingRightX ? PINK : "#8e8e93"}
+          fontSize="12"
+          fontFamily="sans-serif"
+          className={locked ? "cursor-default" : "cursor-pointer"}
+          onClick={() => {
+            if (locked) return
+            setRightXValue(rightLabel)
+            setEditingRightX(true)
+          }}
+        >
+          {rightLabel}
+        </text>
+
+        {/* Horizontal grid lines */}
+        {yAxisValues.map((val, i) => (
           <line
             key={`grid-${i}`}
             x1={padding.left}
             x2={padding.left + chartW}
             y1={getY(val)}
             y2={getY(val)}
-            stroke="#2a2d33"
+            stroke="rgba(255,255,255,0.07)"
             strokeWidth="1"
-            opacity="0.5"
           />
         ))}
-             <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
-        {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
+
+        {/* Glow path */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke="#ff00c8"
+          strokeWidth={7.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.15"
+          filter="url(#engagementGlow)"
+        />
+
+        {/* Main zig-zag path */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke="#ff00c8"
+          strokeWidth={3.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Invisible drag targets */}
+        {data.map((d, i) => (
+          <circle
+            key={i}
+            cx={getX(i)}
+            cy={getY(d.value)}
+            r={16}
+            fill="transparent"
+            className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}
+            onPointerDown={e => handlePointerDown(i, e)}
+            style={{ touchAction: "none" }}
+          />
+        ))}
       </svg>
     </div>
   )
 }
-
 // ===== DRAGGABLE RETENTION GRAPH =====
 type RetentionPoint = { time: string; retention: number }
 const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { data: RetentionPoint[]; onChange: (d: RetentionPoint[]) => void; locked: boolean; videoDuration: string }) => {
