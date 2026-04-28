@@ -2324,14 +2324,14 @@ export default function ReelInsights() {
         </button>
 
         {/* Left icon */}
-        <div
-          className="shrink-0 flex items-center justify-center rounded-full"
-          style={{ width: 44, height: 44, backgroundColor: "#1a1d22" }}
+                <div
+          className="shrink-0 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
         >
-                    <img
+          <img
             src="/edits.webp"
             alt="Edits Icon"
-            className="h-[22px] w-auto object-contain"
+            className="h-[26px] w-auto object-contain"
           />
         </div>
 
