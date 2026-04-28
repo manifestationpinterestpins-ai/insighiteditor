@@ -2328,35 +2328,11 @@ export default function ReelInsights() {
           className="shrink-0 flex items-center justify-center rounded-full"
           style={{ width: 44, height: 44, backgroundColor: "#1a1d22" }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-  <path
-    d="M8.8 4.2
-       C6.9 4.2 5.6 5.6 5.6 7.6
-       V16.4
-       C5.6 18.4 6.9 19.8 8.8 19.8"
-    stroke="white"
-    strokeWidth="2.6"
-    strokeLinecap="round"
-  />
-  <path
-    d="M15.2 4.2
-       C17.1 4.2 18.4 5.6 18.4 7.6
-       V16.4
-       C18.4 18.4 17.1 19.8 15.2 19.8"
-    stroke="white"
-    strokeWidth="2.6"
-    strokeLinecap="round"
-  />
-  <line
-    x1="12"
-    y1="4.5"
-    x2="12"
-    y2="19.5"
-    stroke="white"
-    strokeWidth="2.6"
-    strokeLinecap="round"
-  />
-</svg>
+                    <img
+            src="/icons/edits.webp"
+            alt="Edits Icon"
+            className="h-[22px] w-auto object-contain"
+          />
         </div>
 
         {/* Text */}
