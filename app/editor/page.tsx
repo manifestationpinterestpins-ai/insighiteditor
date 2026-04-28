@@ -2312,7 +2312,7 @@ export default function ReelInsights() {
       }}
     >
       <div
-        className="relative flex items-center gap-3 rounded-2xl px-4 py-4"
+        className="relative flex items-center gap-3 rounded-2xl pl-3 pr-4 py-4"
         style={{ border: "1px solid rgba(255,255,255,0.08)" }}
       >
         {/* Close button */}
