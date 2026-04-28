@@ -1487,13 +1487,8 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const [dragging, setDragging] = useState<number | null>(null)
   const [editingRightX, setEditingRightX] = useState(false)
   const [rightXValue, setRightXValue] = useState("")
-  const [editingEngY, setEditingEngY] = useState<number | null>(null)
-  const [editEngYValue, setEditEngYValue] = useState("")
-  const [engYOverrides, setEngYOverrides] = useState<(string | null)[]>([null, null, null])
   const inputRef = useRef<HTMLInputElement>(null)
-  const engYInputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-  useEffect(() => { if (editingEngY !== null && engYInputRef.current) { engYInputRef.current.focus(); engYInputRef.current.select() } }, [editingEngY])
           const padding = { top: 15, right: 10, bottom: 38, left: 44 };
   const width = 380; const height = 200;
   const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
@@ -1513,37 +1508,6 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
 
   return (
     <div className="relative -mx-1">
-           {editingEngY !== null && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-          <input
-            ref={engYInputRef}
-            value={editEngYValue}
-            onChange={e => setEditEngYValue(e.target.value)}
-            onBlur={() => {
-              if (editingEngY !== null && editEngYValue.trim()) {
-                const updated = [...engYOverrides]
-                updated[editingEngY] = editEngYValue.trim()
-                setEngYOverrides(updated)
-              }
-              setEditingEngY(null)
-              setEditEngYValue("")
-            }}
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                if (editingEngY !== null && editEngYValue.trim()) {
-                  const updated = [...engYOverrides]
-                  updated[editingEngY] = editEngYValue.trim()
-                  setEngYOverrides(updated)
-                }
-                setEditingEngY(null)
-                setEditEngYValue("")
-              }
-            }}
-            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
-            style={{ caretColor: PINK }}
-          />
-        </div>
-      )}
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 15} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
@@ -1598,28 +1562,7 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
     <div className="relative -mx-1">
       {editingRightX && <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"><input ref={inputRef} value={rightXValue} onChange={e => setRightXValue(e.target.value)} onBlur={commitRightX} onKeyDown={e => { if (e.key === "Enter") commitRightX() }} className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg" style={{ caretColor: PINK }} /></div>}
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-                {[0, 50, 100].map((t, i) => {
-          const displayLabel = engYOverrides[i] ?? (t === 0 ? "0" : `${t}%`)
-          return (
-            <text
-              key={t}
-              x={padding.left - 8}
-              y={getY(t) + 4}
-              textAnchor="end"
-              fill={editingEngY === i ? PINK : "#d1d5db"}
-              fontSize="13"
-              fontFamily="sans-serif"
-              className={i === 0 || locked ? "cursor-default" : "cursor-pointer"}
-              onClick={() => {
-                if (locked || i === 0) return
-                setEditingEngY(i)
-                setEditEngYValue(displayLabel)
-              }}
-            >
-              {displayLabel}
-            </text>
-          )
-        })}
+        {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
                 <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
                 {[0, 50, 100].map((val, i) => (
