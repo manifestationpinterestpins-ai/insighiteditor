@@ -2343,7 +2343,7 @@ export default function ReelInsights() {
           <div className="text-[10px] text-white mt-1">
             You can now download your reel's insights and share them with others.
           </div>
-          <div className="text-[11px] text-[#8c9edd] mt-1.5 font-medium">
+          <div className="text-[11px] text-[#9dafee] mt-1.5 font-medium">
             Get Edits
           </div>
         </div>
@@ -2386,8 +2386,8 @@ export default function ReelInsights() {
                     <div className="text-[10px] leading-[1.35] text-white">
             Content from Meta Verified subscribers get more views, likes and comments on average.
           </div>
-          <div className="mt-2 text-[11px] font-semibold text-[#8c9edd] cursor-pointer">
-            Try Meta Verified for â‚¹45
+          <div className="mt-2 text-[11px] font-semibold text-[#9dafee] cursor-pointer">
+            Try Meta Verified for ₹45
           </div>
         </div>
 
