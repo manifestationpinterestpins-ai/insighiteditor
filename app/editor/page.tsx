@@ -2329,7 +2329,7 @@ export default function ReelInsights() {
           style={{ width: 44, height: 44, backgroundColor: "#1a1d22" }}
         >
                     <img
-            src="/icons/edits.webp"
+            src="/edits.webp"
             alt="Edits Icon"
             className="h-[22px] w-auto object-contain"
           />
