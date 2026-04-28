@@ -24,16 +24,16 @@ const shimmerKeyframes = `
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes rollDigit0 { 0% { transform: translateY(-10%); } 100% { transform: translateY(0); } }
-@keyframes rollDigit1 { 0% { transform: translateY(-20%); } 100% { transform: translateY(-10%); } }
-@keyframes rollDigit2 { 0% { transform: translateY(-30%); } 100% { transform: translateY(-20%); } }
-@keyframes rollDigit3 { 0% { transform: translateY(-40%); } 100% { transform: translateY(-30%); } }
-@keyframes rollDigit4 { 0% { transform: translateY(-50%); } 100% { transform: translateY(-40%); } }
-@keyframes rollDigit5 { 0% { transform: translateY(-60%); } 100% { transform: translateY(-50%); } }
-@keyframes rollDigit6 { 0% { transform: translateY(-70%); } 100% { transform: translateY(-60%); } }
-@keyframes rollDigit7 { 0% { transform: translateY(-80%); } 100% { transform: translateY(-70%); } }
-@keyframes rollDigit8 { 0% { transform: translateY(-90%); } 100% { transform: translateY(-80%); } }
-@keyframes rollDigit9 { 0% { transform: translateY(-100%); } 100% { transform: translateY(-90%); } }
+@keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
+@keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
+@keyframes rollDigit2 { 0% { transform: translateY(0); } 100% { transform: translateY(-20%); } }
+@keyframes rollDigit3 { 0% { transform: translateY(0); } 100% { transform: translateY(-30%); } }
+@keyframes rollDigit4 { 0% { transform: translateY(0); } 100% { transform: translateY(-40%); } }
+@keyframes rollDigit5 { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+@keyframes rollDigit6 { 0% { transform: translateY(0); } 100% { transform: translateY(-60%); } }
+@keyframes rollDigit7 { 0% { transform: translateY(0); } 100% { transform: translateY(-70%); } }
+@keyframes rollDigit8 { 0% { transform: translateY(0); } 100% { transform: translateY(-80%); } }
+@keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
 `
 
 const BG = "#0c0f14"
@@ -58,16 +58,16 @@ const tabContent = {
 
 // ===== ODOMETER STYLES =====
 const odometerKeyframes = `
-@keyframes rollDigit0 { 0% { transform: translateY(-10%); } 100% { transform: translateY(0); } }
-@keyframes rollDigit1 { 0% { transform: translateY(-20%); } 100% { transform: translateY(-10%); } }
-@keyframes rollDigit2 { 0% { transform: translateY(-30%); } 100% { transform: translateY(-20%); } }
-@keyframes rollDigit3 { 0% { transform: translateY(-40%); } 100% { transform: translateY(-30%); } }
-@keyframes rollDigit4 { 0% { transform: translateY(-50%); } 100% { transform: translateY(-40%); } }
-@keyframes rollDigit5 { 0% { transform: translateY(-60%); } 100% { transform: translateY(-50%); } }
-@keyframes rollDigit6 { 0% { transform: translateY(-70%); } 100% { transform: translateY(-60%); } }
-@keyframes rollDigit7 { 0% { transform: translateY(-80%); } 100% { transform: translateY(-70%); } }
-@keyframes rollDigit8 { 0% { transform: translateY(-90%); } 100% { transform: translateY(-80%); } }
-@keyframes rollDigit9 { 0% { transform: translateY(-100%); } 100% { transform: translateY(-90%); } }
+@keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
+@keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
+@keyframes rollDigit2 { 0% { transform: translateY(0); } 100% { transform: translateY(-20%); } }
+@keyframes rollDigit3 { 0% { transform: translateY(0); } 100% { transform: translateY(-30%); } }
+@keyframes rollDigit4 { 0% { transform: translateY(0); } 100% { transform: translateY(-40%); } }
+@keyframes rollDigit5 { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+@keyframes rollDigit6 { 0% { transform: translateY(0); } 100% { transform: translateY(-60%); } }
+@keyframes rollDigit7 { 0% { transform: translateY(0); } 100% { transform: translateY(-70%); } }
+@keyframes rollDigit8 { 0% { transform: translateY(0); } 100% { transform: translateY(-80%); } }
+@keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
 `
 
 // ===== SINGLE ROLLING DIGIT =====
@@ -88,7 +88,7 @@ const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
           animation: `rollDigit${target} 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) ${delay}s both`,
         }}
       >
-        {[0,1,2,3,4,5,6,7,8,9].map(n => (
+                {[0,1,2,3,4,5,6,7,8,9].map(n => (
           <span key={n} className="block text-center" style={{ height: "1em", lineHeight: "1em" }}>
             {n}
           </span>
