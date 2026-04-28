@@ -2337,7 +2337,7 @@ export default function ReelInsights() {
 
         {/* Text */}
         <div className="flex-1 pr-4">
-          <div className="text-[13px] font-semibold text-white leading-snug">
+          <div className="text-[12px] font-semibold text-white leading-snug">
             Get Edits to download your reel's insights
           </div>
           <div className="text-[10px] text-white mt-1">
