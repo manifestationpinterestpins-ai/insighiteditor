@@ -766,30 +766,46 @@ const generateOrganicViews = (
     reelType === "dead" ? 0.45 :
     1
 
+  // Add realistic time-of-day multiplier
+  const getTimeMultiplier = (pointIdx: number) => {
+    const hourOfDay = (pointIdx * 0.4) % 24
+    if (hourOfDay >= 0 && hourOfDay < 6) return 0.3 + Math.random() * 0.2
+    if (hourOfDay >= 6 && hourOfDay < 9) return 0.6 + Math.random() * 0.3
+    if (hourOfDay >= 9 && hourOfDay < 12) return 0.85 + Math.random() * 0.2
+    if (hourOfDay >= 12 && hourOfDay < 14) return 0.75 + Math.random() * 0.2
+    if (hourOfDay >= 14 && hourOfDay < 18) return 0.9 + Math.random() * 0.2
+    if (hourOfDay >= 18 && hourOfDay < 22) return 1.1 + Math.random() * 0.3
+    return 0.5 + Math.random() * 0.25
+  }
+
   while (increments.length < points) {
     const phase = phases[Math.min(phaseIndex, phases.length - 1)]
     const progress = increments.length / Math.max(points - 1, 1)
+    
     const sinusoidal =
-  1 +
-  Math.sin(progress * Math.PI * 3.1) * 0.08 +
-  Math.sin(progress * Math.PI * 11.2) * 0.02;
+      1 +
+      Math.sin(progress * Math.PI * 2.7) * 0.12 +
+      Math.sin(progress * Math.PI * 7.3) * 0.04 +
+      Math.sin(progress * Math.PI * 13.1) * 0.02
 
     let clusterBoost = 1
     const isBurstPhase = phase.name === "push" || phase.name === "re-push"
 
-    if (isBurstPhase && previousIncrement > phase.base * 1.2 && Math.random() < 0.35) {
-      const clusterLength = randomInRange(3, 6)
-      clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.18
+    // Organic burst clusters
+    if (isBurstPhase && previousIncrement > phase.base * 1.1 && Math.random() < 0.3) {
+      const clusterLength = randomInRange(2, 5)
+      clusterBoost = scaleProfile.clusterBoost + Math.random() * 0.22
 
       for (let burstOffset = 0; burstOffset < clusterLength && increments.length < points; burstOffset++) {
-        const burstWave = 1 + Math.sin((burstOffset / Math.max(clusterLength - 1, 1)) * Math.PI) * 0.22
-        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
+        const burstWave = 1 + Math.sin((burstOffset / Math.max(clusterLength - 1, 1)) * Math.PI) * 0.28
+        const burstNoise = 1 + (Math.random() - 0.5) * scaleProfile.jitter * 1.2
+        const timeMult = getTimeMultiplier(increments.length)
         let burstIncrement =
-          previousIncrement * (phase.momentum + 0.03 * scaleProfile.momentumBonus) +
-          phase.base * clusterBoost * burstWave * sinusoidal * burstNoise
+          previousIncrement * (phase.momentum + 0.04 * scaleProfile.momentumBonus) +
+          phase.base * clusterBoost * burstWave * sinusoidal * burstNoise * timeMult
 
         if (total < 1000 && Math.random() < scaleProfile.dipChance) {
-          burstIncrement *= 0.72 + Math.random() * 0.18
+          burstIncrement *= 0.65 + Math.random() * 0.2
         }
 
         burstIncrement = Math.max(0.05, burstIncrement)
@@ -802,53 +818,57 @@ const generateOrganicViews = (
           phasePoint = 0
         }
       }
-
       continue
     }
 
     const noise = 1 + (Math.random() - 0.5) * scaleProfile.jitter
-    const hour = increments.length % 24;
-let hourBoost = 1;
+    const timeMult = getTimeMultiplier(increments.length)
 
-if (hour < 8) hourBoost = 0.65;       // night slow
-else if (hour < 18) hourBoost = 1.0;  // normal
-else hourBoost = 1.35;                // evening boost
+    let increment =
+      previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
+      phase.base * sinusoidal * noise
 
-let increment =
-  previousIncrement * (phase.momentum * scaleProfile.momentumBonus) +
-  phase.base * sinusoidal * noise;
+    // Organic micro-pauses
+    if (Math.random() < scaleProfile.flatChance) {
+      increment *= 0.15 + Math.random() * 0.3
+    }
 
-    // micro pause (realistic stagnation)
-if (Math.random() < scaleProfile.flatChance) {
-  increment *= 0.25 + Math.random() * 0.25;
-}
-increment *= hourBoost;
+    // Occasional organic spikes
+    if (isBurstPhase && Math.random() < 0.08) {
+      increment *= 1.5 + Math.random() * 0.8
+    }
+
+    increment *= timeMult
 
     if (total < 1000) {
       if (Math.random() < scaleProfile.dipChance) {
-        increment *= 0.62 + Math.random() * 0.22
+        increment *= 0.55 + Math.random() * 0.25
       }
       if (Math.random() < scaleProfile.chaos) {
-        increment += phase.base * (Math.random() - 0.35)
+        increment += phase.base * (Math.random() - 0.4)
       }
     } else if (total < 5000) {
-      if (Math.random() < scaleProfile.flatChance) {
-        increment *= 0.74 + Math.random() * 0.12
+      if (Math.random() < scaleProfile.flatChance * 0.7) {
+        increment *= 0.7 + Math.random() * 0.15
       }
     } else {
-      increment = previousIncrement * 0.84 + increment * 0.16
+      increment = previousIncrement * 0.82 + increment * 0.18
     }
 
     if (phase.name === "dead") {
-      increment *= 0.7 + Math.random() * 0.1
+      increment *= 0.6 + Math.random() * 0.15
     }
 
-    const saturation = cumulative / total;
-increment *= (1 - Math.pow(saturation, 1.4));
+    if (phase.name === "cooldown") {
+      increment *= 0.75 + Math.random() * 0.15
+    }
 
-increment = Math.max(0.05, increment);
-    increments.push(increment);
-cumulative += increment;
+    const saturation = cumulative / total
+    increment *= (1 - Math.pow(saturation, 1.3))
+
+    increment = Math.max(0.03, increment)
+    increments.push(increment)
+    cumulative += increment
     previousIncrement = increment
     phasePoint++
 
@@ -858,14 +878,21 @@ cumulative += increment;
     }
   }
 
-  const smoothedIncrements =
-    total > 5000
-      ? weightedSmooth(weightedSmooth(increments))
-      : total > 1000
-        ? weightedSmooth(increments)
-        : increments.map((value, index, arr) =>
-            index === 0 || index === arr.length - 1 ? value : value * 0.72 + arr[index - 1] * 0.14 + arr[index + 1] * 0.14
-          )
+  // Adaptive smoothing
+  let smoothedIncrements: number[]
+  if (total > 8000) {
+    smoothedIncrements = weightedSmooth(weightedSmooth(weightedSmooth(increments)))
+  } else if (total > 3000) {
+    smoothedIncrements = weightedSmooth(weightedSmooth(increments))
+  } else if (total > 800) {
+    smoothedIncrements = weightedSmooth(increments)
+  } else {
+    smoothedIncrements = increments.map((value, index, arr) =>
+      index === 0 || index === arr.length - 1
+        ? value
+        : value * 0.65 + arr[index - 1] * 0.18 + arr[index + 1] * 0.17
+    )
+  }
 
   const rawTotal = smoothedIncrements.reduce((sum, n) => sum + n, 0) || 1
   const scale = total / rawTotal
@@ -879,7 +906,7 @@ cumulative += increment;
     }
   })
 
-  result[0].value = Math.max(1, Math.round(total * 0.003))
+  result[0].value = Math.max(1, Math.round(total * (0.002 + Math.random() * 0.003)))
   for (let i = 1; i < result.length; i++) {
     result[i].value = Math.max(result[i].value, result[i - 1].value + 1)
   }
@@ -888,7 +915,6 @@ cumulative += increment;
   return result
 }
 
-
 const generateRetention = (
   duration = 20,
   reelType: ReelType = "normal"
@@ -896,41 +922,58 @@ const generateRetention = (
   const totalSeconds = clamp(duration, 6, 45)
 
   const decayK =
-    reelType === "viral" ? 0.085 :
-    reelType === "dead" ? 0.14 :
-    0.11
+    reelType === "viral" ? 0.065 + Math.random() * 0.03 :
+    reelType === "dead" ? 0.12 + Math.random() * 0.04 :
+    0.08 + Math.random() * 0.04
 
-  const earlyReplayCenter = clamp(randomInRange(2, 4), 2, totalSeconds - 2)
-  const midReplayCenter = clamp(Math.round(totalSeconds * (0.4 + Math.random() * 0.2)), 4, totalSeconds - 2)
+  // Hook quality affects early retention
+  const hookStrength = Math.random()
+  const hookQuality = hookStrength > 0.7 ? "strong" : hookStrength > 0.3 ? "medium" : "weak"
+
+  // Multiple replay bumps at natural points
+  const replayPoints = [
+    { center: clamp(randomInRange(1, 3), 1, totalSeconds - 2), strength: hookQuality === "strong" ? 10 : hookQuality === "medium" ? 7 : 4, width: 0.7 },
+    { center: clamp(Math.round(totalSeconds * (0.3 + Math.random() * 0.15)), 3, totalSeconds - 2), strength: randomInRange(3, 7), width: 1.1 },
+    { center: clamp(Math.round(totalSeconds * (0.55 + Math.random() * 0.15)), 4, totalSeconds - 2), strength: randomInRange(2, 5), width: 1.3 },
+    { center: clamp(Math.round(totalSeconds * (0.8 + Math.random() * 0.1)), 5, totalSeconds - 1), strength: randomInRange(3, 8), width: 0.9 },
+  ]
 
   const gaussian = (x: number, center: number, width: number) =>
     Math.exp(-Math.pow(x - center, 2) / (2 * width * width))
 
-  const hookStrength = Math.random(); // 0–1
   const raw: number[] = []
 
   for (let t = 0; t <= totalSeconds; t++) {
+    // Base exponential decay
     const base = 100 * Math.exp(-decayK * t)
-    const earlyDropPenalty = t <= 3 ? t * (reelType === "dead" ? 8 : 6) : 0
 
-    const earlyReplay =
-  (reelType === "viral" ? 8 : reelType === "dead" ? 4 : 6) *
-  gaussian(t, earlyReplayCenter, 0.8) *
-  (0.6 + hookStrength);
+    // Early drop — steeper for dead reels, gentler for viral
+    let earlyDrop = 0
+    if (t <= 3) {
+      const dropRate = hookQuality === "strong" ? 4 : hookQuality === "medium" ? 6 : 9
+      earlyDrop = t * dropRate * (reelType === "dead" ? 1.3 : reelType === "viral" ? 0.7 : 1)
+    }
 
-    const midReplay =
-      (reelType === "viral" ? 7 : reelType === "dead" ? 3 : 5) *
-      gaussian(t, midReplayCenter, 1.3)
+    // Replay bumps
+    let replayBoost = 0
+    for (const rp of replayPoints) {
+      replayBoost += rp.strength * gaussian(t, rp.center, rp.width) * (reelType === "viral" ? 1.3 : reelType === "dead" ? 0.6 : 1)
+    }
 
-    const shaped =
-      base -
-      earlyDropPenalty +
-      earlyReplay +
-      midReplay
+    // End-of-reel replay bump (people rewatching)
+    const endReplay = t >= totalSeconds - 2
+      ? (reelType === "viral" ? 6 : reelType === "dead" ? 1 : 3) * gaussian(t, totalSeconds, 1.2)
+      : 0
 
-    raw.push(clamp(shaped, 5, 100))
+    // Micro-noise for organic feel
+    const microNoise = (Math.random() - 0.5) * 2.5
+
+    const shaped = base - earlyDrop + replayBoost + endReplay + microNoise
+
+    raw.push(clamp(shaped, 3, 100))
   }
 
+  // Light smoothing
   const smoothed = weightedSmooth(raw)
   const result: { second: number; retention: number }[] = []
   let previous = 100
@@ -939,19 +982,33 @@ const generateRetention = (
     let value = i === 0 ? 100 : Math.round(smoothed[i])
 
     if (i > 0) {
-      const allowedRise = i <= 4 ? 4 : 2
+      // Allow small rises (replay effect) but cap them
+      const allowedRise = i <= 3 ? 3 : i <= 6 ? 4 : 3
       value = Math.min(value, previous + allowedRise)
     }
 
-    value = clamp(value, 5, 100)
+    // Ensure monotonic-ish with organic feel
+    if (i > 5 && value > previous + 1) {
+      value = previous + randomInRange(0, 2)
+    }
+
+    value = clamp(value, 3, 100)
     result.push({ second: i, retention: value })
     previous = value
   }
 
   result[0].retention = 100
+
+  // Ensure end doesn't go too low for viral reels
+  if (reelType === "viral") {
+    const lastVal = result[result.length - 1].retention
+    if (lastVal < 15) {
+      result[result.length - 1].retention = randomInRange(15, 25)
+    }
+  }
+
   return result
 }
-
 const generateViewsGraph = (views: number): GraphPoint[] => {
   const pointCount = getViewsPointCount(views)
   const reelType = pickReelType(views)
@@ -1026,23 +1083,42 @@ const DraggableGraph = ({
     } catch {}
     return ["28 Jan", "29 Jan", "30 Jan"]
   })
-  const [editingX, setEditingX] = useState<number | null>(null)
+    const [editingX, setEditingX] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [editingY, setEditingY] = useState<number | null>(null)
+  const [editYValue, setEditYValue] = useState("")
+  const yInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
+    useEffect(() => {
     if (editingX !== null && inputRef.current) {
       inputRef.current.focus()
       inputRef.current.select()
     }
   }, [editingX])
 
+  useEffect(() => {
+    if (editingY !== null && yInputRef.current) {
+      yInputRef.current.focus()
+      yInputRef.current.select()
+    }
+  }, [editingY])
+
   const padding = { top: 15, right: 10, bottom: 38, left: 44 }
   const width = 380
   const height = 170
   const chartW = width - padding.left - padding.right
   const chartH = height - padding.top - padding.bottom
-  const yLabels = ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
+    const yLabels = (() => {
+    try {
+      const saved = localStorage.getItem("graph-y-labels")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length === 3) return parsed
+      }
+    } catch {}
+    return ["0", formatViewsAxisLabel(Math.round(yAxisTop / 2)), formatViewsAxisLabel(yAxisTop)]
+  })()
   const yPositions = [padding.top + chartH, padding.top + chartH / 2, padding.top]
     const getX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW
   const getThisReelX = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * (chartW * 0.75)
@@ -1096,6 +1172,37 @@ const allThisReel = fullPoints.slice(0, cutoff)
 
   return (
     <div className="relative -mx-1">
+           {editingY !== null && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={yInputRef}
+            value={editYValue}
+            onChange={e => setEditYValue(e.target.value)}
+            onBlur={() => {
+              if (editingY !== null && editYValue.trim()) {
+                const updated = [...yLabels]
+                updated[editingY] = editYValue.trim()
+                try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
+              }
+              setEditingY(null)
+              setEditYValue("")
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                if (editingY !== null && editYValue.trim()) {
+                  const updated = [...yLabels]
+                  updated[editingY] = editYValue.trim()
+                  try { localStorage.setItem("graph-y-labels", JSON.stringify(updated)) } catch {}
+                }
+                setEditingY(null)
+                setEditYValue("")
+              }
+            }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: PINK }}
+          />
+        </div>
+      )}
       {editingX !== null && (
         <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
           <input
@@ -1117,8 +1224,22 @@ const allThisReel = fullPoints.slice(0, cutoff)
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {yLabels.map((label, i) => (
-          <text key={`yt-${i}`} x={padding.left - 8} y={yPositions[i] + 5} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">
+                {yLabels.map((label, i) => (
+          <text
+            key={`yt-${i}`}
+            x={padding.left - 8}
+            y={yPositions[i] + 5}
+            textAnchor="end"
+            fill={editingY === i ? PINK : "#d1d5db"}
+            fontSize="13"
+            fontFamily="sans-serif"
+            className={i === 0 || locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked || i === 0) return
+              setEditingY(i)
+              setEditYValue(label)
+            }}
+          >
             {label}
           </text>
         ))}
@@ -1214,7 +1335,7 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
           const padding = { top: 15, right: 10, bottom: 38, left: 44 };
-  const width = 380; const height = 160;
+  const width = 380; const height = 200;
   const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
   const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12);
   const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH;
@@ -1236,7 +1357,19 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
         <text x={padding.left + 15} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{rightLabel}</text>
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+                {[0, 50, 100].map((val, i) => (
+          <line
+            key={`grid-${i}`}
+            x1={padding.left}
+            x2={padding.left + chartW}
+            y1={getY(val)}
+            y2={getY(val)}
+            stroke="#2a2d33"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+        ))}
+             <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.value)} r={18} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -1277,7 +1410,19 @@ const DraggableRetentionGraph = ({ data, onChange, locked, videoDuration }: { da
         {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
                 <text x={getX(0) + 18} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 6} y={height - 7} textAnchor="middle" fill={editingRightX ? PINK : "#d1d5db"} fontSize="13" fontFamily="sans-serif" className={locked ? "cursor-default" : "cursor-pointer"} onClick={() => { if (locked) return; setRightXValue(dynamicDurLabel); setEditingRightX(true) }}>{dynamicDurLabel}</text>
-        <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
+                {[0, 50, 100].map((val, i) => (
+          <line
+            key={`grid-${i}`}
+            x1={padding.left}
+            x2={padding.left + chartW}
+            y1={getY(val)}
+            y2={getY(val)}
+            stroke="#2a2d33"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+        ))}
+             <path d={pathD} fill="none" stroke={PINK} strokeWidth={5} strokeLinecap="round" />
         {data.map((d, i) => <circle key={i} cx={getX(i)} cy={getY(d.retention)} r={16} fill="transparent" className={locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"} onPointerDown={e => handlePointerDown(i, e)} style={{ touchAction: "none" }} />)}
       </svg>
     </div>
@@ -1660,7 +1805,7 @@ export default function ReelInsights() {
     }
 
     // Randomize countries
-    const us = parseFloat((35 + Math.random() * 10).toFixed(1))
+        const us = parseFloat((40 + Math.random() * 15).toFixed(1))
     const uk = parseFloat((20 + Math.random() * 8).toFixed(1))
     const ca = parseFloat((12 + Math.random() * 6).toFixed(1))
     const au = parseFloat((8 + Math.random() * 5).toFixed(1))
@@ -1786,7 +1931,16 @@ export default function ReelInsights() {
 
   return (
     <>
-      <style>{shimmerKeyframes}</style>
+      <style>{shimmerKeyframes}{`
+  html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+`}</style>
 
       <div
   className="min-h-screen text-white font-sans antialiased flex justify-center"
@@ -2026,13 +2180,22 @@ export default function ReelInsights() {
                             <div className="h-[14px] mb-1 flex items-center">
                               <span className="text-[11px] text-gray-400">{card.label}</span>
                             </div>
-                            <div className="h-[24px] flex items-center">
+                                                                                    <div className="h-[24px] flex items-center">
                               {card.label === "Average watch time" ? (
                                 <span className="text-[17px] font-bold text-white">{card.value}</span>
-                                                            ) : card.label === "Follows" ? (
+                              ) : card.label === "Follows" ? (
                                 <span className="text-[17px] font-bold text-white">{profileActivity}</span>
+                                                            ) : card.label === "Accounts reached" ? (
+                                <InlineEditor
+                                  value={(card.value as number).toLocaleString("en-IN")}
+                                  isNumber={true}
+                                  locked={locked}
+                                  className="text-[17px] font-bold text-white"
+                                  onSave={(val: number) => {
+                                    saveData({ ...insightsData, accountsReached: val })
+                                  }}
+                                />
                               ) : (
-
                                 <span className="text-[17px] font-bold text-white">{(card.value as number).toLocaleString("en-IN")}</span>
                               )}
                             </div>
@@ -2172,7 +2335,7 @@ export default function ReelInsights() {
               {mainTab === "Engagement" && (
                 <motion.div key="engagement" variants={tabContent} initial="initial" animate="animate" exit="exit">
                   <section className="px-4 py-5">
-                    <div className="flex items-center gap-2 mb-5"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
+                                       <div className="flex items-center gap-2 mb-8"><h3 className="text-[15px] font-semibold">When people liked your reel</h3><InfoIcon /></div>
                     {engagementData.length > 0 && <DraggableEngagementGraph data={engagementData} onChange={handleEngagementChange} locked={locked} videoDuration={insightsData.videoDuration} />}
                   </section>
 
@@ -2215,7 +2378,28 @@ export default function ReelInsights() {
                   </section>
 
                   <section className="px-4 pt-3 pb-5">
-                    <div className="flex items-center gap-2 mb-3"><h3 className="text-[15px] font-semibold">Audience details</h3><InfoIcon /></div>
+                                        <div className="flex items-center gap-2 mb-3">
+                      <h3 className="text-[15px] font-semibold">Audience details</h3>
+                      <button className="focus:outline-none active:opacity-60 transition-opacity" onClick={() => {
+                        const us = parseFloat((40 + Math.random() * 15).toFixed(1))
+                        const uk = parseFloat((15 + Math.random() * 10).toFixed(1))
+                        const ca = parseFloat((8 + Math.random() * 8).toFixed(1))
+                        const au = parseFloat((5 + Math.random() * 6).toFixed(1))
+                        const de = parseFloat((3 + Math.random() * 4).toFixed(1))
+                        const ot = parseFloat(Math.max(0, 100 - us - uk - ca - au - de).toFixed(1))
+                        saveData({
+                          ...insightsData,
+                          countryData: [
+                            { name: insightsData.countryData[0]?.name ?? "United States", percentage: us },
+                            { name: insightsData.countryData[1]?.name ?? "United Kingdom", percentage: uk },
+                            { name: insightsData.countryData[2]?.name ?? "Canada", percentage: ca },
+                            { name: insightsData.countryData[3]?.name ?? "Australia", percentage: au },
+                            { name: insightsData.countryData[4]?.name ?? "Germany", percentage: de },
+                            { name: insightsData.countryData[5]?.name ?? "Others", percentage: ot },
+                          ],
+                        })
+                      }}><InfoIcon /></button>
+                    </div>
                     <div className="flex gap-2 mb-5">
                       {(["Age", "Country", "Gender"] as const).map(tab => (
                         <button key={tab} onClick={() => setAudienceTab(tab === "Age" ? "Age" : tab === "Country" ? "Country" : "Gender")} className={`px-4 py-[8px] rounded-full text-[12px] font-medium transition-all duration-200 border ${audienceTab === tab ? "text-white border-transparent" : "bg-transparent text-white border-zinc-700"}`} style={audienceTab === tab ? { backgroundColor: CARD_BG } : {}}>{tab}</button>
@@ -2228,10 +2412,33 @@ export default function ReelInsights() {
                           {insightsData.ageData.map((age, index) => <AudienceRow key={age.name} labelNode={<span>{age.name}</span>} percentage={age.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 60} />)}
                         </motion.div>
                       )}
-                      {audienceTab === "Country" && (
+                                            {audienceTab === "Country" && (
                         <motion.div key="country" variants={tabContent} initial="initial" animate="animate" exit="exit">
                           {insightsData.countryData.map((country, index) => (
-                            <AudienceRow key={index} labelNode={<CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />} percentage={country.percentage} barColor={PINK} animateCharts={animateCharts} delay={index * 80} />
+                            <div key={index} className="mb-3.5">
+                              <div className="mb-1 text-[13px] text-white">
+                                <CountryNameEditor locked={locked} name={country.name} onSave={newName => { const uc = [...insightsData.countryData]; uc[index] = { ...uc[index], name: newName }; try { localStorage.setItem("country-names", JSON.stringify(uc.map(c => c.name))) } catch {}; saveData({ ...insightsData, countryData: uc }) }} />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 relative h-[8px] overflow-hidden" style={{ backgroundColor: BAR_BG, borderRadius: 6 }}>
+                                  <div className="absolute left-0 top-0 h-full" style={{ width: `${country.percentage}%`, backgroundColor: PINK, borderRadius: 6 }} />
+                                </div>
+                                {index === 0 ? (
+                                  <GenderPercentEditor value={country.percentage} locked={locked} onSave={(newVal: number) => {
+                                    const clamped = Math.max(40, Math.min(100, newVal))
+                                    const remaining = 100 - clamped
+                                    const otherTotal = insightsData.countryData.slice(1).reduce((s, c) => s + c.percentage, 0) || 1
+                                    const updated = insightsData.countryData.map((c, i) => {
+                                      if (i === 0) return { ...c, percentage: clamped }
+                                      return { ...c, percentage: parseFloat((c.percentage / otherTotal * remaining).toFixed(1)) }
+                                    })
+                                    saveData({ ...insightsData, countryData: updated })
+                                  }} />
+                                ) : (
+                                  <span className="text-[13px] text-white font-semibold w-[46px] text-right shrink-0">{country.percentage.toFixed(1)}%</span>
+                                )}
+                              </div>
+                            </div>
                           ))}
                         </motion.div>
                       )}
