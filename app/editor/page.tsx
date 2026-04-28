@@ -2330,24 +2330,30 @@ export default function ReelInsights() {
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
   <path
-    d="M8.5 4C6.5 4 5 5.5 5 7.5V16.5C5 18.5 6.5 20 8.5 20"
+    d="M8.8 4.2
+       C6.9 4.2 5.6 5.6 5.6 7.6
+       V16.4
+       C5.6 18.4 6.9 19.8 8.8 19.8"
     stroke="white"
-    strokeWidth="2.8"
+    strokeWidth="2.6"
     strokeLinecap="round"
   />
   <path
-    d="M15.5 4C17.5 4 19 5.5 19 7.5V16.5C19 18.5 17.5 20 15.5 20"
+    d="M15.2 4.2
+       C17.1 4.2 18.4 5.6 18.4 7.6
+       V16.4
+       C18.4 18.4 17.1 19.8 15.2 19.8"
     stroke="white"
-    strokeWidth="2.8"
+    strokeWidth="2.6"
     strokeLinecap="round"
   />
   <line
     x1="12"
-    y1="4"
+    y1="4.5"
     x2="12"
-    y2="20"
+    y2="19.5"
     stroke="white"
-    strokeWidth="2.8"
+    strokeWidth="2.6"
     strokeLinecap="round"
   />
 </svg>
