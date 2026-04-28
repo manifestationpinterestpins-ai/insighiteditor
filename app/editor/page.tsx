@@ -72,6 +72,21 @@ const odometerKeyframes = `
 
 // ===== SINGLE ROLLING DIGIT =====
 const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
+  const [started, setStarted] = useState(false)
+
+  useEffect(() => {
+    setStarted(false)
+
+    const timeout = setTimeout(() => {
+      requestAnimationFrame(() => setStarted(true))
+    }, delay * 1000)
+
+    return () => clearTimeout(timeout)
+  }, [target, delay])
+
+  const digits = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+  const targetIndex = digits.indexOf(target)
+
   return (
     <span
       className="inline-block overflow-hidden"
@@ -85,11 +100,17 @@ const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
       <span
         className="flex flex-col"
         style={{
-          animation: `rollDigit${target} 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) ${delay}s both`,
+          transform: `translateY(${started ? -(targetIndex * 10) : -90}%)`,
+          transition: "transform 1.8s cubic-bezier(0.2, 0.8, 0.3, 1)",
+          willChange: "transform",
         }}
       >
-                        {[9,8,7,6,5,4,3,2,1,0].map(n => (
-          <span key={n} className="block text-center" style={{ height: "1em", lineHeight: "1em" }}>
+        {digits.map(n => (
+          <span
+            key={n}
+            className="block text-center"
+            style={{ height: "1em", lineHeight: "1em" }}
+          >
             {n}
           </span>
         ))}
@@ -97,7 +118,6 @@ const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
     </span>
   )
 }
-
 // ===== ANIMATED NUMBER (Odometer — digit rolling) =====
 const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
   const formatted = value.toLocaleString("en-IN")
