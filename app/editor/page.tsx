@@ -2328,7 +2328,7 @@ export default function ReelInsights() {
           className="shrink-0 flex items-center justify-center rounded-full"
           style={{ width: 44, height: 44, backgroundColor: "#1a1d22" }}
         >
-          i want to change get edits icon with this svg - <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
   <path
     d="M8.5 4C6.5 4 5 5.5 5 7.5V16.5C5 18.5 6.5 20 8.5 20"
     stroke="white"
