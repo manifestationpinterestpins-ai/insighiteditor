@@ -98,7 +98,7 @@ const RollingDigit = ({ target, delay }: { target: number; delay: number }) => {
   )
 }
 
-// ===== ANIMATED NUMBER (Odometer — digit rolling) =====
+// ===== ANIMATED NUMBER (Odometer â€” digit rolling) =====
 const AnimatedNumber = ({ value, className, triggerKey }: { value: number; className?: string; triggerKey?: number }) => {
   const formatted = value.toLocaleString("en-IN")
   const chars = formatted.split("")
@@ -976,7 +976,7 @@ const generateOrganicViews = (
     }
 
     if (phase.name === "test") {
-      // Instagram testing phase — small but growing
+      // Instagram testing phase â€” small but growing
       increment *= 0.6 + progress * 0.8
     }
 
@@ -1013,7 +1013,7 @@ const generateOrganicViews = (
   } else if (total > 1000) {
     smoothedIncrements = weightedSmooth(increments)
   } else {
-    // Light smoothing for small reels — keep the organic roughness
+    // Light smoothing for small reels â€” keep the organic roughness
     smoothedIncrements = increments.map((value, index, arr) => {
       if (index === 0 || index === arr.length - 1) return value
       return value * 0.6 + arr[index - 1] * 0.22 + arr[index + 1] * 0.18
@@ -1090,7 +1090,7 @@ const generateRetention = (
     // Base exponential decay
     const base = 100 * Math.exp(-decayK * t)
 
-    // Early drop — steeper for dead reels, gentler for viral
+    // Early drop â€” steeper for dead reels, gentler for viral
     let earlyDrop = 0
     if (t <= 3) {
       const dropRate = hookQuality === "strong" ? 4 : hookQuality === "medium" ? 6 : 9
@@ -2301,56 +2301,56 @@ export default function ReelInsights() {
                         <div className="px-4 pt-4">
 
   {/* ===== GET EDITS BANNER ===== */}
-{activeBannerType === "edits" && (
-  <div
-    style={{
-      opacity: showGetEditsBanner ? 1 : 0,
-      height: showGetEditsBanner ? "auto" : "0px",
-      overflow: "hidden",
-      transition: "opacity 0.2s ease, height 0.25s ease",
-      marginTop: 12,
-      marginBottom: 12,
-    }}
-  >
+  {activeBannerType === "edits" && (
     <div
-      className="relative flex items-center gap-3 rounded-[14px] px-[14px] py-[14px]"
-      style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+      style={{
+        opacity: showGetEditsBanner ? 1 : 0,
+        height: showGetEditsBanner ? "auto" : "0px",
+        overflow: "hidden",
+        transition: "opacity 0.2s ease, height 0.25s ease",
+        marginBottom: showGetEditsBanner ? 14 : 0,
+      }}
     >
-      {/* Close button */}
-      <button
-        className="absolute right-3 top-3 text-[#9aa0a6] opacity-80 active:opacity-60 transition-opacity"
-        onClick={() => setShowGetEditsBanner(false)}
-      >
-        <CloseIcon />
-      </button>
-
-      {/* Left icon */}
       <div
-        className="shrink-0 flex items-center justify-center rounded-full"
-        style={{ width: 36, height: 36, backgroundColor: "#1c1f24" }}
+        className="relative flex items-center gap-3 rounded-2xl pl-2 pr-4 py-4"
+        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
       >
-        <img
-          src="/edits.webp"
-          alt="Edits Icon"
-          className="h-[18px] w-auto object-contain opacity-95"
-        />
-      </div>
+        {/* Close button */}
+        <button
+          className="absolute top-3 right-3 text-[#9aa0a6] active:opacity-60"
+          onClick={() => setShowGetEditsBanner(false)}
+        >
+          <CloseIcon />
+        </button>
 
-      {/* Text */}
-      <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-        <div className="text-[14px] font-semibold leading-[1.3] text-[#f5f5f5]">
-          Get Edits to download your reel's insights
+        {/* Left icon */}
+                <div
+          className="shrink-0 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
+        >
+          <img
+            src="/edits.webp"
+            alt="Edits Icon"
+            className="h-[26px] w-auto object-contain"
+          />
         </div>
-        <div className="text-[12.5px] leading-[1.35] text-[#a8adb3]">
-          You can now download your reel's insights and share them with others.
-        </div>
-        <div className="mt-1 text-[13px] font-medium text-[#4c8dff]">
-          Get Edits
+
+        {/* Text */}
+        <div className="flex-1 pr-4">
+          <div className="text-[12px] font-semibold text-white leading-snug">
+            Get Edits to download your reel's insights
+          </div>
+          <div className="text-[10px] text-white mt-1">
+            You can now download your reel's insights and share them with others.
+          </div>
+          <div className="text-[11px] text-[#8c9edd] mt-1.5 font-medium">
+            Get Edits
+          </div>
         </div>
       </div>
     </div>
-  </div>
-)}
+  )}
+
   {/* ===== META VERIFIED BANNER ===== */}
   {activeBannerType === "meta" && (
   <div
@@ -2387,7 +2387,7 @@ export default function ReelInsights() {
             Content from Meta Verified subscribers get more views, likes and comments on average.
           </div>
           <div className="mt-2 text-[11px] font-semibold text-[#8c9edd] cursor-pointer">
-            Try Meta Verified for ₹45
+            Try Meta Verified for â‚¹45
           </div>
         </div>
 
@@ -2420,12 +2420,12 @@ export default function ReelInsights() {
                           className="rounded-xl p-3.5 relative overflow-hidden"
                           style={{ backgroundColor: CARD_BG, minHeight: 72, transform: "none" }}
                         >
-                          {/* Shimmer overlay — sits on top, doesn't affect layout */}
+                          {/* Shimmer overlay â€” sits on top, doesn't affect layout */}
                           {summaryLoading && (
                             <div className="absolute inset-0 z-10" style={{ ...shimmerStyle, animationDelay: `${i * 0.08}s` }} />
                           )}
 
-                          {/* Content — ALWAYS rendered to maintain fixed height */}
+                          {/* Content â€” ALWAYS rendered to maintain fixed height */}
                           <div style={{ opacity: summaryLoading ? 0 : 1, transition: "opacity 0.2s ease-out" }}>
                             <div className="h-[14px] mb-1 flex items-center">
                               <span className="text-[11px] text-gray-400">{card.label}</span>
@@ -2787,3 +2787,4 @@ export default function ReelInsights() {
     </>
   )
 }
+
