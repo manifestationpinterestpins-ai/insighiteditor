@@ -24,16 +24,16 @@ const shimmerKeyframes = `
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
-@keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
-@keyframes rollDigit2 { 0% { transform: translateY(0); } 100% { transform: translateY(-20%); } }
-@keyframes rollDigit3 { 0% { transform: translateY(0); } 100% { transform: translateY(-30%); } }
-@keyframes rollDigit4 { 0% { transform: translateY(0); } 100% { transform: translateY(-40%); } }
-@keyframes rollDigit5 { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
-@keyframes rollDigit6 { 0% { transform: translateY(0); } 100% { transform: translateY(-60%); } }
-@keyframes rollDigit7 { 0% { transform: translateY(0); } 100% { transform: translateY(-70%); } }
-@keyframes rollDigit8 { 0% { transform: translateY(0); } 100% { transform: translateY(-80%); } }
-@keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
+@keyframes rollDigit0 { 0% { transform: translateY(-10%); } 100% { transform: translateY(0); } }
+@keyframes rollDigit1 { 0% { transform: translateY(-20%); } 100% { transform: translateY(-10%); } }
+@keyframes rollDigit2 { 0% { transform: translateY(-30%); } 100% { transform: translateY(-20%); } }
+@keyframes rollDigit3 { 0% { transform: translateY(-40%); } 100% { transform: translateY(-30%); } }
+@keyframes rollDigit4 { 0% { transform: translateY(-50%); } 100% { transform: translateY(-40%); } }
+@keyframes rollDigit5 { 0% { transform: translateY(-60%); } 100% { transform: translateY(-50%); } }
+@keyframes rollDigit6 { 0% { transform: translateY(-70%); } 100% { transform: translateY(-60%); } }
+@keyframes rollDigit7 { 0% { transform: translateY(-80%); } 100% { transform: translateY(-70%); } }
+@keyframes rollDigit8 { 0% { transform: translateY(-90%); } 100% { transform: translateY(-80%); } }
+@keyframes rollDigit9 { 0% { transform: translateY(-100%); } 100% { transform: translateY(-90%); } }
 `
 
 const BG = "#0c0f14"
@@ -58,16 +58,16 @@ const tabContent = {
 
 // ===== ODOMETER STYLES =====
 const odometerKeyframes = `
-@keyframes rollDigit0 { 0% { transform: translateY(0); } 100% { transform: translateY(0); } }
-@keyframes rollDigit1 { 0% { transform: translateY(0); } 100% { transform: translateY(-10%); } }
-@keyframes rollDigit2 { 0% { transform: translateY(0); } 100% { transform: translateY(-20%); } }
-@keyframes rollDigit3 { 0% { transform: translateY(0); } 100% { transform: translateY(-30%); } }
-@keyframes rollDigit4 { 0% { transform: translateY(0); } 100% { transform: translateY(-40%); } }
-@keyframes rollDigit5 { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
-@keyframes rollDigit6 { 0% { transform: translateY(0); } 100% { transform: translateY(-60%); } }
-@keyframes rollDigit7 { 0% { transform: translateY(0); } 100% { transform: translateY(-70%); } }
-@keyframes rollDigit8 { 0% { transform: translateY(0); } 100% { transform: translateY(-80%); } }
-@keyframes rollDigit9 { 0% { transform: translateY(0); } 100% { transform: translateY(-90%); } }
+@keyframes rollDigit0 { 0% { transform: translateY(-10%); } 100% { transform: translateY(0); } }
+@keyframes rollDigit1 { 0% { transform: translateY(-20%); } 100% { transform: translateY(-10%); } }
+@keyframes rollDigit2 { 0% { transform: translateY(-30%); } 100% { transform: translateY(-20%); } }
+@keyframes rollDigit3 { 0% { transform: translateY(-40%); } 100% { transform: translateY(-30%); } }
+@keyframes rollDigit4 { 0% { transform: translateY(-50%); } 100% { transform: translateY(-40%); } }
+@keyframes rollDigit5 { 0% { transform: translateY(-60%); } 100% { transform: translateY(-50%); } }
+@keyframes rollDigit6 { 0% { transform: translateY(-70%); } 100% { transform: translateY(-60%); } }
+@keyframes rollDigit7 { 0% { transform: translateY(-80%); } 100% { transform: translateY(-70%); } }
+@keyframes rollDigit8 { 0% { transform: translateY(-90%); } 100% { transform: translateY(-80%); } }
+@keyframes rollDigit9 { 0% { transform: translateY(-100%); } 100% { transform: translateY(-90%); } }
 `
 
 // ===== SINGLE ROLLING DIGIT =====
@@ -1487,11 +1487,31 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
   const [dragging, setDragging] = useState<number | null>(null)
   const [editingRightX, setEditingRightX] = useState(false)
   const [rightXValue, setRightXValue] = useState("")
+  const [editingY, setEditingY] = useState<number | null>(null)
+  const [editYValue, setEditYValue] = useState("")
+  const [yLabelOverrides, setYLabelOverrides] = useState<(string | null)[]>([null, null, null])
   const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => { if (editingRightX && inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [editingRightX])
-          const padding = { top: 15, right: 10, bottom: 38, left: 44 };
+  const yInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingRightX && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingRightX])
+
+  useEffect(() => {
+    if (editingY !== null && yInputRef.current) {
+      yInputRef.current.focus()
+      yInputRef.current.select()
+    }
+  }, [editingY])
+
+  const padding = { top: 15, right: 10, bottom: 38, left: 44 };
   const width = 380; const height = 200;
-  const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
+    const chartW = width - padding.left - padding.right; const chartH = height - padding.top - padding.bottom;
+  const yLabels = ["0", "50%", "100%"]
+  const displayYLabels = yLabels.map((label, i) => yLabelOverrides[i] ?? label)
   const getX = (i: number) => (padding.left + 12) + (i / Math.max(data.length - 1, 1)) * (chartW - 12);
   const getY = (val: number) => padding.top + chartH - (Math.min(val, 100) / 100) * chartH;
   const getValFromY = (clientY: number) => { const svg = svgRef.current; if (!svg) return 0; const rect = svg.getBoundingClientRect(); const svgY = ((clientY - rect.top) / rect.height) * height; return Math.max(0, Math.min(100, Math.round(((padding.top + chartH - svgY) / chartH) * 100))) }
@@ -1506,10 +1526,59 @@ const DraggableEngagementGraph = ({ data, onChange, locked, videoDuration }: { d
     // Right side label is always current video duration
   const rightLabel = videoDuration;
 
-  return (
+    return (
     <div className="relative -mx-1">
-            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
-        {[0, 50, 100].map(t => <text key={t} x={padding.left - 8} y={getY(t) + 4} textAnchor="end" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{t === 0 ? "0" : `${t}%`}</text>)}
+      {editingY !== null && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <input
+            ref={yInputRef}
+            value={editYValue}
+            onChange={e => setEditYValue(e.target.value)}
+            onBlur={() => {
+              if (editingY !== null && editYValue.trim()) {
+                const updated = [...yLabelOverrides]
+                updated[editingY] = editYValue.trim()
+                setYLabelOverrides(updated)
+              }
+              setEditingY(null)
+              setEditYValue("")
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                if (editingY !== null && editYValue.trim()) {
+                  const updated = [...yLabelOverrides]
+                  updated[editingY] = editYValue.trim()
+                  setYLabelOverrides(updated)
+                }
+                setEditingY(null)
+                setEditYValue("")
+              }
+            }}
+            className="pointer-events-auto bg-zinc-800 border border-fuchsia-500 rounded-lg px-3 py-1.5 text-[13px] text-white text-center w-[100px] outline-none shadow-lg"
+            style={{ caretColor: PINK }}
+          />
+        </div>
+      )}
+      <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className={`w-full select-none ${locked ? "" : "touch-none"}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+                {[0, 50, 100].map((t, i) => (
+          <text
+            key={t}
+            x={padding.left - 8}
+            y={getY(t) + 4}
+            textAnchor="end"
+            fill={editingY === i ? PINK : "#d1d5db"}
+            fontSize="13"
+            fontFamily="sans-serif"
+            className={i === 0 || locked ? "cursor-default" : "cursor-pointer"}
+            onClick={() => {
+              if (locked || i === 0) return
+              setEditingY(i)
+              setEditYValue(displayYLabels[i])
+            }}
+          >
+            {displayYLabels[i]}
+          </text>
+        ))}
         <text x={padding.left + 15} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">0:00</text>
         <text x={getX(lastIdx) - 8} y={height - 7} textAnchor="middle" fill="#d1d5db" fontSize="13" fontFamily="sans-serif">{rightLabel}</text>
                 {[0, 50, 100].map((val, i) => (
