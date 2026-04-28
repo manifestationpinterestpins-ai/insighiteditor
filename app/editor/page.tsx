@@ -474,8 +474,7 @@ const BottomSheet = ({
   yAxisTop,
     sourcesMode,
   onToggleSources,
-  activeBannerType,
-  onToggleBanner,
+
 }: {
   open: boolean
   onClose: () => void
@@ -487,8 +486,6 @@ const BottomSheet = ({
   yAxisTop: number
     sourcesMode: "all" | "three"
   onToggleSources: () => void
-  activeBannerType: "meta" | "edits"
-  onToggleBanner: () => void
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [showGreyEditor, setShowGreyEditor] = useState(false)
@@ -587,20 +584,7 @@ const BottomSheet = ({
                 <ChevronRightIcon />
               </button>
 
-                           <div className="h-px bg-zinc-800" />
-              <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => { onToggleBanner(); onClose() }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="3"/>
-                    </svg>
-                  </div>
-                  <span className="text-[13px] text-white">
-                    {activeBannerType === "meta" ? "Switch to Get Edits banner" : "Switch to Meta Verified banner"}
-                  </span>
-                </div>
-                <ChevronRightIcon />
-              </button>
+                           
               <div className="h-px bg-zinc-800" />
               <button className="w-full flex items-center justify-between py-3 active:opacity-60 transition-opacity" onClick={() => { onToggleLock(); onClose() }}>
                 <div className="flex items-center gap-3">
@@ -2700,7 +2684,16 @@ export default function ReelInsights() {
                   </section>
 
                   <section className="px-4 py-5">
-                    <div className="flex items-center gap-2 mb-4"><h3 className="text-[15px] font-semibold">Interactions</h3><InfoIcon /></div>
+                                        <div className="flex items-center gap-2 mb-4">
+                      <h3 className="text-[15px] font-semibold">Interactions</h3>
+                      <button className="focus:outline-none active:opacity-60 transition-opacity" onClick={() => {
+                        const next = activeBannerType === "meta" ? "edits" : "meta"
+                        setActiveBannerType(next)
+                        setShowGetEditsBanner(true)
+                        setShowMetaVerifiedBanner(true)
+                        try { localStorage.setItem("active-banner-type", next) } catch {}
+                      }}><InfoIcon /></button>
+                    </div>
                     <div className="space-y-3.5">
                       {[["Likes", insightsData.likes], ["Comments", insightsData.comments], ["Reposts", insightsData.reposts], ["Shares", insightsData.shares], ["Saves", insightsData.bookmarks]].map(([label, val]) => (
                         <div key={label as string} className="flex justify-between items-center">
@@ -2824,14 +2817,7 @@ export default function ReelInsights() {
             onUpdateGraph={setGraphData}
             yAxisTop={getViewsAxisTop(insightsData.views)}
                         sourcesMode={sourcesMode}
-            activeBannerType={activeBannerType}
-            onToggleBanner={() => {
-              const next = activeBannerType === "meta" ? "edits" : "meta"
-              setActiveBannerType(next)
-              setShowGetEditsBanner(true)
-              setShowMetaVerifiedBanner(true)
-              try { localStorage.setItem("active-banner-type", next) } catch {}
-            }}
+           
             onToggleSources={() => {
               const next = sourcesMode === "all" ? "three" : "all"
               setSourcesMode(next)
