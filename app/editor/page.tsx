@@ -1017,14 +1017,25 @@ const DraggableGraph = ({
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState<{ index: number; line: "thisReel" | "typical" } | null>(null)
     const [xLabels, setXLabels] = useState<string[]>(() => {
+    const defaults = ["28 Jan", "29 Jan", "30 Jan"]
+
     try {
       const saved = localStorage.getItem("graph-x-labels")
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length === 3) return parsed
+
+        if (Array.isArray(parsed) && parsed.length === 3) {
+          const repaired = parsed.map((label, index) =>
+            typeof label === "string" && label.trim() ? label : defaults[index]
+          )
+
+          localStorage.setItem("graph-x-labels", JSON.stringify(repaired))
+          return repaired
+        }
       }
     } catch {}
-    return ["28 Jan", "29 Jan", "30 Jan"]
+
+    return defaults
   })
     const [editingX, setEditingX] = useState<number | null>(null)
   const [editValue, setEditValue] = useState("")
