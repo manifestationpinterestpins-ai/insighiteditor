@@ -1392,34 +1392,13 @@ export default function ReelInsights() {
     const router = useRouter()
 
         useEffect(() => {
-      async function verifyAccess() {
-        const savedKey = localStorage.getItem("device-access-key");
-        
-        // If there's no key in storage, they shouldn't be here anyway
-        if (!savedKey) {
-          window.location.href = "/";
-          return;
-        }
-
-        // Ask Supabase if this specific key still exists in your table
-        const { data, error } = await supabase
-          .from("keys")
-          .select("key")
-          .eq("key", savedKey);
-
-        // If data is empty, the row was deleted
-        if (error || !data || data.length === 0) {
-          console.log("Access Revoked: Key not found in database.");
-          localStorage.removeItem("access-granted");
-          localStorage.removeItem("device-access-key");
-          window.location.href = "/"; 
-        }
-      }
-
-      if (isLoaded) {
-        verifyAccess();
-      }
-    }, [isLoaded]);
+  if (!isLoaded) return
+  const access = localStorage.getItem("access-granted")
+  const savedKey = localStorage.getItem("device-access-key")
+  if (access !== "true" || !savedKey) {
+    router.replace("/")
+  }
+}, [isLoaded, router])
     const [headerImage, setHeaderImage] = useState<string | null>(null)
         const [thumbnailImage, setThumbnailImage] = useState<string | null>(() => {
     try { return localStorage.getItem("shared-thumbnail") } catch { return null }
